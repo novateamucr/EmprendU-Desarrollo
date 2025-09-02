@@ -1,19 +1,21 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\Api\EntrepreneurshipController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\FairController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\InterestController;
+use App\Http\Controllers\Api\UserController;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
+Route::apiResource('products', ProductController::class);
+Route::apiResource('fairs', FairController::class);
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('roles', RoleController::class);
+Route::apiResource('favorites', FavoriteController::class);
+Route::apiResource('interests', InterestController::class);
+Route::apiResource('users', UserController::class);
