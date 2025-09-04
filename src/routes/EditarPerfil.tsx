@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Info, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Navbar } from '../components/Navbar';
+import { Navbar } from '../components/navbar';
+import { User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { RoleSelector } from '../components/RoleSelector';
 import { Modal } from '../components/Modal';
 import { TextField } from '../components/Form/TextField';
@@ -97,7 +99,24 @@ export function EditarPerfil() {
   if (isError && error) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-2xl" />
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-2xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
         <div className="pt-20 px-4 max-w-4xl mx-auto">
           <div className="py-12">
             {!hasCreds ? (
@@ -124,7 +143,24 @@ export function EditarPerfil() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar maxWidth="max-w-2xl" />
+      <Navbar
+        logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+        maxWidth="max-w-2xl"
+        items={[
+          { type: 'link', label: 'Inicio', to: '/home' },
+          { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+          { type: 'link', label: 'Ferias', to: '/ferias' },
+        ]}
+        rightContent={
+          <Link
+            to="/perfil"
+            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            aria-label="Ir al perfil"
+          >
+            <User className="w-5 h-5" />
+          </Link>
+        }
+      />
       
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex justify-center">

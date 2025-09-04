@@ -12,6 +12,7 @@ function App() {
     <QueryProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<Perfil />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/editar" element={<EditarPerfil />} /> 
           <Route path="/" element={<Perfil />} />
