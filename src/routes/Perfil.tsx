@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Navbar } from '../components/Navbar';
+import { Plus, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Navbar } from '../components/navbar';
 import { PanelPerfil } from '../components/PanelPerfil';
 import { InterestCard } from '../components/InterestCard';
 import { FavoriteCard } from '../components/FavoriteCard';
@@ -34,7 +35,24 @@ export function Perfil() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-3xl" />
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
         <div className="pt-20 px-4 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 mt-6">
@@ -67,7 +85,24 @@ export function Perfil() {
   if (isError && error) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-3xl" />
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
         <div className="pt-20 px-4 max-w-6xl mx-auto">
           <div className="py-12">
             {!hasCreds ? (
@@ -95,7 +130,24 @@ export function Perfil() {
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-3xl" />
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
         <div className="pt-20 px-4 max-w-6xl mx-auto">
           <div className="py-12">
             <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
@@ -107,7 +159,24 @@ export function Perfil() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar maxWidth="max-w-3xl" />
+      <Navbar
+        logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+        maxWidth="max-w-3xl"
+        items={[
+          { type: 'link', label: 'Inicio', to: '/home' },
+          { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+          { type: 'link', label: 'Ferias', to: '/ferias' },
+        ]}
+        rightContent={
+          <Link
+            to="/perfil"
+            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            aria-label="Ir al perfil"
+          >
+            <User className="w-5 h-5" />
+          </Link>
+        }
+      />
       
       <div className="pt-20 px-4 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
