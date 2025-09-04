@@ -1,15 +1,18 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, setInterests, updatePassword, uploadAvatar, getInterests, getFavorites, addFavorite, removeFavorite } from './service';
 import { mapFavoritesDTO, mapProfileDTO, mapToProfileDTO } from './mapper';
 import { UserProfile, Favorito } from './types';
 import { PasswordUpdateDTO } from './dto';
+import type { ApiError } from '../errors';
+import { onTokenChange, getToken } from '../auth';
 
 export const PROFILE_KEY = ['profile'];
 export const INTERESTS_KEY = ['profile', 'interests'];
 export const FAVORITES_KEY = ['profile', 'favorites'];
 
 export function useProfile() {
-  return useQuery({
+  const q = useQuery({
     queryKey: PROFILE_KEY,
     queryFn: async () => {
       const [profileData, interestsData, favoritesData] = await Promise.all([
@@ -22,8 +25,23 @@ export function useProfile() {
         interestsData.interests, 
         mapFavoritesDTO(favoritesData)
       );
+    },
+    retry: (count, error: ApiError) => {
+      // no reintentar en unauth o notfound; reintento mínimo en server/network
+      if (error?.kind === 'unauth' || error?.kind === 'notfound') return false;
+      return count < 1;
     }
-  });
+  }) as ReturnType<typeof useQuery> & { error: ApiError | null };
+
+  // Sensible a futuras credenciales: si el token cambia, refetch
+  useEffect(() => {
+    const off = onTokenChange(() => {
+      if (getToken()) q.refetch();
+    });
+    return off;
+  }, [q]);
+
+  return q;
 }
 
 export function useUpdateProfile() {

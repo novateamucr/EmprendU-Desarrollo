@@ -11,7 +11,6 @@ function App() {
         <Routes>
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/editar" element={<EditarPerfil />} /> 
-          <Route path="/" element={<Perfil />} />
         </Routes>
       </Router>
     </QueryProvider>
