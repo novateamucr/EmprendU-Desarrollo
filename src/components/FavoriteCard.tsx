@@ -18,5 +18,6 @@ export function FavoriteCard({ title, imgUrl }: FavoriteCardProps) {
         {title}
       </span>
     </div>
+    //hola soy ericka
   );
 }
