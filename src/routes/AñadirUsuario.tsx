@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { Navbar } from '../components/navbar';
 import { useState } from 'react';
 import { Info } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Navbar } from '../components/Navbar';
 import { RoleSelector } from '../components/RoleSelector';
 import { Modal } from '../components/Modal';
 import { TextField } from '../components/Form/TextField';
@@ -11,8 +11,32 @@ import { SelectField } from '../components/Form/SelectField';
 import { useLocations } from '../hooks/useLocations';
 import { profileFormSchema } from '../domain/profile/schema';
 import type { ProfileFormData } from '../domain/profile/schema';
+import { Link } from "react-router-dom";
+import {Person} from '@mui/icons-material';
 
 export function AñadirUsuario() {
+  const navItems = [
+    { type: 'link' as const, label: 'Inicio', to: '/home' },
+    { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
+    { type: 'link' as const, label: 'Ferias', to: '/ferias' },
+  ];
+
+  const logo = (
+      <Link to="/home" className="flex items-center">
+        <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+      </Link>
+    );
+
+    const rightContent = (
+        <Link
+          to="/perfil"
+          className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+          aria-label="Ir al perfil"
+        >
+          <Person sx={{ fontSize: 20 }} />
+        </Link>
+      );
+
   const navigate = useNavigate();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const { provincias, cantones, distritos, loadCantones, loadDistritos } = useLocations();
@@ -46,7 +70,12 @@ export function AñadirUsuario() {
 
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-2xl" />
+        <Navbar 
+                logo={logo}
+                items={navItems}
+                rightContent={rightContent}
+                maxWidth="max-w-3xl"
+          />
         <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
           <div className="flex justify-center">
             <div className="w-full max-w-3xl mt-6">

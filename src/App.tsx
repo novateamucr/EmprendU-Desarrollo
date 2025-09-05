@@ -8,6 +8,8 @@ import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
 import Login from './routes/login';
 import Register from './routes/register';
 import PwReset from './routes/pwReset';
+import GestorUsuarios from './routes/GestorUsuarios';
+import { AñadirUsuario } from './routes/AñadirUsuario';
 
 import './App.css';
 
@@ -24,6 +26,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/pwReset" element={<PwReset />} />
+          <Route path="/gestor-usuarios" element={<GestorUsuarios />} />
+          <Route path="/añadir-usuario" element={<AñadirUsuario />} />
         </Routes>
       </Router>
     </QueryProvider>

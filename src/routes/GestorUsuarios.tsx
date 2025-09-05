@@ -1,6 +1,7 @@
 import React from "react";
-import { Navbar } from "../components/Navbar";
+import { Navbar } from '../components/navbar';
 import { Link } from "react-router-dom";
+import {Person} from '@mui/icons-material';
 
 const button = (
   <Link
@@ -42,6 +43,27 @@ const userData = [
 
 
 export default function GestorUsuarios() {
+  const navItems = [
+      { type: 'link' as const, label: 'Inicio', to: '/home' },
+      { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
+      { type: 'link' as const, label: 'Ferias', to: '/ferias' },
+    ];
+  
+    const logo = (
+        <Link to="/home" className="flex items-center">
+          <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+        </Link>
+      );
+  
+      const rightContent = (
+          <Link
+            to="/perfil"
+            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            aria-label="Ir al perfil"
+          >
+            <Person sx={{ fontSize: 20 }} />
+          </Link>
+      );
 
   const [openMenuId, setOpenMenuId] = React.useState<number | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -61,7 +83,12 @@ export default function GestorUsuarios() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar maxWidth="max-w-2xl" />
+      <Navbar 
+                logo={logo}
+                items={navItems}
+                rightContent={rightContent}
+                maxWidth="max-w-3xl"
+        />
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex flex-col gap-4 mt-6">
           <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de usuarios</h1>
