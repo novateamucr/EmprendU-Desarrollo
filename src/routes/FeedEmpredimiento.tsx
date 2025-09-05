@@ -1,12 +1,14 @@
 import { ProductCard } from '../components/ProductCard'; 
+import {useNavigate} from 'react-router-dom';
 
 export function FeedEmprendimiento() {
+  const navigate = useNavigate();
   return (
     <div className="p-6">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
         {/* Botón volver */}
         <div className="mb-4">
-          <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600" onClick={() => navigate(-1)}>
             <span className="text-2xl">←</span>
             <span className="text-sm md:text-base">Volver</span>
           </button>
