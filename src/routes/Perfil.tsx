@@ -1,25 +1,29 @@
 import { useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
-import { Navbar } from '../components/Navbar';
+import { Plus, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Navbar } from '../components/navbar';
 import { PanelPerfil } from '../components/PanelPerfil';
 import { InterestCard } from '../components/InterestCard';
 import { FavoriteCard } from '../components/FavoriteCard';
 import { Modal } from '../components/Modal';
 import { useProfile, useUpdateInterests } from '../domain/profile/queries';
+import { getToken } from '../domain/auth';
+import { ErrorMustLogin, ErrorSessionExpired, ErrorSystem, ErrorDB } from '../components/ErrorStates';
 
 export function Perfil() {
-  const { data: user, isLoading, isError, refetch } = useProfile();
+  const { data: user, isLoading, isError, error, refetch } = useProfile() as any;
   const updateInterestsMutation = useUpdateInterests();
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const hasCreds = !!getToken();
 
   const availableInterests = ['Comida', 'Joyería', 'Ropa', 'Arte', 'Tecnología', 'Deportes', 'Música', 'Libros'];
 
   const toggleInteres = (interes: string) => {
-    if (!user) return;
+    if (!user || !user.interests) return;
     const newInterests = user.interests.includes(interes)
-      ? user.interests.filter(i => i !== interes)
+      ? user.interests.filter((i: string) => i !== interes)
       : [...user.interests, interes];
     updateInterestsMutation.mutate(newInterests);
   };
@@ -31,7 +35,24 @@ export function Perfil() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-3xl" />
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
         <div className="pt-20 px-4 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 mt-6">
@@ -61,20 +82,75 @@ export function Perfil() {
     );
   }
 
-  if (isError || !user) {
+  if (isError && error) {
     return (
       <div className="min-h-screen bg-slate-100">
-        <Navbar maxWidth="max-w-3xl" />
-        <div className="pt-20 px-4 max-w-6xl mx-auto">
-          <div className="text-center py-12">
-            <p className="text-red-600 mb-4">Error al cargar el perfil</p>
-            <button
-              onClick={() => refetch()}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 mx-auto"
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
             >
-              <RefreshCw className="w-4 h-4" />
-              Reintentar
-            </button>
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
+        <div className="pt-20 px-4 max-w-6xl mx-auto">
+          <div className="py-12">
+            {!hasCreds ? (
+              <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'unauth' ? (
+              <ErrorSessionExpired onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'notfound' ? (
+              <ErrorSystem onRetry={() => refetch()} />
+            ) : error.kind === 'server' || error.kind === 'network' ? (
+              <ErrorDB onRetry={() => refetch()} />
+            ) : (
+              <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+                <p className="text-red-600 font-medium">Error al cargar el perfil</p>
+                <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  Reintentar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-100">
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-3xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
+        <div className="pt-20 px-4 max-w-6xl mx-auto">
+          <div className="py-12">
+            <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
           </div>
         </div>
       </div>
@@ -83,7 +159,24 @@ export function Perfil() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar maxWidth="max-w-3xl" />
+      <Navbar
+        logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+        maxWidth="max-w-3xl"
+        items={[
+          { type: 'link', label: 'Inicio', to: '/home' },
+          { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+          { type: 'link', label: 'Ferias', to: '/ferias' },
+        ]}
+        rightContent={
+          <Link
+            to="/perfil"
+            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            aria-label="Ir al perfil"
+          >
+            <User className="w-5 h-5" />
+          </Link>
+        }
+      />
       
       <div className="pt-20 px-4 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -112,13 +205,13 @@ export function Perfil() {
               </div>
               
               <div className="flex flex-wrap gap-4">
-                {user.interests.map((interest) => (
+                {user.interests?.map((interest: string) => (
                   <InterestCard
                     key={interest}
                     title={interest}
                     onRemove={() => toggleInteres(interest)}
                   />
-                ))}
+                )) || []}
               </div>
             </div>
 
@@ -127,13 +220,13 @@ export function Perfil() {
               <h2 className="text-xl font-semibold text-primary mb-6">Favoritos</h2>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {user.favorites.map((favorito) => (
+                {user.favorites?.map((favorito: any) => (
                   <FavoriteCard
                     key={favorito.id}
                     title={favorito.name}
                     imgUrl={favorito.imageUrl}
                   />
-                ))}
+                )) || []}
               </div>
             </div>
           </div>
@@ -156,7 +249,7 @@ export function Perfil() {
               <label key={interes} className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={user.interests.includes(interes)}
+                  checked={user.interests?.includes(interes) || false}
                   onChange={() => toggleInteres(interes)}
                   className="w-4 h-4 text-primary border-border rounded focus:ring-primary focus:ring-2"
                 />

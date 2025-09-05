@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Info, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Navbar } from '../components/Navbar';
+import { Navbar } from '../components/navbar';
+import { User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { RoleSelector } from '../components/RoleSelector';
 import { Modal } from '../components/Modal';
 import { TextField } from '../components/Form/TextField';
@@ -13,13 +15,16 @@ import { useProfile, useUpdateProfile, useUpdatePassword, useUploadAvatar } from
 import { useLocations } from '../hooks/useLocations';
 import { profileFormSchema, passwordSchema } from '../domain/profile/schema';
 import type { ProfileFormData, PasswordFormData } from '../domain/profile/schema';
+import { getToken } from '../domain/auth';
+import { ErrorMustLogin, ErrorSessionExpired, ErrorSystem, ErrorDB } from '../components/ErrorStates';
 
 export function EditarPerfil() {
   const navigate = useNavigate();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   
-  const { data: user, isLoading, isError } = useProfile();
+  const { data: user, isLoading, isError, error, refetch } = useProfile() as any;
+  const hasCreds = !!getToken();
   const updateProfileMutation = useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
   const uploadAvatarMutation = useUploadAvatar();
@@ -91,17 +96,46 @@ export function EditarPerfil() {
     );
   }
 
-  if (isError || !user) {
+  if (isError && error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Error al cargar el perfil</p>
-          <button 
-            onClick={() => navigate('/perfil')}
-            className="px-4 py-2 bg-primary text-white rounded-lg"
-          >
-            Volver al perfil
-          </button>
+      <div className="min-h-screen bg-slate-100">
+        <Navbar
+          logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+          maxWidth="max-w-2xl"
+          items={[
+            { type: 'link', label: 'Inicio', to: '/home' },
+            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Ferias', to: '/ferias' },
+          ]}
+          rightContent={
+            <Link
+              to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
+        <div className="pt-20 px-4 max-w-4xl mx-auto">
+          <div className="py-12">
+            {!hasCreds ? (
+              <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'unauth' ? (
+              <ErrorSessionExpired onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'notfound' ? (
+              <ErrorSystem onRetry={() => refetch()} />
+            ) : error.kind === 'server' || error.kind === 'network' ? (
+              <ErrorDB onRetry={() => refetch()} />
+            ) : (
+              <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+                <p className="text-red-600 font-medium">Error al cargar el perfil</p>
+                <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  Reintentar
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -109,7 +143,24 @@ export function EditarPerfil() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar maxWidth="max-w-2xl" />
+      <Navbar
+        logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+        maxWidth="max-w-2xl"
+        items={[
+          { type: 'link', label: 'Inicio', to: '/home' },
+          { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+          { type: 'link', label: 'Ferias', to: '/ferias' },
+        ]}
+        rightContent={
+          <Link
+            to="/perfil"
+            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            aria-label="Ir al perfil"
+          >
+            <User className="w-5 h-5" />
+          </Link>
+        }
+      />
       
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex justify-center">

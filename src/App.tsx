@@ -1,9 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import QueryProvider from './context/QueryProvider';
+import Home from './routes/Home';
 import { Perfil } from './routes/Perfil';
 import { EditarPerfil } from './routes/EditarPerfil';
-import { AñadirUsuario } from './routes/AñadirUsuario';
-import GestorUsuarios from './routes/GestorUsuarios';
+import LandingPage from './routes/Landing';
+import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
+import Login from './routes/login';
+import Register from './routes/register';
+import PwReset from './routes/pwReset';
+
 import './App.css';
 
 function App() {
@@ -11,11 +16,14 @@ function App() {
     <QueryProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/editar" element={<EditarPerfil />} /> 
-          <Route path="/" element={<Perfil />} />
-          <Route path="/añadir-usuario" element={<AñadirUsuario />} />
-          <Route path="/gestor-usuarios" element={<GestorUsuarios />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/pwReset" element={<PwReset />} />
         </Routes>
       </Router>
     </QueryProvider>
