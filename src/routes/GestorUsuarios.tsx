@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Navbar } from '../components/navbar';
 import { Link } from "react-router-dom";
-import {Person} from '@mui/icons-material';
+import { Person } from '@mui/icons-material';
+import useUsers from "../hooks/useUsers";
 
 const button = (
   <Link
@@ -12,88 +13,124 @@ const button = (
   </Link>
 );
 
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
 
-const userData = [
-  {
-    id: 1,
-    name: "Edward Waller Smith",
-    type: "Admin",
-    status: "Habilitado",
-    lastModified: "Mar 22, 2026",
-    addedOn: "Mar 22, 2026",
-  },
-  {
-    id: 2,
-    name: "Doreen Miranda Doe",
-    type: "Emprendedor",
-    status: "Deshabilitado",
-    lastModified: "Mar 22, 2026",
-    addedOn: "Mar 22, 2026",
-  },
-  {
-    id: 3,
-    name: "Amalia Leon Martines",
-    type: "Usuario",
-    status: "Habilitado",
-    lastModified: "Mar 22, 2026",
-    addedOn: "Mar 22, 2026",
-  },
-];
+// Map role numbers to role names
+const getRoleName = (roleId: number) => {
+  switch (roleId) {
+    case 1: return 'Usuario';
+    case 2: return 'Emprendedor';
+    case 3: return 'Admin';
+    default: return 'Usuario';
+  }
+};
 
 
 
 export default function GestorUsuarios() {
-  const navItems = [
-      { type: 'link' as const, label: 'Inicio', to: '/home' },
-      { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
-      { type: 'link' as const, label: 'Ferias', to: '/ferias' },
-    ];
-  
-    const logo = (
-        <Link to="/home" className="flex items-center">
-          <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
-        </Link>
-      );
-  
-      const rightContent = (
-          <Link
-            to="/perfil"
-            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
-            aria-label="Ir al perfil"
-          >
-            <Person sx={{ fontSize: 20 }} />
-          </Link>
-      );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
-  const [openMenuId, setOpenMenuId] = React.useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = React.useState("");
+  // Use the useUsers hook to fetch real user data
+  const { users: allUsers, loading, error, refetch } = useUsers();
+  
+  // Filter users based on search term
+  const filteredUsers = React.useMemo(() => {
+    if (!allUsers) return [];
+    if (!searchTerm.trim()) return allUsers;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    return allUsers.filter(user => 
+      (user.name?.toLowerCase() || '').includes(searchLower) || 
+      (user.email?.toLowerCase() || '').includes(searchLower) ||
+      (user.username?.toLowerCase() || '').includes(searchLower)
+    );
+  }, [allUsers, searchTerm]);
+
+  const navItems = [
+    { type: 'link' as const, label: 'Inicio', to: '/' },
+    { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
+    { type: 'link' as const, label: 'Ferias', to: '/ferias' },
+  ];
+
+  const logo = (
+    <Link to="/" className="flex items-center">
+      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+    </Link>
+  );
+
+  const rightContent = (
+    <Link
+      to="/perfil"
+      className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+      aria-label="Ir al perfil"
+    >
+      <Person sx={{ fontSize: 20 }} />
+    </Link>
+  );
 
   const handleActionClick = (userId: number) => {
     setOpenMenuId(openMenuId === userId ? null : userId);
   };
 
-  const handleOptionClick = (option: string, userId: number) => {
-    alert(`Opción: ${option} para usuario ID: ${userId}`);
-    setOpenMenuId(null);
-  };
+  const handleOptionClick = async (option: string, userId: number) => {
+    try {
+      let response;
 
-  const filteredUsers = userData.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      switch (option) {
+        case 'Eliminar':
+          response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+          break;
+        case 'Habilitar':
+        case 'Deshabilitar':
+          const isBanning = option === 'Deshabilitar';
+          response = await fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banned: isBanning })
+          });
+          break;
+        default:
+          alert(`Opción: ${option} para usuario ID: ${userId}`);
+          setOpenMenuId(null);
+          return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Error al procesar la solicitud');
+      }
+
+      // Refresh the user list
+      refetch();
+      setOpenMenuId(null);
+      alert(`Usuario ${option.toLowerCase()} correctamente`);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Ocurrió un error al procesar la solicitud');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar 
-                logo={logo}
-                items={navItems}
-                rightContent={rightContent}
-                maxWidth="max-w-3xl"
-        />
+      <Navbar
+        logo={logo}
+        items={navItems}
+        rightContent={rightContent}
+        maxWidth="max-w-3xl"
+      />
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex flex-col gap-4 mt-6">
           <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de usuarios</h1>
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 mb-2">
-            <h3 className="text-lg font-medium text-secondary">Usuarios: {userData.length}</h3>
+            <h3 className="text-lg font-medium text-secondary">Usuarios: {filteredUsers?.length || 0}</h3>
             <div className="w-full md:w-1/2">
               <input
                 type="text"
@@ -121,36 +158,91 @@ export default function GestorUsuarios() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map(user => (
-                <tr key={user.id} className="relative">
-                  <td>{user.name}</td>
-                  <td>{user.type}</td>
-                  <td>{user.status}</td>
-                  <td>{user.lastModified}</td>
-                  <td>{user.addedOn}</td>
-                  <td className="relative">
-                    <button onClick={() => handleActionClick(user.id)} className="px-2 py-1">⋮</button>
-                    {openMenuId === user.id && (
-                      <div
-                        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 bg-white min-w-[120px] shadow-lg border border-gray-200 rounded-md"
-                      >
-                        <button
-                          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                          onClick={() => handleOptionClick("Editar", user.id)}
-                        >Editar</button>
-                        <button
-                          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                          onClick={() => handleOptionClick("Eliminar", user.id)}
-                        >Eliminar</button>
-                        <button
-                          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                          onClick={() => handleOptionClick("Habilitar", user.id)}
-                        >Habilitar</button>
-                      </div>
-                    )}
+              {loading && allUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                    Cargando usuarios...
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-red-500">
+                    Error al cargar los usuarios: {error.message}
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                    No se encontraron usuarios
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map(user => (
+                  <tr key={user.id} className="relative hover:bg-gray-50">
+                    <td className="py-3 px-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-gray-500">@{user.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2">{getRoleName(user.role)}</td>
+                    <td className="py-3 px-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                        }`}>
+                        {user.banned ? 'Deshabilitado' : 'Habilitado'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2">{formatDate(user.updated_at)}</td>
+                    <td className="py-3 px-2">{formatDate(user.created_at)}</td>
+                    <td className="py-3 px-2 relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleActionClick(user.id);
+                        }}
+                        className="px-2 py-1 hover:bg-gray-100 rounded-full"
+                        aria-label="Acciones"
+                      >
+                        ⋮
+                      </button>
+                      {openMenuId === user.id && (
+                        <div
+                          className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Link
+                            to={`/editar-usuario/${user.id}`}
+                            className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                          >
+                            Editar
+                          </Link>
+                          <button
+                            className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm"
+                            onClick={() => handleOptionClick("Eliminar", user.id)}
+                          >
+                            Eliminar
+                          </button>
+                          <button
+                            className={`block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm ${user.banned ? 'text-green-600' : 'text-yellow-600'
+                              }`}
+                            onClick={() => handleOptionClick(
+                              user.banned ? 'Habilitar' : 'Deshabilitar',
+                              user.id
+                            )}
+                          >
+                            {user.banned ? 'Habilitar' : 'Deshabilitar'}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
