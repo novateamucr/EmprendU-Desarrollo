@@ -15,7 +15,7 @@ interface OptionPanelProps {
 
 export default function OptionPanel(props: OptionPanelProps) {
    return (
-    <div className={`relative flex-1 flex flex-col justify-center items-center bg-gray-900 px-12 gap-6 ${props.style || ""}`}>
+    <div className={` relative flex-1 flex flex-col justify-center items-center bg-gray-900 px-12 gap-6 ${props.style || ""}`}>
       {props.imgSrc && (
         <img
           src={props.imgSrc}

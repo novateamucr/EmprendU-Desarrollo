@@ -19,8 +19,8 @@ export default function Login() {
   };
 
   const handleSubmit = () => {
-    alert(JSON.stringify(formValues, null, 2)); 
-    setFormValues({ correo: "", password: "" }); 
+    alert(JSON.stringify(formValues, null, 2));
+    setFormValues({ correo: "", password: "" });
   };
 
   // Inputs del login
@@ -75,7 +75,7 @@ export default function Login() {
   // Formulario de autenticación
   const AuthFormLogin = [
     <AuthForm
-      style="flex-2 flex flex-col items-center justify-center bg-white px-16"
+      style="flex-2 flex flex-col items-center justify-center bg-white px-16 w-[75%]"
       title="Inicia sesión"
       input={loginInputs}
       newPw={pwLink}
@@ -86,6 +86,7 @@ export default function Login() {
   // Panel lateral
   const optPanelInicia = [
     <OptionPanel
+      style="w-[25%]"
       title="¡Inicia ahora!"
       text="Ingresa tus datos y comienza a explorar emprendimientos en tu zona"
       button={registerBtn}
