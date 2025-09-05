@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import logo from "../assets/logo.png";
 import hero from "../assets/hero.png";
+import vision from "../assets/vision_8440711.png";
 
 export default function Landing() {
     return (
@@ -45,7 +46,7 @@ export default function Landing() {
                 <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
                     <CardLanding
                         title="Visibilidad"
-                        imgUrl="/icons/visibilidad.svg"
+                        imgUrl={vision}
                         description="Da a conocer tu emprendimiento y llega a más personas en tu comunidad y más allá."
                     />
                     <CardLanding
@@ -111,7 +112,7 @@ export default function Landing() {
 
                     <div className="flex justify-center mt-10">
                         <Link
-                            to="/Home"
+                            to="/"
                             className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-emerald-600 transition"
                         >
                             Conocer más
