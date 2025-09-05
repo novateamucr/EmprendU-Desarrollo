@@ -7,6 +7,7 @@ import LandingPage from './routes/Landing';
 import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
 import Login from './routes/login';
 import Register from './routes/register';
+import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
@@ -25,9 +26,12 @@ function App() {
           <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/logout" element={<Logout />} />
           <Route path="/pwReset" element={<PwReset />} />
+
           <Route path="/gestor-usuarios" element={<GestorUsuarios />} />
           <Route path="/añadir-usuario" element={<AñadirUsuario />} />
+
         </Routes>
       </Router>
     </QueryProvider>

@@ -1,12 +1,18 @@
 import { ProductCard } from '../components/ProductCard'; 
+import {useNavigate} from 'react-router-dom';
+
+// Importar imágenes desde src/assets
+import logoEmprendimiento from "../assets/logoEmprendimiento.jpg";
+import rosas from "../assets/rosas.jpg";
 
 export function FeedEmprendimiento() {
+  const navigate = useNavigate();
   return (
     <div className="p-6">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
         {/* Botón volver */}
         <div className="mb-4">
-          <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600" onClick={() => navigate(-1)}>
             <span className="text-2xl">←</span>
             <span className="text-sm md:text-base">Volver</span>
           </button>
@@ -15,7 +21,7 @@ export function FeedEmprendimiento() {
         {/* Banner y descripción del emprendimiento */}
         <div className="text-center mb-6">
           <img
-            src="img/Frame 11.jpg"
+            src={logoEmprendimiento}
             alt="Banner"
             className="mx-auto md:h-72 object-cover rounded-2xl"
           />
@@ -42,25 +48,25 @@ export function FeedEmprendimiento() {
         <h2 className="text-xl md:text-2xl font-semibold mt-8 mb-4">Productos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+            
           />
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+          
           />
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+            
           />
         </div>
       </div>

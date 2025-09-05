@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Navbar } from '../components/navbar';
+import { UserProfile } from '../components/navbar/UserProfile';
 import { ProductCard } from '../components/ProductCard';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 import { 
   Search, 
-  Person, 
   Star, 
   Apps,
   Restaurant,
@@ -107,15 +107,7 @@ export default function Home() {
     { type: 'link' as const, label: 'Ferias', to: '/ferias' },
   ];
 
-  const rightContent = (
-    <Link
-      to="/perfil"
-      className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
-      aria-label="Ir al perfil"
-    >
-      <Person sx={{ fontSize: 20 }} />
-    </Link>
-  );
+  const rightContent = <UserProfile />;
 
   const logo = (
     <Link to="/home" className="flex items-center">
