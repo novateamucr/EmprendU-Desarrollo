@@ -8,6 +8,7 @@ import { FavoriteCard } from '../components/FavoriteCard';
 import { Modal } from '../components/Modal';
 import { useProfile, useUpdateInterests } from '../domain/profile/queries';
 import { getToken } from '../domain/auth';
+import { isDemoMode } from '../domain/demo';
 import { ErrorMustLogin, ErrorSessionExpired, ErrorSystem, ErrorDB } from '../components/ErrorStates';
 
 export function Perfil() {
@@ -39,8 +40,8 @@ export function Perfil() {
           logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
           maxWidth="max-w-3xl"
           items={[
-            { type: 'link', label: 'Inicio', to: '/home' },
-            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Inicio', to: '/' },
+            { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
             { type: 'link', label: 'Ferias', to: '/ferias' },
           ]}
           rightContent={
@@ -83,14 +84,69 @@ export function Perfil() {
   }
 
   if (isError && error) {
+    // En modo demo, mantener comportamiento actual
+    if (isDemoMode()) {
+      return (
+        <div className="min-h-screen bg-slate-100">
+          <Navbar
+            logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
+            maxWidth="max-w-3xl"
+            items={[
+              { type: 'link', label: 'Inicio', to: '/' },
+              { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
+              { type: 'link', label: 'Ferias', to: '/ferias' },
+            ]}
+            rightContent={
+              <Link
+                to="/perfil"
+              className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+              aria-label="Ir al perfil"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          }
+        />
+        <div className="pt-20 px-4 max-w-6xl mx-auto">
+          <div className="py-12">
+            {isDemoMode() ? (
+              // En modo demo: mostrar error genérico sin validación de credenciales
+              <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+                <p className="text-red-600 font-medium">Error al cargar el perfil (modo demo)</p>
+                <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  Reintentar
+                </button>
+              </div>
+            ) : !hasCreds ? (
+              <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'unauth' ? (
+              <ErrorSessionExpired onLogin={() => { window.location.href = '/login'; }} />
+            ) : error.kind === 'notfound' ? (
+              <ErrorSystem onRetry={() => refetch()} />
+            ) : error.kind === 'server' || error.kind === 'network' ? (
+              <ErrorDB onRetry={() => refetch()} />
+            ) : (
+              <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+                <p className="text-red-600 font-medium">Error al cargar el perfil</p>
+                <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                  Reintentar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+    }
+    
+    // En modo NO demo, aplicar lógica de errores específica
     return (
       <div className="min-h-screen bg-slate-100">
         <Navbar
           logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
           maxWidth="max-w-3xl"
           items={[
-            { type: 'link', label: 'Inicio', to: '/home' },
-            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Inicio', to: '/' },
+            { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
             { type: 'link', label: 'Ferias', to: '/ferias' },
           ]}
           rightContent={
@@ -134,8 +190,8 @@ export function Perfil() {
           logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
           maxWidth="max-w-3xl"
           items={[
-            { type: 'link', label: 'Inicio', to: '/home' },
-            { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+            { type: 'link', label: 'Inicio', to: '/' },
+            { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
             { type: 'link', label: 'Ferias', to: '/ferias' },
           ]}
           rightContent={
@@ -150,7 +206,14 @@ export function Perfil() {
         />
         <div className="pt-20 px-4 max-w-6xl mx-auto">
           <div className="py-12">
-            <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
+            {isDemoMode() ? (
+              // En modo demo: no mostrar error de login
+              <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+                <p className="text-gray-600 font-medium">Cargando perfil demo...</p>
+              </div>
+            ) : (
+              <ErrorMustLogin onLogin={() => { window.location.href = '/login'; }} />
+            )}
           </div>
         </div>
       </div>
@@ -163,8 +226,8 @@ export function Perfil() {
         logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
         maxWidth="max-w-3xl"
         items={[
-          { type: 'link', label: 'Inicio', to: '/home' },
-          { type: 'link', label: 'Emprendimientos', to: '/emprendimientos' },
+          { type: 'link', label: 'Inicio', to: '/' },
+          { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
           { type: 'link', label: 'Ferias', to: '/ferias' },
         ]}
         rightContent={

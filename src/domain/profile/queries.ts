@@ -27,9 +27,10 @@ export function useProfile() {
       );
     },
     retry: (count, error: ApiError) => {
-      // no reintentar en unauth o notfound; reintento mínimo en server/network
+      // no reintentar en unauth o notfound; 1 reintento en server/network
       if (error?.kind === 'unauth' || error?.kind === 'notfound') return false;
-      return count < 1;
+      if (error?.kind === 'server' || error?.kind === 'network') return count < 1;
+      return false;
     }
   }) as ReturnType<typeof useQuery> & { error: ApiError | null };
 
