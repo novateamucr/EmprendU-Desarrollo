@@ -1,5 +1,9 @@
 import { ProductCard } from '../components/ProductCard'; 
 
+// Importar imágenes desde src/assets
+import logoEmprendimiento from "../assets/logoEmprendimiento.jpg";
+import rosas from "../assets/rosas.jpg";
+
 export function FeedEmprendimiento() {
   return (
     <div className="p-6">
@@ -15,7 +19,7 @@ export function FeedEmprendimiento() {
         {/* Banner y descripción del emprendimiento */}
         <div className="text-center mb-6">
           <img
-            src="img/Frame 11.jpg"
+            src={logoEmprendimiento}
             alt="Banner"
             className="mx-auto md:h-72 object-cover rounded-2xl"
           />
@@ -42,25 +46,25 @@ export function FeedEmprendimiento() {
         <h2 className="text-xl md:text-2xl font-semibold mt-8 mb-4">Productos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+            
           />
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+          
           />
           <ProductCard
-            imgUrl="img/rosas.jpg"
+            imgUrl={rosas}
             title="Ramo de dos rosas"
             description="Ramo de dos rosas con follaje y colores a elegir"
             price={4000}
-            onBuy={() => alert('Compraste: Ramo de dos rosas')}
+            
           />
         </div>
       </div>

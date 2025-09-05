@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import QueryProvider from './context/QueryProvider';
 import { Perfil } from './routes/Perfil';
 import { EditarPerfil } from './routes/EditarPerfil';
-import LandingPage from './routes/landing';
+import LandingPage from './routes/Landing';
 import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
 
 import './App.css';
@@ -17,6 +17,7 @@ function App() {
           <Route path="/" element={<Perfil />} />
           <Route path="landing" element={<LandingPage />} />
           <Route path="feed/emprendimiento" element={<FeedEmprendimiento />} />
+          
         </Routes>
       </Router>
     </QueryProvider>
