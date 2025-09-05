@@ -71,7 +71,7 @@ export function EditarPerfil() {
   const onSubmitProfile = (data: ProfileFormData) => {
     updateProfileMutation.mutate(data, {
       onSuccess: () => {
-        navigate('/perfil');
+        navigate('/profile');
       }
     });
   };
@@ -86,7 +86,7 @@ export function EditarPerfil() {
   };
 
   const handleCancel = () => {
-    navigate('/perfil');
+    navigate('/profile');
   };
 
   if (isLoading) {
@@ -112,7 +112,7 @@ export function EditarPerfil() {
           ]}
           rightContent={
             <Link
-              to="/perfil"
+              to="/profile"
               className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
               aria-label="Ir al perfil"
             >
@@ -165,7 +165,7 @@ export function EditarPerfil() {
           ]}
           rightContent={
             <Link
-              to="/perfil"
+              to="/profile"
               className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
               aria-label="Ir al perfil"
             >
@@ -209,7 +209,7 @@ export function EditarPerfil() {
         ]}
         rightContent={
           <Link
-            to="/perfil"
+            to="/profile"
             className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
             aria-label="Ir al perfil"
           >
