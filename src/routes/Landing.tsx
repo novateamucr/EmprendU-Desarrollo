@@ -111,7 +111,7 @@ export default function Landing() {
 
                     <div className="flex justify-center mt-10">
                         <Link
-                            to="/home"
+                            to="/Home"
                             className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-emerald-600 transition"
                         >
                             Conocer más
