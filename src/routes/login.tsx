@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-
+import { useUserLogin } from '../hooks/useUserLogin';
 import Input from '../components/ui/Input';
 import AuthForm from '../components/ui/AuthForm';
 import OptionPanel from '../components/ui/OptionPanel';
@@ -10,27 +10,38 @@ export default function Login() {
   const navigate = useNavigate();
 
   const [formValues, setFormValues] = useState({
-    correo: "",
+    email: "",
     password: "",
   });
+  
+  const { login, loading, error } = useUserLogin();
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
   };
 
-  const handleSubmit = () => {
-    alert(JSON.stringify(formValues, null, 2));
-    setFormValues({ correo: "", password: "" });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login({
+      email: formValues.email,
+      password: formValues.password
+    })
+    .then(result => {
+      if (result) {
+        // Redirect to home page or dashboard after successful login
+        navigate('/');
+      }
+    });
   };
 
   // Inputs del login
   const loginInputs = [
     <Input
-      key="correoLogin"
+      key="email"
       type="email"
       placeholder="Correo electrónico"
-      value={formValues.correo}
-      onChange={handleChange("correo")}
+      value={formValues.email}
+      onChange={handleChange("email")}
     />,
     <Input
       key="password"
@@ -41,15 +52,6 @@ export default function Login() {
     />,
   ];
 
-  // Botón de login
-  const loginBtn = [
-    <Btn
-      style="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl"
-      text='Iniciar sesión'
-      key="iniciar"
-      onClick={handleSubmit}
-    />,
-  ];
 
   // Botón de registro usando navigate de react-router-dom
   const registerBtn = [
@@ -72,15 +74,36 @@ export default function Login() {
     </Link>
   ];
 
+  // Botón de login
+  const loginBtn = [
+    <button
+      key="iniciar"
+      type="submit"
+      className="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl disabled:opacity-50"
+      disabled={loading}
+    >
+      {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+    </button>,
+  ];
+
   // Formulario de autenticación
   const AuthFormLogin = [
-    <AuthForm
-      style="flex-2 flex flex-col items-center justify-center bg-white px-16 w-[75%]"
-      title="Inicia sesión"
-      input={loginInputs}
-      newPw={pwLink}
-      button={loginBtn}
-    />
+    <div key="auth-form" className="w-[75%]">
+      <form onSubmit={handleSubmit}>
+        <AuthForm
+          style="flex-2 flex flex-col items-center justify-center bg-white px-16 w-full"
+          title="Inicia sesión"
+          input={loginInputs}
+          newPw={pwLink}
+          button={loginBtn}
+        />
+      </form>
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+    </div>
   ];
 
   // Panel lateral
@@ -98,7 +121,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen">
       {optPanelInicia}
-      <div className="flex-2 flex flex-col items-center justify-center bg-white px-16">
+      <div className="flex flex-col items-center justify-center bg-white w-[75%]">
         {AuthFormLogin}
       </div>
     </div>

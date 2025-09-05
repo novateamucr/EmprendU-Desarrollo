@@ -7,6 +7,7 @@ interface ButtonProps {
     text: string;
     to?: string; //con esto se le podria agregar una ruta 
     onClick?: () => void; //con esta se le puede agregar una funcion 
+    disabled?: boolean; //para deshabilitar el botón
 
 }
 
@@ -23,8 +24,9 @@ export default function Button(props: ButtonProps) {
 
   return (
     <button
-      className={`${props.style} ${props.hover || ''}`}
-      onClick={handleClick}
+      className={`${props.style} ${props.hover || ''} ${props.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      onClick={props.disabled ? undefined : handleClick}
+      disabled={props.disabled}
     >
       {props.text}
     </button>

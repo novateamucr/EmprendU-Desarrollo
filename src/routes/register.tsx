@@ -1,15 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Input from "../components/ui/Input";
 import AuthForm from "../components/ui/AuthForm";
 import OptionPanel from "../components/ui/OptionPanel";
 import Btn from "../components/ui/Btn";
 import Toggle from '../components/ui/ToggleAccountType';
+import { useUserRegistration } from '../hooks/useUserRegistration';
 
 
 
 export default function RouteComponent() {
+  const { registerUser, loading, error } = useUserRegistration();
+  const navigate = useNavigate();
+  
   const [formValues, setFormValues] = useState({
+    name: "",
+    username: "",
     correo: "",
     password: "",
     confirm: "",
@@ -20,16 +27,47 @@ export default function RouteComponent() {
     setFormValues((prev) => ({ ...prev, [key]: e.target.value }));
   };
 
-  const handleSubmit = () => {
-    alert(JSON.stringify(formValues, null, 2));
+  const handleSubmit = async () => {
+    // Validar que las contraseñas coincidan
+    if (formValues.password !== formValues.confirm) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
 
-    //para limpiar los inputs
+    // Mapear el tipo de cuenta a role ID (asumiendo: comprador = 1, emprendedor = 2)
+    const roleId = formValues.tipoCuenta === "Soy emprendedor" ? 2 : 1;
+
+    const userData = {
+      name: formValues.name,
+      username: formValues.username,
+      email: formValues.correo,
+      password: formValues.password,
+      role: roleId,
+    };
+
+    const result = await registerUser(userData);
+    
+    if (result) {
+      // Guardar token en cookies si existe
+      if (result.token) {
+        document.cookie = `auth_token=${result.token}; path=/; max-age=86400; secure; samesite=strict`;
+      }
+      
+      // Registro exitoso - limpiar formulario
       setFormValues({
+        name: "",
+        username: "",
         correo: "",
         password: "",
         confirm: "",
-        tipoCuenta: "",
+        tipoCuenta: "Soy comprador",
       });
+      
+      // Redirigir a la página principal
+      navigate("/");
+    } else if (error) {
+      alert(`Error: ${error}`);
+    }
   };
 
   //const [accountType, setAccountType] = useState("Soy comprador");
@@ -48,6 +86,20 @@ export default function RouteComponent() {
           style="flex-2 flex flex-col items-center justify-center bg-white px-16"
           title="Crea tu cuenta"
           input={[
+            <Input
+              key="name"
+              type="text"
+              placeholder="Nombre completo"
+              value={formValues.name}
+              onChange={handleChange("name")}
+            />,
+            <Input
+              key="username"
+              type="text"
+              placeholder="Nombre de usuario"
+              value={formValues.username}
+              onChange={handleChange("username")}
+            />,
             <Input
               key="correo"
               type="email"
@@ -75,10 +127,11 @@ export default function RouteComponent() {
           toggle={toggleComponent}
           button={[
             <Btn
-              style="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl"
               key="crear"
-              text="Crear cuenta"
+              style="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl"
+              text={loading ? "Creando cuenta..." : "Crear cuenta"}
               onClick={handleSubmit}
+              disabled={loading}
             />,
           ]}
         />
