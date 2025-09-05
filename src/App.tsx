@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import QueryProvider from './context/QueryProvider';
+import Home from './routes/Home';
 import { Perfil } from './routes/Perfil';
 import { EditarPerfil } from './routes/EditarPerfil';
 import LandingPage from './routes/Landing';
@@ -15,12 +16,11 @@ function App() {
     <QueryProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Perfil />} />
+          <Route path="/" element={<Home />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/editar" element={<EditarPerfil />} /> 
-          <Route path="/" element={<Perfil />} />
-          <Route path="landing" element={<LandingPage />} />
-          <Route path="feed/emprendimiento" element={<FeedEmprendimiento />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/pwReset" element={<PwReset />} />

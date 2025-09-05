@@ -2,6 +2,43 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NavbarItem } from './NavbarItem';
 import { NavbarProps } from './types';
+import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+
+// Soft animations for navbar
+const slideInRight = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+const AnimatedNav = styled.nav`
+  /* Removed load animation to prevent bugs */
+`;
+
+const AnimatedMobileMenu = styled.div`
+  animation: ${slideInRight} 0.2s ease-out;
+  will-change: transform, opacity;
+`;
+
+const HoverButton = styled.button`
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+  will-change: transform, box-shadow;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+`;
 
 export function Navbar({ 
   logo, 
@@ -57,7 +94,7 @@ export function Navbar({
 
   return (
     <>
-      <nav 
+      <AnimatedNav 
         className={`${sticky ? 'fixed top-4 left-1/2 transform -translate-x-1/2' : ''} ${maxWidth} w-full px-4 z-40 ${className}`}
       >
         <div className="bg-white rounded-[16px] shadow-soft border border-border px-6 py-3 h-14 flex items-center">
@@ -85,7 +122,7 @@ export function Navbar({
               
               {/* Mobile Menu Button */}
               {visibleItems.length > 0 && (
-                <button
+                <HoverButton
                   onClick={toggleMobileMenu}
                   className="md:hidden p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
@@ -96,12 +133,12 @@ export function Navbar({
                   ) : (
                     <Menu className="w-5 h-5 text-secondary" />
                   )}
-                </button>
+                </HoverButton>
               )}
             </div>
           </div>
         </div>
-      </nav>
+      </AnimatedNav>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
@@ -118,19 +155,19 @@ export function Navbar({
           />
           
           {/* Mobile Menu Panel */}
-          <div className="fixed top-0 right-0 h-full w-80 max-w-sm bg-white shadow-xl transform transition-transform">
+          <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 max-w-sm bg-white shadow-xl transform transition-transform">
             {/* Mobile Menu Header */}
             <div className="flex items-center justify-between p-6 border-b border-border">
               <div className="flex items-center">
                 {logo}
               </div>
-              <button
+              <HoverButton
                 onClick={closeMobileMenu}
                 className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 aria-label="Cerrar menú"
               >
                 <X className="w-5 h-5 text-secondary" />
-              </button>
+              </HoverButton>
             </div>
             
             {/* Mobile Menu Items */}
@@ -150,7 +187,7 @@ export function Navbar({
                 </div>
               </div>
             )}
-          </div>
+          </AnimatedMobileMenu>
         </div>
       )}
     </>
