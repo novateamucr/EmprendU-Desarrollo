@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -40,7 +41,15 @@ class UserController extends Controller
 
         $user = User::create($data);
 
-        return response()->json($user->load('roleRelation'), 201);
+        // Generate Sanctum token for the new user
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user->load('roleRelation'),
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ], 201);
     }
 
     // show
@@ -83,5 +92,36 @@ class UserController extends Controller
     {
         $user->delete();
         return response()->json(['message' => 'User deleted'], 200);
+    }
+
+    // login
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        // Attempt to authenticate the user
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            
+            // Generate Sanctum token
+            $token = $user->createToken('auth-token')->plainTextToken;
+            
+            // Load user relationships
+            $user->load(['roleRelation', 'interests', 'entrepreneurships']);
+            
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer'
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Invalid credentials'
+        ], 401);
     }
 }

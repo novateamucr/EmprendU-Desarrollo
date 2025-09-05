@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\UserController;
 
+// Public routes (no authentication required)
+Route::post('login', [UserController::class, 'login']);
+
+// Protected routes (authentication required)
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('fairs', FairController::class);
