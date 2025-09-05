@@ -1,9 +1,16 @@
+import { isDemoMode } from './demo';
+
 type TokenListener = () => void;
 
 const TOKEN_KEY = 'auth_token'; // si el equipo usa otro nombre, centralizar aquí
 let listeners: TokenListener[] = [];
 
 export function getToken(): string | null {
+  // En modo demo, devolver token falso
+  if (isDemoMode()) {
+    return import.meta.env.VITE_DEMO_TOKEN || 'demo-123';
+  }
+  
   try { 
     return localStorage.getItem(TOKEN_KEY); 
   } catch { 
