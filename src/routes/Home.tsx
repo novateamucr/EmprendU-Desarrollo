@@ -102,7 +102,7 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/home' },
+    { type: 'link' as const, label: 'Inicio', to: '/' },
     { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
     { type: 'link' as const, label: 'Ferias', to: '/ferias' },
   ];
@@ -110,7 +110,7 @@ export default function Home() {
   const rightContent = <UserProfile />;
 
   const logo = (
-    <Link to="/home" className="flex items-center">
+    <Link to="/" className="flex items-center">
       <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
