@@ -26,6 +26,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/pwReset" element={<PwReset />} />
+
         </Routes>
       </Router>
     </QueryProvider>
