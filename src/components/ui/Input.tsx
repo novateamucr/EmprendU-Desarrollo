@@ -11,7 +11,7 @@ export default function Input(props: InputProps) {
     return (
         <input
             type={props.type}
-            className={`bg-gray-300 p-3 rounded-lg w-xl mb-4 ${props.style || ""}`}
+            className={`bg-white p-3 rounded-lg w-xl mb-4 ${props.style || ""}`}
             placeholder={props.placeholder}
             onChange={props.onChange}
             onMouseOver={(e) => {

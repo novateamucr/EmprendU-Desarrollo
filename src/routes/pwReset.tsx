@@ -23,6 +23,7 @@ export default function PwReset() {
 
   const pwEmailInput = [
     <Input
+      style="w-full border border-gray-300"
       key="correo"
       type="email"
       placeholder="Correo electrónico"
@@ -33,7 +34,7 @@ export default function PwReset() {
 
   const btnSendLink = [
     <Btn
-      style="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl"
+      style="hover:bg-green-600  bg-black text-white font-black p-3 rounded-lg w-full"
       key="restablecerPw"
       text="Enviar enlace"
       onClick={handleSubmit}
@@ -41,7 +42,7 @@ export default function PwReset() {
   ];
 
   return (
-    <div className='flex-1 flex flex-col items-center justify-center bg-white px-16 p-16 pt-30'>
+    <div className='flex-1 flex flex-col items-center justify-center bg-background px-16 p-16 pt-30'>
       <Link to="/login" className="absolute top-6 left-6">
         <img
           src="/small_dark_logo.png"
@@ -52,7 +53,7 @@ export default function PwReset() {
       
       <PwForm
         title="Restablecer contraseña"
-        text="¿Olvidaste tu contraseña? Introduce la dirección de correo electrónico de la cuenta y te enviaremos un enlace para restablecer la contraseña"
+        text="Introduce la dirección de correo electrónico de la cuenta y te enviaremos un enlace para restablecer la contraseña"
         input={pwEmailInput}
         button={btnSendLink}
       />

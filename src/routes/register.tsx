@@ -81,12 +81,13 @@ export default function RouteComponent() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-2 flex flex-col items-center justify-center bg-white px-16">
+      <div className="flex-2 flex flex-col items-center justify-center bg-background px-16 w-[65%]">
         <AuthForm
-          style="flex-2 flex flex-col items-center justify-center bg-white px-16"
+          style="flex-2 flex flex-col items-center justify-center px-16 p-8"
           title="Crea tu cuenta"
           input={[
             <Input
+              style="w-full"
               key="name"
               type="text"
               placeholder="Nombre completo"
@@ -94,6 +95,7 @@ export default function RouteComponent() {
               onChange={handleChange("name")}
             />,
             <Input
+              style="w-full"
               key="username"
               type="text"
               placeholder="Nombre de usuario"
@@ -101,6 +103,7 @@ export default function RouteComponent() {
               onChange={handleChange("username")}
             />,
             <Input
+              style="w-full"
               key="correo"
               type="email"
               placeholder="Correo electrónico"
@@ -108,6 +111,7 @@ export default function RouteComponent() {
               onChange={handleChange("correo")}
             />,
             <Input
+              style="w-full"
               key="password"
               type="password"
               placeholder="Contraseña"
@@ -115,6 +119,7 @@ export default function RouteComponent() {
               onChange={handleChange("password")}
             />,
             <Input
+              style="w-full"
               key="confirm"
               type="password"
               placeholder="Confirmar contraseña"
@@ -128,7 +133,7 @@ export default function RouteComponent() {
           button={[
             <Btn
               key="crear"
-              style="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl"
+              style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full"
               text={loading ? "Creando cuenta..." : "Crear cuenta"}
               onClick={handleSubmit}
               disabled={loading}
