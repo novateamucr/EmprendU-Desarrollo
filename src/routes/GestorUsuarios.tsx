@@ -26,7 +26,7 @@ const formatDate = (dateString: string) => {
 // Map role numbers to role names
 const getRoleName = (roleId: number) => {
   switch (roleId) {
-    case 1: return 'Usuario';
+    case 1: return 'Comprador';
     case 2: return 'Emprendedor';
     case 3: return 'Admin';
     default: return 'Usuario';
@@ -41,19 +41,25 @@ export default function GestorUsuarios() {
 
   // Use the useUsers hook to fetch real user data
   const { users: allUsers, loading, error, refetch } = useUsers();
-  
+  // Estado local para usuarios editable
+  const [usuarios, setUsuarios] = useState(allUsers || []);
+
+  // Sincronizar usuarios locales cuando cambian los usuarios globales
+  React.useEffect(() => {
+    if (allUsers) setUsuarios(allUsers);
+  }, [allUsers]);
+
   // Filter users based on search term
   const filteredUsers = React.useMemo(() => {
-    if (!allUsers) return [];
-    if (!searchTerm.trim()) return allUsers;
-    
+    if (!usuarios) return [];
+    if (!searchTerm.trim()) return usuarios;
     const searchLower = searchTerm.toLowerCase().trim();
-    return allUsers.filter(user => 
+    return usuarios.filter(user => 
       (user.name?.toLowerCase() || '').includes(searchLower) || 
       (user.email?.toLowerCase() || '').includes(searchLower) ||
       (user.username?.toLowerCase() || '').includes(searchLower)
     );
-  }, [allUsers, searchTerm]);
+  }, [usuarios, searchTerm]);
 
   const navItems = [
     { type: 'link' as const, label: 'Inicio', to: '/' },
@@ -84,20 +90,27 @@ export default function GestorUsuarios() {
   const handleOptionClick = async (option: string, userId: number) => {
     try {
       let response;
+      const apiUrl = "http://emprendu-backend.test";
 
       switch (option) {
         case 'Eliminar':
-          response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+          response = await fetch(`${apiUrl}/api/users/${userId}`, { method: 'DELETE' });
           break;
         case 'Habilitar':
-        case 'Deshabilitar':
+        case 'Deshabilitar': {
           const isBanning = option === 'Deshabilitar';
-          response = await fetch(`/api/users/${userId}`, {
+          response = await fetch(`${apiUrl}/api/users/${userId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ banned: isBanning })
           });
+          if (response.ok) {
+            setUsuarios(prev => prev.map(u =>
+              u.id === userId ? { ...u, banned: isBanning } : u
+            ));
+          }
           break;
+        }
         default:
           alert(`Opción: ${option} para usuario ID: ${userId}`);
           setOpenMenuId(null);
@@ -216,7 +229,7 @@ export default function GestorUsuarios() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            to={`/editar-usuario/${user.id}`}
+                            to={`/perfil/editar/${user.id}`}
                             className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
                           >
                             Editar
