@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
-import Input from "../ui/Input";
+import { Input } from "../ui/Input";
 import AuthForm from "../ui/AuthForm";
 import OptionPanel from "../ui/OptionPanel";
 import Btn from "../ui/Btn";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 
-import Input from '../components/ui/Input';
+import { Input } from "../components/ui/Input";
 import PwForm from '../components/ui/PwForm';
 import Btn from '../components/ui/Btn';
 

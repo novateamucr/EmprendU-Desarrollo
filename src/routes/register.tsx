@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Input from "../components/ui/Input";
+import { Input } from "../components/ui/Input";
 import AuthForm from "../components/ui/AuthForm";
 import OptionPanel from "../components/ui/OptionPanel";
 import Btn from "../components/ui/Btn";
