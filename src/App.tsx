@@ -5,6 +5,7 @@ import { Perfil } from './routes/Profile';
 import { EditarPerfil } from './routes/EditarPerfil';
 import LandingPage from './routes/Landing';
 import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
+import BusinessFeedback  from './routes/BusinessFeedback';
 import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
@@ -24,6 +25,7 @@ function App() {
           <Route path="/perfil/editar" element={<EditarPerfil />} /> 
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
+          <Route path="/businessFeedback" element={<BusinessFeedback/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/logout" element={<Logout />} />

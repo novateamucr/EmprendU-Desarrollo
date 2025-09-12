@@ -34,7 +34,7 @@ export default function PwReset() {
 
   const btnSendLink = [
     <Btn
-      style="hover:bg-green-600  bg-black text-white font-black p-3 rounded-lg w-full"
+      style="hover:bg-green-600  bg-black text-white font-black p-3 rounded-full w-full"
       key="restablecerPw"
       text="Enviar enlace"
       onClick={handleSubmit}
@@ -42,7 +42,7 @@ export default function PwReset() {
   ];
 
   return (
-    <div className='flex-1 flex flex-col items-center justify-center bg-background px-16 p-16 pt-30'>
+    <div className='flex-1 flex flex-col items-center justify-center bg-background h-screen pt-30'>
       <Link to="/login" className="absolute top-6 left-6">
         <img
           src="/small_dark_logo.png"
