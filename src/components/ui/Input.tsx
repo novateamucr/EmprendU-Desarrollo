@@ -8,7 +8,7 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
 }
 
 
-export function Input({
+export default function Input({
   type = 'text',
   className = '',
   hoverClass,
@@ -45,26 +45,4 @@ export function Input({
       {...rest}
     />
   );
-
-export default function Input(props: InputProps) {
-    return (
-        <input
-            type={props.type}
-            className={`bg-white p-3 rounded-lg w-xl mb-4 ${props.style || ""}`}
-            placeholder={props.placeholder}
-            onChange={props.onChange}
-            onMouseOver={(e) => {
-                if (props.hover) {
-                    e.currentTarget.className = props.hover;
-                }
-            }}
-            onMouseOut={(e) => {
-                if (props.hover) {
-                    e.currentTarget.className = `bg-gray-300 p-3 rounded-lg w-xl mb-4 ${props.style || ""}`;
-                }
-            }}
-            value={props.value}
-        />
-    );
-
 }

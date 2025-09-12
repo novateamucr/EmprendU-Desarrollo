@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Edit, Trash2, Eye, Sliders, X, ArrowUpDown } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
+import  Input  from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
