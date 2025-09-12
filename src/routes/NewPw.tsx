@@ -98,7 +98,7 @@ export default function NewPw() {
           </p>
 
           <Input
-            style="w-[90%] border border-gray-300"
+            
             type="password"
             placeholder="Nueva contraseña"
             value={formValues.newPassword}
@@ -106,7 +106,7 @@ export default function NewPw() {
           />
 
           <Input
-            style="w-[90%] border border-gray-300"
+            
             type="password"
             placeholder="Confirmar contraseña"
             value={formValues.confirmPassword}

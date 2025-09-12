@@ -37,7 +37,7 @@ export default function Login() {
   // Inputs del login
   const loginInputs = [
     <Input
-      style="w-full "
+     
       key="email"
       type="email"
       placeholder="Correo electrónico"
@@ -45,7 +45,7 @@ export default function Login() {
       onChange={handleChange("email")}
     />,
     <Input
-      style="w-full "
+     
       key="password"
       type="password"
       placeholder="Contraseña"

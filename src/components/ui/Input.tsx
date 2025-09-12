@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'style'> {
+  
   hoverClass?: string;
   customClass?: string;
   value?: string;
@@ -8,9 +9,10 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
 }
 
 
-export default function Input({
+export default function Input({  
+  
   type = 'text',
-  className = '',
+  className = 'w-full',
   hoverClass,
   customClass = '',
   onChange,

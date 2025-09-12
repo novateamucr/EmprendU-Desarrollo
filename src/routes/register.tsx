@@ -87,7 +87,7 @@ export default function RouteComponent() {
           title="Crea tu cuenta"
           input={[
             <Input
-              style="w-full"
+             
               key="name"
               type="text"
               placeholder="Nombre completo"
@@ -95,7 +95,7 @@ export default function RouteComponent() {
               onChange={handleChange("name")}
             />,
             <Input
-              style="w-full"
+              
               key="username"
               type="text"
               placeholder="Nombre de usuario"
@@ -103,7 +103,7 @@ export default function RouteComponent() {
               onChange={handleChange("username")}
             />,
             <Input
-              style="w-full"
+              
               key="correo"
               type="email"
               placeholder="Correo electrónico"
@@ -111,7 +111,7 @@ export default function RouteComponent() {
               onChange={handleChange("correo")}
             />,
             <Input
-              style="w-full"
+             
               key="password"
               type="password"
               placeholder="Contraseña"
@@ -119,7 +119,7 @@ export default function RouteComponent() {
               onChange={handleChange("password")}
             />,
             <Input
-              style="w-full"
+              
               key="confirm"
               type="password"
               placeholder="Confirmar contraseña"

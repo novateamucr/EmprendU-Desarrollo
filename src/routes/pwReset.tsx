@@ -76,7 +76,7 @@ export default function PwReset() {
         text="Introduce tu correo y, si existe una cuenta, te enviaremos un enlace para restablecer tu contraseña"
         input={[
           <Input
-            style="w-full border border-gray-300"
+            
             key="correo"
             type="email"
             placeholder="Correo electrónico"
