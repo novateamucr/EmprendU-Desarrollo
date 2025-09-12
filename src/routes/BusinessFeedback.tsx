@@ -11,7 +11,10 @@ export default function BusinessFeedback() {
                 {/* Encabezado */}
                 <div className="bg-slate-200 w-full h-[50%] flex flex-col items-center gap-6  justify-center rounded-xl">
                     <h2 className="text-2xl font-bold text-slate-700 ">¡Califica tu experiencia!</h2>
-                    <img src="" className="w-32 h-32 rounded-full bg-slate-400" alt="" />
+                    <img src=""
+                     className="w-32 h-32  rounded-full border-2 border-slate-300
+                     transition-transform duration-300 hover:scale-105 hover:-translate-y-2" 
+                     alt="" />
                     <p className="text-slate-600 align-middle ">Nombre_del_producto</p>
                 </div>
 
@@ -21,8 +24,8 @@ export default function BusinessFeedback() {
                             <span
                                 key={star}
                                 onClick={() => setRating(star)}
-                                className={`cursor-pointer text-6xl ${
-                                    star <= rating ? "text-yellow-400" : "text-gray-300"
+                                className={`cursor-pointer text-6xl transition-transform duration-300 ${
+                                    star <= rating ? "text-yellow-400" : "text-gray-300 hover:scale-125 hover:-translate-y-1 active:scale-90" 
                                 }`}
                             >
                                 ★
