@@ -100,6 +100,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [viewMode, setViewMode] = useState<'emprendimientos' | 'productos'>('emprendimientos');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedZone, setSelectedZone] = useState('Todas');
 
   const navItems = [
     { type: 'link' as const, label: 'Inicio', to: '/' },
@@ -131,6 +132,7 @@ export default function Home() {
       name: "Café Luna",
       description: "Café artesanal con granos locales y ambiente acogedor",
       category: "Comida",
+      zone: "Esparza",
       rating: 4.8,
       image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&h=300&fit=crop",
       products: [
@@ -153,6 +155,7 @@ export default function Home() {
       name: "Artesanías Bella",
       description: "Productos hechos a mano con materiales sostenibles",
       category: "Arte",
+      zone: "Puntarenas",
       rating: 4.6,
       image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&h=300&fit=crop",
       products: [
@@ -169,6 +172,7 @@ export default function Home() {
       name: "Tech Solutions",
       description: "Soluciones tecnológicas innovadoras para empresas",
       category: "Tecnología",
+      zone: "San Ramón",
       rating: 4.9,
       image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=300&fit=crop",
       products: [
@@ -185,6 +189,7 @@ export default function Home() {
       name: "Joyería Elegante",
       description: "Joyas únicas diseñadas con piedras preciosas",
       category: "Joyería",
+      zone: "Liberia",
       rating: 4.7,
       image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&h=300&fit=crop",
       products: [
@@ -198,14 +203,20 @@ export default function Home() {
     }
   ];
 
-  // Filter businesses by category and search query
+  // Get unique zones for selector
+  const zones = [
+    ...new Set(featuredBusinesses.map(b => b.zone))
+  ];
+
+  // Filter businesses by category, search query, and selected zone
   const filteredBusinesses = featuredBusinesses.filter(business => {
     const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
     const matchesSearch = searchQuery === '' || 
       business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       business.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       business.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
+    return matchesCategory && matchesSearch && matchesZone;
   });
 
   // Filter products by category and search query for products view
@@ -311,38 +322,51 @@ export default function Home() {
           </div>
         </AnimatedContainer>
 
-        {/* Search Bar */}
+        {/* Search Bar + Zone Selector */}
         <div className="mb-6">
-          <div className="relative max-w-2xl">
-            <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
-            <input
-              type="text"
-              placeholder={`Buscar ${viewMode}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
-            />
-            
-            {/* Search Suggestions */}
-            {showSuggestions && searchSuggestions.length > 0 && (
-              <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                {searchSuggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSearchQuery(suggestion);
-                      setShowSuggestions(false);
-                    }}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-3"
-                  >
-                    <Search sx={{ fontSize: 16 }} className="text-gray-400" />
-                    <span className="text-gray-700">{suggestion}</span>
-                  </button>
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full max-w-2xl">
+            <div className="relative flex-1 w-full">
+              <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+              <input
+                type="text"
+                placeholder={`Buscar ${viewMode}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+              />
+              {/* Search Suggestions */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  {searchSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSearchQuery(suggestion);
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-3"
+                    >
+                      <Search sx={{ fontSize: 16 }} className="text-gray-400" />
+                      <span className="text-gray-700">{suggestion}</span>
+                    </button>
+                  ))}
+                </AnimatedContainer>
+              )}
+            </div>
+            <div className="w-full md:w-48">
+              <select
+                value={selectedZone}
+                onChange={e => setSelectedZone(e.target.value)}
+                className="w-full px-4 py-3 rounded-navbar border border-border bg-white text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="Todas">Todas las zonas</option>
+                {zones.map(zone => (
+                  <option key={zone} value={zone}>{zone}</option>
                 ))}
-              </AnimatedContainer>
-            )}
+              </select>
+            </div>
           </div>
         </div>
 
