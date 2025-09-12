@@ -2,6 +2,7 @@
 // import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, setInterests, updatePassword, uploadAvatar, getInterests, getFavorites, addFavorite, removeFavorite } from './service';
+import { api } from '../../lib/api';
 import { mapFavoritesDTO, mapProfileDTO, mapToProfileDTO } from './mapper';
 import { UserProfile, Favorito } from './types';
 import { PasswordUpdateDTO } from './dto';
@@ -109,6 +110,20 @@ export function useAddFavorite() {
         return { ...old, favorites: [...old.favorites, newFavorite] };
       });
     }
+  });
+}
+
+// Nuevo hook para obtener perfil por id
+export function useProfileById(id: string | number) {
+  return useQuery({
+    queryKey: ['profile', id],
+    queryFn: async () => {
+      const response = await api.get(`/users/${id}`);
+      const profileData = response.data;
+      // Opcional: puedes cargar intereses y favoritos si lo necesitas
+      return profileData;
+    },
+    enabled: !!id
   });
 }
 
