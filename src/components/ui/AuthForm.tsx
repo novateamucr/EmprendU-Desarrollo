@@ -16,14 +16,18 @@ interface AuthFormProps {
 
 export default function AuthForm(props: AuthFormProps) {
    return (
-    <div className={props.style }>
-        <div className="w-full max-w-md mx-auto  bg-background">
-            <h1 className="text-3xl font-bold pb-4 ">{props.title}</h1>
-            {props.input}
-            {props.newPw && <div className="pl-103  mb-4 pb-6">{props.newPw}</div>}
-            {props.dividerText && <Divider text={props.dividerText} />}
-            {props.toggle && <div className="my-4">{props.toggle}</div>} 
-            {props.button}
+    <div className={`w-full ${props.style}`}>
+        <div className="w-full max-w-md space-y-6">
+            <h1 className="text-3xl font-bold text-center">{props.title}</h1>
+            <div className="space-y-4 w-full">
+                {props.input}
+                {props.newPw && <div className="w-full">{props.newPw}</div>}
+                {props.dividerText && <Divider text={props.dividerText} />}
+                {props.toggle && <div className="w-full">{props.toggle}</div>} 
+                <div className="w-full">
+                    {props.button}
+                </div>
+            </div>
         </div>
     </div>
    );
