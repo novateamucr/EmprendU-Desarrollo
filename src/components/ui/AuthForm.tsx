@@ -11,7 +11,7 @@ interface AuthFormProps {
     button: React.ReactNode[];
     style: string;
     toggle?: React.ReactNode;
-
+    type?: "submit" | "button" | "reset" | undefined;
 }
 
 export default function AuthForm(props: AuthFormProps) {
