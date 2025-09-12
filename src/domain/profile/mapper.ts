@@ -1,6 +1,19 @@
 import { ProfileDTO, FavoritesDTO, InterestsDTO } from './dto';
 import { UserProfile, Favorito } from './types';
 
+// Mapeo de roles numéricos a strings
+const mapRoleFromBackend = (roleId: number, roleRelation?: { name: string }): 'comprador' | 'emprendedor' => {
+  if (roleRelation?.name) {
+    return roleRelation.name.toLowerCase() === 'emprendedor' ? 'emprendedor' : 'comprador';
+  }
+  // Fallback basado en ID (ajustar según la estructura real del backend)
+  return roleId === 2 ? 'emprendedor' : 'comprador';
+};
+
+const mapRoleToBackend = (role: 'comprador' | 'emprendedor'): number => {
+  return role === 'emprendedor' ? 2 : 1; // Ajustar según IDs reales del backend
+};
+
 export const mapProfileDTO = (
   dto: ProfileDTO, 
   interestsDTO: InterestsDTO['interests'] = [], 
@@ -9,12 +22,17 @@ export const mapProfileDTO = (
   id: dto.id,
   name: dto.name,
   username: dto.username,
-  role: dto.role,
+  role: mapRoleFromBackend(dto.role, dto.roleRelation),
   email: dto.email,
   phone: dto.phone,
-  location: dto.location ?? {},
+  location: {
+    province: dto.province,
+    canton: dto.canton,
+    district: dto.district,
+    address: dto.address
+  },
   avatarUrl: dto.avatar_url,
-  interests: interestsDTO,
+  interests: dto.interests ? dto.interests.map(i => i.interest) : interestsDTO,
   favorites,
 });
 
@@ -32,9 +50,12 @@ export const mapFavoritesDTO = (dto: FavoritesDTO): Favorito[] =>
 export const mapToProfileDTO = (profile: Partial<UserProfile>): Partial<ProfileDTO> => ({
   name: profile.name,
   username: profile.username,
-  role: profile.role,
+  role: profile.role ? mapRoleToBackend(profile.role) : undefined,
   email: profile.email,
   phone: profile.phone,
-  location: profile.location,
+  province: profile.location?.province,
+  canton: profile.location?.canton,
+  district: profile.location?.district,
+  address: profile.location?.address,
   avatar_url: profile.avatarUrl,
 });
