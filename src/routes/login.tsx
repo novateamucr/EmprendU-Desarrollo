@@ -37,6 +37,7 @@ export default function Login() {
   // Inputs del login
   const loginInputs = [
     <Input
+      style="w-full "
       key="email"
       type="email"
       placeholder="Correo electrónico"
@@ -44,6 +45,7 @@ export default function Login() {
       onChange={handleChange("email")}
     />,
     <Input
+      style="w-full "
       key="password"
       type="password"
       placeholder="Contraseña"
@@ -68,7 +70,7 @@ export default function Login() {
     <Link
       key="forgot"
       to="/pwreset"
-      className="text-blue-600 hover:underline mt-4 text-sm"
+      className="text-blue-600 hover:underline mt-4 text-sm place-self-end"
     >
       ¿Olvidaste tu contraseña?
     </Link>
@@ -79,7 +81,7 @@ export default function Login() {
     <button
       key="iniciar"
       type="submit"
-      className="hover:bg-gray-800 bg-gray-600 text-white font-black p-3 rounded-lg w-xl disabled:opacity-50"
+      className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
       disabled={loading}
     >
       {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
@@ -88,10 +90,10 @@ export default function Login() {
 
   // Formulario de autenticación
   const AuthFormLogin = [
-    <div key="auth-form" className="w-[75%]">
-      <form onSubmit={handleSubmit}>
+    <div key="auth-form" className="w-[75%] ">
+      <form  onSubmit={handleSubmit}>
         <AuthForm
-          style="flex-2 flex flex-col items-center justify-center bg-white px-16 w-full"
+          style="flex-2 flex flex-col items-center justify-center px-16 w-full "
           title="Inicia sesión"
           input={loginInputs}
           newPw={pwLink}
@@ -119,9 +121,9 @@ export default function Login() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen ">
       {optPanelInicia}
-      <div className="flex flex-col items-center justify-center bg-white w-[75%]">
+      <div className="flex flex-col items-center justify-center  bg-background w-[65%]">
         {AuthFormLogin}
       </div>
     </div>
