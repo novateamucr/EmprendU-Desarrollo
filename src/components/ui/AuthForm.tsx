@@ -11,13 +11,13 @@ interface AuthFormProps {
     button: React.ReactNode[];
     style: string;
     toggle?: React.ReactNode;
-
+    type?: "submit" | "button" | "reset" | undefined;
 }
 
 export default function AuthForm(props: AuthFormProps) {
    return (
-    <div className={props.style +  " items-start"}>
-        <div className="w-full max-w-md mx-auto">
+    <div className={props.style }>
+        <div className="w-full max-w-md mx-auto  bg-background">
             <h1 className="text-3xl font-bold pb-4 ">{props.title}</h1>
             {props.input}
             {props.newPw && <div className="pl-103  mb-4 pb-6">{props.newPw}</div>}

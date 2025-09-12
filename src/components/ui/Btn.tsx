@@ -8,7 +8,7 @@ interface ButtonProps {
     to?: string; //con esto se le podria agregar una ruta 
     onClick?: () => void; //con esta se le puede agregar una funcion 
     disabled?: boolean; //para deshabilitar el botón
-
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 export default function Button(props: ButtonProps) {

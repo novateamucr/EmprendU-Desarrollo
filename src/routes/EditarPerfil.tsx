@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Info, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -11,7 +12,7 @@ import { Modal } from '../components/Modal';
 import { TextField } from '../components/Form/TextField';
 import { SelectField } from '../components/Form/SelectField';
 import { ImageUpload } from '../components/ImageUpload';
-import { useProfile, useUpdateProfile, useUpdatePassword, useUploadAvatar } from '../domain/profile/queries';
+import { useProfile, useProfileById, useUpdateProfile, useUpdatePassword, useUploadAvatar } from '../domain/profile/queries';
 import { useLocations } from '../hooks/useLocations';
 import { profileFormSchema, passwordSchema } from '../domain/profile/schema';
 import type { ProfileFormData, PasswordFormData } from '../domain/profile/schema';
@@ -21,10 +22,13 @@ import { ErrorMustLogin, ErrorSessionExpired, ErrorSystem, ErrorDB } from '../co
 
 export function EditarPerfil() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  
-  const { data: user, isLoading, isError, error, refetch } = useProfile() as any;
+
+  // Si hay id, usar el hook por id, si no, usar el actual
+  const profileQuery = id ? useProfileById(id) : useProfile();
+  const { data: user, isLoading, isError, error, refetch } = profileQuery as any;
   const hasCreds = !!getToken();
   const updateProfileMutation = useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
@@ -44,10 +48,10 @@ export function EditarPerfil() {
       email: user.email,
       phone: user.phone || '',
       location: {
-        province: user.location.province || '',
-        canton: user.location.canton || '',
-        district: user.location.district || '',
-        address: user.location.address || ''
+        province: user.location?.province || '',
+        canton: user.location?.canton || '',
+        district: user.location?.district || '',
+        address: user.location?.address || ''
       }
     } : undefined
   });
