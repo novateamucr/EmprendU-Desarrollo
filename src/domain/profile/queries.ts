@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+// TODO: reactivar cuando el equipo de auth dé el flujo final
+// import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, setInterests, updatePassword, uploadAvatar, getInterests, getFavorites, addFavorite, removeFavorite } from './service';
 import { mapFavoritesDTO, mapProfileDTO, mapToProfileDTO } from './mapper';
 import { UserProfile, Favorito } from './types';
 import { PasswordUpdateDTO } from './dto';
 import type { ApiError } from '../errors';
-import { onTokenChange, getToken } from '../auth';
+// TODO: reactivar cuando el equipo de auth dé el flujo final
+// import { onTokenChange, getToken } from '../auth';
 
 export const PROFILE_KEY = ['profile'];
 export const INTERESTS_KEY = ['profile', 'interests'];
@@ -15,8 +17,9 @@ export function useProfile() {
   const q = useQuery({
     queryKey: PROFILE_KEY,
     queryFn: async () => {
-      const [profileData, interestsData, favoritesData] = await Promise.all([
-        getProfile(),
+      // En modo sesión, obtenemos todo desde el perfil principal
+      const profileData = await getProfile();
+      const [interestsData, favoritesData] = await Promise.all([
         getInterests(),
         getFavorites()
       ]);
@@ -27,20 +30,24 @@ export function useProfile() {
       );
     },
     retry: (count, error: ApiError) => {
-      // no reintentar en unauth o notfound; 1 reintento en server/network
-      if (error?.kind === 'unauth' || error?.kind === 'notfound') return false;
+      // No reintentar en 401/419 (sin sesión); 1 reintento en 5xx/network
+      if (error?.kind === 'unauth') return false;
+      if (error?.kind === 'notfound') return false;
       if (error?.kind === 'server' || error?.kind === 'network') return count < 1;
       return false;
     }
   }) as ReturnType<typeof useQuery> & { error: ApiError | null };
 
+  // TODO: reactivar cuando el equipo de auth dé el flujo final
   // Sensible a futuras credenciales: si el token cambia, refetch
+  /*
   useEffect(() => {
     const off = onTokenChange(() => {
       if (getToken()) q.refetch();
     });
     return off;
   }, [q]);
+  */
 
   return q;
 }
