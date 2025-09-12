@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar } from '../components/navbar';
-import { UserProfile } from '../components/navbar/UserProfile';
+import { Layout } from '../components/layout/Layout';
 import { ProductCard } from '../components/ProductCard';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
@@ -102,19 +101,6 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedZone, setSelectedZone] = useState('Todas');
 
-  const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/' },
-    { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
-    { type: 'link' as const, label: 'Ferias', to: '/ferias' },
-  ];
-
-  const rightContent = <UserProfile />;
-
-  const logo = (
-    <Link to="/" className="flex items-center">
-      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
-    </Link>
-  );
 
   const categories = [
     { name: 'Todos', icon: Apps, count: 120 },
@@ -267,14 +253,7 @@ export default function Home() {
   ].slice(0, 5) : [];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <Navbar 
-        logo={logo}
-        items={navItems}
-        rightContent={rightContent}
-        maxWidth="max-w-3xl"
-      />
+    <Layout>
 
       {/* Main Content */}
       <div className="pt-24 pb-8 px-4 max-w-6xl mx-auto">
@@ -543,6 +522,6 @@ export default function Home() {
           </>
         )}
       </div>
-    </div>
+    </Layout>
   );
 }

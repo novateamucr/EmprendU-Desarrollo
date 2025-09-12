@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Input } from "../components/ui/Input";
+import PwForm from '../components/ui/PwForm';
+import Btn from '../components/ui/Btn';
+
 import Input from "../components/ui/Input";
 import PwForm from "../components/ui/PwForm";
 import Btn from "../components/ui/Btn";
