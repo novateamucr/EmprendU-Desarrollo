@@ -2,16 +2,26 @@ export interface ProfileDTO {
   id: number;
   name: string;
   username: string;
-  role: 'comprador' | 'emprendedor';
+  role: number; // Laravel backend usa ID numérico del rol
   email: string;
   phone?: string;
-  location?: { 
-    province?: string; 
-    canton?: string; 
-    district?: string; 
-    address?: string;
-  };
+  province?: string; // Laravel backend usa campos separados
+  canton?: string;
+  district?: string;
+  address?: string;
   avatar_url?: string;
+  banned?: boolean;
+  // Relaciones que puede incluir el backend
+  roleRelation?: {
+    id: number;
+    name: string;
+  };
+  interests?: Array<{
+    id: number;
+    user_id: number;
+    interest: string;
+  }>;
+  entrepreneurships?: any[];
 }
 
 export interface FavoritesDTO { 

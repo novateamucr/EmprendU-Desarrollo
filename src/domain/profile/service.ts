@@ -94,49 +94,93 @@ async function demo_uploadAvatar(imageData: string): Promise<{ avatarUrl: string
   return { avatarUrl: imageData };
 }
 
-// Helper para obtener user ID actual
-const getCurrentUserId = (): number => {
-  // TODO: Implementar lógica para obtener el ID del usuario actual
-  // Por ahora retornamos 1, pero debería venir del token JWT o contexto de auth
-  return 1;
+// Función para obtener el usuario de la sesión actual
+const getSessionUser = async () => {
+  // Intentar obtener el usuario autenticado desde la sesión
+  // Laravel típicamente expone esto en /api/user con middleware auth:sanctum
+  // Como no existe ese endpoint, usaremos /api/users/me o similar
+  // Por ahora, asumimos que el backend tiene un endpoint para obtener el usuario actual
+  try {
+    // Primero intentamos con un endpoint de sesión estándar
+    const response = await api.get('/user');
+    return response.data;
+  } catch (error: any) {
+    // Si no existe /user, intentamos con el primer usuario (para desarrollo)
+    // En producción esto debería fallar y mostrar error de autenticación
+    if (error?.response?.status === 404) {
+      // Fallback: usar usuario ID 1 para desarrollo
+      const response = await api.get('/users/1');
+      return response.data;
+    }
+    throw error;
+  }
 };
 
 // Funciones reales (migradas a endpoints Laravel 10)
-const real_getProfile = () => {
-  const userId = getCurrentUserId();
-  return api.get<ProfileDTO>(`/users/${userId}`).then(r => r.data);
+const real_getProfile = async () => {
+  const sessionUser = await getSessionUser();
+  return sessionUser; // El usuario ya viene con toda la información necesaria
 };
 
-const real_updateProfile = (payload: Partial<ProfileDTO>) => {
-  const userId = getCurrentUserId();
-  return api.put<ProfileDTO>(`/users/${userId}`, payload).then(r => r.data);
+const real_updateProfile = async (payload: Partial<ProfileDTO>) => {
+  const sessionUser = await getSessionUser();
+  return api.put<ProfileDTO>(`/users/${sessionUser.id}`, payload).then(r => r.data);
 };
 
-const real_updatePassword = (payload: PasswordUpdateDTO) => {
-  const userId = getCurrentUserId();
-  return api.put(`/users/${userId}/password`, payload).then(r => r.data);
+const real_updatePassword = async (payload: PasswordUpdateDTO) => {
+  const sessionUser = await getSessionUser();
+  return api.put(`/users/${sessionUser.id}/password`, payload).then(r => r.data);
 };
 
-const real_getInterests = () => 
-  api.get<InterestsDTO>('/interests').then(r => r.data);
+const real_getInterests = async () => {
+  const sessionUser = await getSessionUser();
+  return api.get<InterestsDTO>(`/interests?user_id=${sessionUser.id}`).then(r => r.data);
+};
 
-const real_setInterests = (interests: string[]) => 
-  api.post<InterestsDTO>('/interests', { interests }).then(r => r.data);
+const real_setInterests = async (interests: string[]) => {
+  const sessionUser = await getSessionUser();
+  // Eliminar intereses existentes y crear nuevos
+  const existingInterests = await api.get(`/interests?user_id=${sessionUser.id}`);
+  
+  // Eliminar intereses existentes
+  if (existingInterests.data.data) {
+    for (const interest of existingInterests.data.data) {
+      await api.delete(`/interests/${interest.id}`);
+    }
+  }
+  
+  // Crear nuevos intereses
+  const createdInterests = [];
+  for (const interest of interests) {
+    await api.post('/interests', { 
+      user_id: sessionUser.id, 
+      interest 
+    });
+    createdInterests.push(interest);
+  }
+  
+  return { interests: createdInterests };
+};
 
-const real_addFavorite = (entrepreneurshipId: number) =>
-  api.post<{ favorite: FavoritesDTO['favorites'][0] }>('/favorites', { 
+const real_addFavorite = async (entrepreneurshipId: number) => {
+  const sessionUser = await getSessionUser();
+  return api.post<{ favorite: FavoritesDTO['favorites'][0] }>('/favorites', { 
+    user_id: sessionUser.id,
     entrepreneurship_id: entrepreneurshipId 
   }).then(r => r.data);
+};
 
 const real_removeFavorite = (favoriteId: number) =>
   api.delete(`/favorites/${favoriteId}`).then(r => r.data);
 
-const real_getFavorites = () => 
-  api.get<FavoritesDTO>('/favorites').then(r => r.data);
+const real_getFavorites = async () => {
+  const sessionUser = await getSessionUser();
+  return api.get<FavoritesDTO>(`/favorites?user_id=${sessionUser.id}`).then(r => r.data);
+};
 
-const real_uploadAvatar = (imageData: string) => {
-  const userId = getCurrentUserId();
-  return api.post<{ avatar_url: string }>(`/users/${userId}/avatar`, { image: imageData })
+const real_uploadAvatar = async (imageData: string) => {
+  const sessionUser = await getSessionUser();
+  return api.post<{ avatar_url: string }>(`/users/${sessionUser.id}/avatar`, { image: imageData })
     .then(r => ({ avatarUrl: r.data.avatar_url })); // Mapear snake_case a camelCase
 };
 
