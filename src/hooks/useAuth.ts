@@ -66,10 +66,10 @@ export function useAuth() {
         setUser(user);
         return { success: true };
       }
-      return { success: false, error: 'Invalid credentials' };
+      return { success: false, error: 'Credenciales inválidas' };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: 'An error occurred during login' };
+      return { success: false, error: 'Ha ocurrido un error en el login' };
     }
   };
 

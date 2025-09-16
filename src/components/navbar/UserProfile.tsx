@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -60,14 +63,17 @@ export function UserProfile() {
             <User size={16} className="mr-2" />
             Perfil
           </Link>
-          <Link
-            to="/logout"
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              logout();
+              navigate('/login');
+            }}
             className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-50 w-full text-left"
-            onClick={() => setIsOpen(false)}
           >
             <LogOut size={16} className="mr-2" />
             Cerrar sesión
-          </Link>
+          </button>
         </div>
       )}
     </div>

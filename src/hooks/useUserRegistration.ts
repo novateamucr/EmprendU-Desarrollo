@@ -58,14 +58,14 @@ export function useUserRegistration() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo completar el registro. Por favor verifica los datos e intenta de nuevo.`);
       }
 
       const result: UserRegistrationResponse = await response.json();
       setSuccess(true);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al registrar usuario';
+      const errorMessage = err instanceof Error ? err.message : 'Error al registrar el usuario. Por favor verifica la información e intenta de nuevo.';
       setError(errorMessage);
       return null;
     } finally {
@@ -94,14 +94,14 @@ export function useUserRegistration() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo completar el registro. Por favor verifica los datos e intenta de nuevo.`);
       }
 
       const result: UserRegistrationResponse = await response.json();
       setSuccess(true);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar usuario';
+      const errorMessage = err instanceof Error ? err.message : 'Error al actualizar el usuario. Por favor verifica la información e intenta de nuevo.';
       setError(errorMessage);
       return null;
     } finally {

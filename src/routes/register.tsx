@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import  Input  from "../components/ui/Input";
+import { useAuth } from '../context/AuthContext';
+import Input from "../components/ui/Input";
 import AuthForm from "../components/ui/AuthForm";
 import OptionPanel from "../components/ui/OptionPanel";
 import Btn from "../components/ui/Btn";
 import Toggle from '../components/ui/ToggleAccountType';
-import { useUserRegistration } from '../hooks/useUserRegistration';
-
-
+import { useUserRegistration, UserRegistrationResponse } from '../hooks/useUserRegistration';
 
 export default function RouteComponent() {
   const { registerUser, loading, error } = useUserRegistration();
   const navigate = useNavigate();
+  const { login } = useAuth();
   
   const [formValues, setFormValues] = useState({
     name: "",
@@ -26,6 +25,7 @@ export default function RouteComponent() {
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues((prev) => ({ ...prev, [key]: e.target.value }));
   };
+
 
   const handleSubmit = async () => {
     // Validar que las contraseñas coincidan
@@ -45,28 +45,42 @@ export default function RouteComponent() {
       role: roleId,
     };
 
-    const result = await registerUser(userData);
-    
-    if (result) {
-      // Guardar token en cookies si existe
-      if (result.token) {
-        document.cookie = `auth_token=${result.token}; path=/; max-age=86400; secure; samesite=strict`;
+    try {
+      const result = await registerUser(userData);
+      
+      if (result?.token) {
+        // The registration was successful, now log the user in with the response data
+        login({
+          token: result.token,
+          user: {
+            id: result.id,
+            name: result.name,
+            username: result.username,
+            email: result.email,
+            role: result.role,
+            phone: result.phone,
+            province: result.province,
+            canton: result.canton,
+            district: result.district,
+            address: result.address,
+            avatar_url: result.avatar_url,
+            created_at: result.created_at,
+            updated_at: result.updated_at
+          }
+        });
+        
+        // Redirect based on role
+        if (result.role === 1) { // Admin
+          navigate('/gestor-usuarios');
+        } else { // Emprendedor (2) or Comprador (3)
+          navigate('/');
+        }
       }
-      
-      // Registro exitoso - limpiar formulario
-      setFormValues({
-        name: "",
-        username: "",
-        correo: "",
-        password: "",
-        confirm: "",
-        tipoCuenta: "Soy comprador",
-      });
-      
-      // Redirigir a la página principal
-      navigate("/");
-    } else if (error) {
-      alert(`Error: ${error}`);
+    } catch (err: any) {
+      console.error('Registration failed:', err);
+      // Show error message to user
+      const errorMessage = err?.message || 'Error en el registro. Por favor intente nuevamente.';
+      alert(errorMessage);
     }
   };
 
@@ -79,13 +93,34 @@ export default function RouteComponent() {
     />
   );
 
+  // Panel lateral
+  const optPanelRegister = (
+    <OptionPanel
+      style="w-[25%] h-screen"
+      title="¡Únete a nuestra comunidad!"
+      text="Regístrate para descubrir y apoyar emprendimientos locales"
+      button={[
+        <Btn
+          key="login"
+          style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-gray-200 hover:text-gray-800"
+          text="Iniciar sesión"
+          onClick={() => navigate("/login")}
+        />
+      ]}
+      imgSrc="/small_white_logo.png"
+      imgPosition="left"
+    />
+  );
+
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-2 flex flex-col items-center justify-center bg-background px-16 w-[65%]">
-        <AuthForm
-          style="flex-2 flex flex-col items-center justify-center px-16 p-8"
-          title="Crea tu cuenta"
-          input={[
+    <div className="flex min-h-screen w-full">
+      {optPanelRegister}
+      <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
+        <div className="w-full max-w-md p-4">
+          <AuthForm
+            style="w-full"
+            title="Crea tu cuenta"
+            input={[
             <Input
              
               key="name"
@@ -128,34 +163,26 @@ export default function RouteComponent() {
             />,
           ]}
           dividerText="Tipo de cuenta"
-
           toggle={toggleComponent}
           button={[
-            <Btn
-              key="crear"
-              style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full"
-              text={loading ? "Creando cuenta..." : "Crear cuenta"}
+            <button
+              key="register"
+              type="button"
               onClick={handleSubmit}
+              className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
               disabled={loading}
-            />,
+            >
+              {loading ? 'Creando cuenta...' : 'Registrarme'}
+            </button>
           ]}
         />
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+            {error}
+          </div>
+        )}
       </div>
-
-      <OptionPanel
-        title="¡Bienvenida!"
-        text="Continúa explorando diferentes productos y emprendimientos en tu zona!"
-        button={[
-          <Btn
-            style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-gray-200 hover:text-gray-800"
-            key="iniciar"
-            text="Iniciar sesión"
-            to="/login"
-          />,
-        ]}
-        imgSrc="/small_white_logo.png"
-        imgPosition="right"
-      />
+    </div>
     </div>
   );
 }
