@@ -39,21 +39,19 @@ export function Layout({ children }: LayoutProps) {
   const rightContent = <UserProfile />;
 
   const logo = (
-    <Link to="/" className="flex items-center">
       <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
-    </Link>
   );
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-gray-50">
+    <div className="flex flex-col min-h-screen w-full bg-slate-100">
       <Navbar
         logo={logo}
         items={navItems.filter(item => item.visible === undefined || item.visible)}
         rightContent={rightContent}
-        className="w-full z-50 bg-white shadow-sm"
+        className="w-full z-50"
       />
       <main className="flex-1 w-full overflow-auto">
-        <div className="max-w-7xl mx-auto w-full h-full px-4 py-6">
+        <div className="max-w-7xl mx-auto w-full h-full px-4 py-6 ">
           {children}
         </div>
       </main>

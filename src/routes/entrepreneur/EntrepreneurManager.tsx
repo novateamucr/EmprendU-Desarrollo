@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Routes, Route } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Store, 
@@ -9,6 +9,10 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { Button } from '../../components/Button';
+import BusinessList from './components/BusinessList';
+import BusinessSetup from './components/BusinessSetup';
+import BusinessForm from './components/BusinessForm';
+import Dashboard from './Dashboard';
 
 type MenuItem = {
   id: string;
@@ -24,9 +28,8 @@ export default function EntrepreneurManager() {
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/entrepreneur' },
     { id: 'businesses', label: 'Mis emprendimientos', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
-
-    { id: 'inventory', label: 'Inventario', icon: <Package size={20} />, path: '/entrepreneur/inventory' },
-    { id: 'settings', label: 'Configuración', icon: <Settings size={20} />, path: '/entrepreneur/settings' },
+    { id: 'new-business', label: 'Nuevo emprendimiento', icon: <Plus size={20} />, path: '/entrepreneur/businesses/new' },
+   
   ];
 
   const toggleSidebar = () => {
@@ -34,7 +37,7 @@ export default function EntrepreneurManager() {
   };
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full ">
       {/* Sidebar */}
       <div 
         className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex-shrink-0 fixed h-full`}
@@ -69,22 +72,20 @@ export default function EntrepreneurManager() {
 
         {isSidebarOpen && (
           <div className="p-4 border-t border-gray-200 mt-auto">
-            <Button 
-              variant="primary" 
-              className="w-full flex items-center justify-center space-x-2"
-              onClick={() => navigate('/entrepreneur/businesses/new')}
-            >
-              <Plus size={18} />
-              <span>Nuevo emprendimiento</span>
-
-            </Button>
+        
           </div>
         )}
       </div>
 
       {/* Main Content - Full Width */}
-      <div className="flex-1 ml-0 transition-all duration-300" style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
-        <div className="w-full h-full overflow-auto">
+      <div className="flex-1 ml-0 transition-all duration-300 mt-6" style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
+        <div className="w-full h-full overflow-auto p-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="businesses" element={<BusinessList />} />
+            <Route path="businesses/new" element={<BusinessForm />} />
+            <Route path="businesses/:id" element={<BusinessSetup />} />          
+          </Routes>
           <Outlet />
         </div>
       </div>

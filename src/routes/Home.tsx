@@ -342,7 +342,6 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
   return (
     <Layout>
-
       {/* Main Content */}
       <div className="pt-24 pb-8 px-4 max-w-6xl mx-auto">
         {/* Header */}
@@ -388,54 +387,6 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
             </SoftButton>
           </div>
         </AnimatedContainer>
-
-        {/* Search Bar + Zone Selector */}
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row items-center gap-3 w-full max-w-2xl">
-            <div className="relative flex-1 w-full">
-              <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
-              <input
-                type="text"
-                placeholder={`Buscar ${viewMode}...`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
-              />
-              {/* Search Suggestions */}
-              {showSuggestions && searchSuggestions.length > 0 && (
-                <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                  {searchSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        setShowSuggestions(false);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-3"
-                    >
-                      <Search sx={{ fontSize: 16 }} className="text-gray-400" />
-                      <span className="text-gray-700">{suggestion}</span>
-                    </button>
-                  ))}
-                </AnimatedContainer>
-              )}
-            </div>
-            <div className="w-full md:w-48">
-              <select
-                value={selectedZone}
-                onChange={e => setSelectedZone(e.target.value)}
-                className="w-full px-4 py-3 rounded-navbar border border-border bg-white text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="Todas">Todas las zonas</option>
-                {zones.map(zone => (
-                  <option key={zone} value={zone}>{zone}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
 
         {viewMode === 'emprendimientos' ? (
           <>
@@ -485,8 +436,57 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
               </GlowingCard>
             </AnimatedContainer>
 
+            {/* Search Bar + Zone Selector */}
+            <div className="mb-8  rounded-lg ">
+              <h2 className="text-lg font-semibold text-primary mb-4">Buscar {viewMode === 'emprendimientos' ? 'emprendimientos' : 'productos'}</h2>
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+                <div className="relative flex-1 w-full">
+                  <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+                  <input
+                    type="text"
+                    placeholder={`Buscar ${viewMode}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                  />
+                  {/* Search Suggestions */}
+                  {showSuggestions && searchSuggestions.length > 0 && (
+                    <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                      {searchSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(suggestion);
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-3"
+                        >
+                          <Search sx={{ fontSize: 16 }} className="text-gray-400" />
+                          <span className="text-gray-700">{suggestion}</span>
+                        </button>
+                      ))}
+                    </AnimatedContainer>
+                  )}
+                </div>
+                <div className="w-full md:w-48">
+                  <select
+                    value={selectedZone}
+                    onChange={e => setSelectedZone(e.target.value)}
+                    className="w-full px-4 py-3 rounded-navbar border border-border bg-white text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="Todas">Todas las zonas</option>
+                    {zones.map(zone => (
+                      <option key={zone} value={zone}>{zone}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {/* Categories */}
-           <Categories
+            <Categories
             selectedCategory={selectedCategory} 
             setSelectedCategory={setSelectedCategory}
            />

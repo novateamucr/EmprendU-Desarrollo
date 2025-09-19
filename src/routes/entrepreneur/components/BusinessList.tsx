@@ -6,11 +6,19 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { entrepreneurshipApi, Entrepreneurship } from '../../../services/entrepreneurshipService';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../../context/AuthContext';
 
-// Use the Entrepreneurship type with added productCount
-type Business = Omit<Entrepreneurship, 'id'> & {
+// Custom Business type that matches the API response and adds productCount
+type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
   id: string; // Override id to be string for consistency with the rest of the app
   productCount: number;
+  category: string; // Override to use the category name instead of ID
+  category_relation?: {
+    id: number;
+    nombre: string;
+    created_at: string;
+    updated_at: string;
+  };
 };
 
 export default function BusinessList() {
@@ -18,21 +26,25 @@ export default function BusinessList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
-        // Get all businesses with pagination
-        const response = await entrepreneurshipApi.getAll({ per_page: 100 }); // Increase per_page to get all businesses
+        // Get businesses for the current user (API already filters by authenticated user)
+        const response = await entrepreneurshipApi.getAll({ 
+          per_page: 100
+        });
         
         if (response && response.data) {
-          // Map API data to our local Business type
+// Map API data to our local Business type
           const mappedData = response.data.map((business: Entrepreneurship) => ({
             ...business,
             id: business.id.toString(), // Convert id to string
             productCount: business.products?.length || 0,
-          })) as Business[];
+            category: business.category_relation?.nombre || 'Sin categoría', // Use category name from relation
+          })) as unknown as Business[]; // Type assertion to handle the category type difference
           
           setBusinesses(mappedData);
           setError(null);
@@ -50,7 +62,7 @@ export default function BusinessList() {
     };
 
     fetchBusinesses();
-  }, []);
+  }, [user?.id]); // Re-fetch when user changes
 
   const handleDelete = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este emprendimiento? Esta acción no se puede deshacer.')) {
@@ -67,31 +79,21 @@ export default function BusinessList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error al cargar los emprendimientos</h3>
-            <div className="mt-2 text-sm text-red-700">
-              <p>{error}</p>
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" onClick={() => window.location.reload()}>
-                Reintentar
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="text-center py-12">
+        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar los emprendimientos</h3>
+        <p className="text-gray-500 mb-6">{error}</p>
+        <Button variant="primary" onClick={() => window.location.reload()}>
+          Reintentar
+        </Button>
       </div>
     );
   }

@@ -96,24 +96,54 @@ async function demo_uploadAvatar(imageData: string): Promise<{ avatarUrl: string
 
 // Función para obtener el usuario de la sesión actual
 const getSessionUser = async () => {
-  // Intentar obtener el usuario autenticado desde la sesión
-  // Laravel típicamente expone esto en /api/user con middleware auth:sanctum
-  // Como no existe ese endpoint, usaremos /api/users/me o similar
-  // Por ahora, asumimos que el backend tiene un endpoint para obtener el usuario actual
   try {
-    // Primero intentamos con un endpoint de sesión estándar
-    const response = await api.get('/user');
-    return response.data;
+    // Obtener el usuario autenticado desde la sesión
+    const response = await api.get('/api/user');
+    const userId = response.data.id;
+    
+    // Obtener los datos completos del usuario con sus relaciones
+    const userResponse = await api.get(`/api/users/${userId}`);
+    const userData = userResponse.data;
+    
+    // Mapear la respuesta al formato esperado por la aplicación
+    return {
+      id: userData.id,
+      name: userData.name,
+      username: userData.username,
+      email: userData.email,
+      phone: userData.phone,
+      location: {
+        province: userData.province,
+        canton: userData.canton,
+        district: userData.district,
+        address: userData.address
+      },
+      avatarUrl: userData.avatar_url,
+      role: mapRoleFromBackend(userData.role, userData.role_relation),
+      interests: userData.interests ? userData.interests.map((i: any) => i.interest || i) : [],
+      favorites: userData.favorites || [],
+      role_relation: userData.role_relation,
+      businesses: userData.entrepreneurships || []
+    };
   } catch (error: any) {
-    // Si no existe /user, intentamos con el primer usuario (para desarrollo)
-    // En producción esto debería fallar y mostrar error de autenticación
-    if (error?.response?.status === 404) {
-      // Fallback: usar usuario ID 1 para desarrollo
-      const response = await api.get('/users/1');
-      return response.data;
-    }
+    console.error('Error fetching user data:', error);
     throw error;
   }
+};
+
+// Helper function to map role ID to role name
+const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): string => {
+  if (roleRelation?.nombre) {
+    const role = roleRelation.nombre.toLowerCase();
+    if (role === 'emprendedor' || role === 'administrador') {
+      return role;
+    }
+    return 'cliente';
+  }
+  // Mapeo de ID de rol a nombre de rol (3: Admin, 2: Emprendedor, 1: Cliente)
+  if (roleId === 3) return 'administrador';
+  if (roleId === 2) return 'emprendedor';
+  return 'cliente';
 };
 
 // Funciones reales (migradas a endpoints Laravel 10)
