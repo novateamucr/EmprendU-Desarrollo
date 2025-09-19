@@ -32,6 +32,11 @@ export function TextField({
         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
           error ? 'border-red-500' : 'border-border'
         }`}
+        inputMode={name === 'phone' ? 'numeric' : undefined}
+        pattern={name === 'phone' ? '[0-9]*' : undefined}
+        onInput={name === 'phone' ? (e => {
+          e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '');
+        }) : undefined}
       />
       {error && (
         <p className="mt-1 text-sm text-red-600">{error.message}</p>

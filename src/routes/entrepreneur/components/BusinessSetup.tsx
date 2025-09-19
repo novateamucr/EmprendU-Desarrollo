@@ -85,8 +85,8 @@ export default function BusinessSetup() {
           }
         } catch (error) {
           console.error('Error fetching business:', error);
-          setError('No se pudo cargar la información del negocio');
-          toast.error('Error al cargar el negocio');
+          setError('No se pudo cargar la información del emprendimiento');
+          toast.error('Error al cargar el emprendimiento');
         } finally {
           setIsLoading(false);
         }
@@ -168,16 +168,16 @@ export default function BusinessSetup() {
       
       if (isEditMode && id) {
         await entrepreneurshipApi.update(id, businessData);
-        toast.success('Negocio actualizado exitosamente');
+        toast.success('emprendimiento actualizado exitosamente');
       } else {
         await entrepreneurshipApi.create(businessData);
-        toast.success('Negocio creado exitosamente');
+        toast.success('emprendimiento creado exitosamente');
       }
       
       navigate('/entrepreneur/businesses');
     } catch (err: any) {
       console.error('Error saving business:', err);
-      const errorMessage = err.response?.data?.message || 'Ocurrió un error al guardar el negocio. Por favor, inténtalo de nuevo.';
+      const errorMessage = err.response?.data?.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -205,7 +205,7 @@ export default function BusinessSetup() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-2xl font-bold text-gray-800">
-          {isEditMode ? 'Editar Negocio' : 'Agregar Nuevo Negocio'}
+          {isEditMode ? 'Editar emprendimiento' : 'Agregar Nuevo emprendimiento'}
         </h2>
       </div>
       
@@ -231,7 +231,7 @@ export default function BusinessSetup() {
               <div className="md:col-span-2 space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre del Negocio <span className="text-red-500">*</span>
+                    Nombre del emprendimiento <span className="text-red-500">*</span>
                   </label>
                   <Input
                     id="name"
@@ -273,7 +273,7 @@ export default function BusinessSetup() {
                     rows={3}
                     value={formData.description}
                     onChange={handleInputChange}
-                    placeholder="Describe tu negocio en pocas palabras..."
+                    placeholder="Describe tu emprendimiento en pocas palabras..."
                   />
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function BusinessSetup() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Logo del Negocio
+                    Logo del emprendimiento
                   </label>
                   <div className="mt-1 flex items-center">
                     <div className="relative group">
@@ -289,7 +289,7 @@ export default function BusinessSetup() {
                         {logoPreview ? (
                           <img 
                             src={logoPreview} 
-                            alt="Logo del negocio" 
+                            alt="Logo del emprendimiento" 
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -382,7 +382,7 @@ export default function BusinessSetup() {
             
             <div>
               <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-                Sitio Web
+                Red social
               </label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -402,7 +402,7 @@ export default function BusinessSetup() {
                     }
                   })}
                   className="rounded-l-none"
-                  placeholder="tunegocio.com"
+                  placeholder="tuemprendimiento.com"
                 />
               </div>
             </div>
@@ -446,7 +446,7 @@ export default function BusinessSetup() {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  {isEditMode ? 'Actualizar Negocio' : 'Crear Negocio'}
+                  {isEditMode ? 'Actualizar emprendimiento' : 'Crear emprendimiento'}
                 </>
               )}
             </Button>

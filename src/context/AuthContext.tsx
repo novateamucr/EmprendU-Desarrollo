@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 export interface User {
   id: number;
   name?: string;
-  username: string;
   email: string;
   role: number;
   phone?: string;

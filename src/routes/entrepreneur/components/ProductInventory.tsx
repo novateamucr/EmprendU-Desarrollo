@@ -237,7 +237,7 @@ export default function ProductInventory() {
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Inventario de Productos</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Gestiona los productos de tu negocio
+            Gestiona los productos de tu emrpendimiento
           </p>
         </div>
         

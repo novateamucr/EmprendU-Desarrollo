@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import logo from "../assets/logo.png";
 import hero from "../assets/hero.png";
+import herow from "../assets/hero-w.png";
 import vision from "../assets/vision_8440711.png";
 
 export default function Landing() {
@@ -20,7 +21,7 @@ export default function Landing() {
                         gestionar y dar visibilidad a los proyectos emprendedores.
                     </p>
                     <div className="flex gap-4">
-                        <Link to="/login">
+                        <Link to="/register">
                             <button className="px-6 py-3 border border-black rounded-full hover:bg-gray-100">
                                 Registrarse gratis
                             </button>
@@ -125,7 +126,7 @@ export default function Landing() {
             <footer className="bg-black text-white py-6">
                 <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
                     <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-                    <img src={hero} alt="Logo" className="w-8 bg-white p-1 rounded-full" />
+                    <img src={herow} alt="Logo" className="w-8 " />
                 </div>
             </footer>
         </div>
