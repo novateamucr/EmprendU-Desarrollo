@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { ProductCard } from '../components/ProductCard';
@@ -14,7 +14,9 @@ import {
   Palette,
   Computer,
   SportsBaseball,
-  FavoriteBorder
+  FavoriteBorder,
+  ChevronLeft,
+  ChevronRight
 } from '@mui/icons-material';
 
 // Soft animations with Emotion
@@ -101,6 +103,14 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedZone, setSelectedZone] = useState('Todas');
 
+  interface CategoriesProps {
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}
+const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
+  const categoryScrollRef = useRef<HTMLDivElement | null>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
   const categories = [
     { name: 'Todos', icon: Apps, count: 120 },
@@ -111,6 +121,84 @@ export default function Home() {
     { name: 'Tecnología', icon: Computer, count: 12 },
     { name: 'Deportes', icon: SportsBaseball, count: 7 }
   ];
+  const scrollCategories = (direction: "left" | "right") => {
+    if (!categoryScrollRef.current) return;
+    const scrollAmount = 220;
+    categoryScrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+  const checkScroll = () => {
+    if (!categoryScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+    setShowLeftArrow(scrollLeft > 0);
+    setShowRightArrow(scrollLeft + clientWidth < scrollWidth);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const ref = categoryScrollRef.current;
+    ref?.addEventListener("scroll", checkScroll);
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      ref?.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, []);
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
+      <div className="relative overflow-hidden">
+        {showLeftArrow && (
+          <button
+            onClick={() => scrollCategories("left")}
+            aria-label="Anterior categorías"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-gray-100"
+          >
+            <ChevronLeft sx={{ fontSize: 20 }} />
+          </button>
+        )}
+
+        <div
+          ref={categoryScrollRef}
+          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-8 category-scroll"
+        >
+          {categories.map((category) => {
+            const IconComponent = category.icon;
+            return (
+              <button
+                key={category.name}
+                onClick={() => setSelectedCategory(category.name)}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                  selectedCategory === category.name
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-secondary border-border hover:border-primary/50"
+                }`}
+              >
+                <IconComponent sx={{ fontSize: 16 }} />
+                <span className="font-medium">{category.name}</span>
+                <span className="text-xs opacity-75">({category.count})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {showRightArrow && (
+          <button
+            onClick={() => scrollCategories("right")}
+            aria-label="Siguiente categorías"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-gray-100"
+          >
+            <ChevronRight sx={{ fontSize: 20 }} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
   const featuredBusinesses = [
     {
@@ -398,29 +486,10 @@ export default function Home() {
             </AnimatedContainer>
 
             {/* Categories */}
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {categories.map((category) => {
-                  const IconComponent = category.icon;
-                  return (
-                    <button
-                      key={category.name}
-                      onClick={() => setSelectedCategory(category.name)}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-card border transition-all ${
-                        selectedCategory === category.name
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white text-secondary border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <IconComponent sx={{ fontSize: 16 }} />
-                      <span className="font-medium">{category.name}</span>
-                      <span className="text-xs opacity-75">({category.count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+           <Categories
+            selectedCategory={selectedCategory} 
+            setSelectedCategory={setSelectedCategory}
+           />
 
             {/* Featured Businesses */}
             <div className="mb-8">
@@ -473,29 +542,11 @@ export default function Home() {
         ) : (
           <>
             {/* Categories */}
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {categories.map((category) => {
-                  const IconComponent = category.icon;
-                  return (
-                    <button
-                      key={category.name}
-                      onClick={() => setSelectedCategory(category.name)}
-                      className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-card border transition-all ${
-                        selectedCategory === category.name
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white text-secondary border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <IconComponent sx={{ fontSize: 16 }} />
-                      <span className="font-medium">{category.name}</span>
-                      <span className="text-xs opacity-75">({category.count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+           <Categories
+            selectedCategory={selectedCategory} 
+            setSelectedCategory={setSelectedCategory}
+           />
+           
 
             {/* Popular Products */}
             <AnimatedContainer>
