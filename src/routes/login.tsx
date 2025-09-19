@@ -1,5 +1,6 @@
+import { useNavigate, Link } from 'react-router-dom';
+import { getDashboardPath } from '../utils/routeUtils';
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUserLogin } from '../hooks/useUserLogin';
 import { useAuth } from '../context/AuthContext';
 import Input from '../components/ui/Input';
@@ -9,7 +10,6 @@ import Btn from '../components/ui/Btn';
 
 export default function Login() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login: authLogin } = useAuth();
 
   const [formValues, setFormValues] = useState({
@@ -17,7 +17,8 @@ export default function Login() {
     password: "",
   });
   
-  const { login, loading, error } = useUserLogin();
+  const { login, loading: isLoading, error } = useUserLogin();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
@@ -25,65 +26,69 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with values:', formValues);
+    if (isLoading || isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     try {
-      console.log('Calling login function...');
+      console.log('Attempting login with:', formValues.email);
       const response = await login({
         email: formValues.email,
         password: formValues.password
       });
       
-      console.log('Login response received:', response);
-      
       if (response) {
-        console.log('Updating auth context with response:', response);
+        console.log('Login successful, updating auth context');
         
         // Ensure we have a valid response with token and user
         if (!response.token || !response.user) {
-          throw new Error('Respuesta de inicio de sesión inválida');
+          throw new Error('Invalid login response: missing token or user data');
         }
         
-        // Update auth context with the response
-        authLogin(response);
-        
-        // Get the redirect path from location state or default to home
-        const from = location.state?.from?.pathname || '/';
-        const role = response.user.role;
-        
-        console.log('User role:', role, 'Role type:', typeof role);
-        
-        // Define role-based redirects
-        const roleRedirects: { [key: number]: string } = {
-          1: '/gestor-usuarios',           // Admin
-          2: '/entrepreneur/dashboard',    // Entrepreneur
-          3: '/'                           // Regular User (home)
+        // Ensure the user object has all required fields
+        const userData = {
+          ...response.user,
+          role: typeof response.user.role === 'string' ? parseInt(response.user.role, 10) : response.user.role,
+          name: response.user.name || '',
+          username: response.user.username || '',
+          email: response.user.email || '',
+          phone: response.user.phone || '',
+          province: response.user.province || '',
+          canton: response.user.canton || '',
+          district: response.user.district || '',
+          address: response.user.address || '',
+          avatar_url: response.user.avatar_url || '',
+          role_relation: response.user.role_relation || null,
+          interests: response.user.interests || [],
+          entrepreneurships: response.user.entrepreneurships || [],
+          created_at: response.user.created_at || new Date().toISOString(),
+          updated_at: response.user.updated_at || new Date().toISOString()
         };
         
-        // Ensure role is a number for the lookup
-        const roleNum = typeof role === 'string' ? parseInt(role, 10) : role;
+        // Update auth context with the response
+        authLogin({
+          token: response.token,
+          user: userData
+        });
         
-        // Get the redirect path based on role, fallback to from location
-        const redirectPath = roleRedirects[roleNum] || from;
+        console.log('User authenticated with role:', userData.role);
         
-        console.log('Redirecting to:', redirectPath, 'for role:', roleNum);
-        
-        // Use replace: true to prevent going back to login page with browser back button
-        navigate(redirectPath, { replace: true });
+        // Redirect based on user role
+        const dashboardPath = getDashboardPath(userData.role);
+        console.log('Redirecting to:', dashboardPath);
+        navigate(dashboardPath, { replace: true });
       }
     } catch (error: any) {
-      console.error('Login error details:', {
+      console.error('Login error:', {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          headers: error.config?.headers,
-          data: error.config?.data
-        }
+        status: error.response?.status
       });
-      // Error is already handled by useUserLogin hook
+      
+      // Show error message to user
+      // You can set an error state here to display in the UI
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -135,9 +140,9 @@ export default function Login() {
       key="iniciar"
       type="submit"
       className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
-      disabled={loading}
+      disabled={isLoading || isSubmitting}
     >
-      {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+      {(isLoading || isSubmitting) ? 'Iniciando sesión...' : 'Iniciar sesión'}
     </button>,
   ];
 

@@ -2,16 +2,26 @@ import { ProfileDTO, FavoritesDTO, InterestsDTO } from './dto';
 import { UserProfile, Favorito } from './types';
 
 // Mapeo de roles numéricos a strings
-const mapRoleFromBackend = (roleId: number, roleRelation?: { name: string }): 'comprador' | 'emprendedor' => {
+type Rol = 'cliente' | 'emprendedor' | 'administrador';
+
+const mapRoleFromBackend = (roleId: number, roleRelation?: { name: string }): Rol => {
   if (roleRelation?.name) {
-    return roleRelation.name.toLowerCase() === 'emprendedor' ? 'emprendedor' : 'comprador';
+    const role = roleRelation.name.toLowerCase();
+    if (role === 'emprendedor' || role === 'administrador') {
+      return role;
+    }
+    return 'cliente';
   }
-  // Fallback basado en ID (ajustar según la estructura real del backend)
-  return roleId === 2 ? 'emprendedor' : 'comprador';
+  // Mapeo de ID de rol a nombre de rol (3: Admin, 2: Emprendedor, 1: Cliente)
+  if (roleId === 3) return 'administrador';
+  if (roleId === 2) return 'emprendedor';
+  return 'cliente';
 };
 
-const mapRoleToBackend = (role: 'comprador' | 'emprendedor'): number => {
-  return role === 'emprendedor' ? 2 : 1; // Ajustar según IDs reales del backend
+const mapRoleToBackend = (role: 'cliente' | 'emprendedor' | 'administrador'): number => {
+  if (role === 'administrador') return 3;
+  if (role === 'emprendedor') return 2;
+  return 1; // Default to client
 };
 
 export const mapProfileDTO = (

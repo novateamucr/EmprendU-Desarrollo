@@ -67,14 +67,46 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // TEMPORARY: Bypass all route protection for demonstration
-  console.warn('Route protection is currently disabled for demonstration purposes');
-  
-  // If public only and user is authenticated, still allow access
-  if (publicOnly && isAuthenticated) {
-    console.log('Public only route accessed by authenticated user - allowing access');
+  // Handle public only routes (login, register, etc.)
+  if (publicOnly) {
+    if (isAuthenticated) {
+      // If user is authenticated and tries to access public route, redirect to home
+      return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    }
+    // Allow access to public routes for unauthenticated users
+    return children ? <>{children}</> : <Outlet />;
   }
-  
-  // Render the children or outlet regardless of authentication or role
+
+  // Handle protected routes
+  // If not authenticated and not a public route, redirect to login
+  if (!isAuthenticated && !publicOnly) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If public only route and user is authenticated, redirect to home
+  if (publicOnly && isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  // If roles are specified, check if user has required role
+  if (allowedRoles && allowedRoles.length > 0) {
+    const userRole = user?.role ? (typeof user.role === 'string' ? parseInt(user.role) : user.role) : null;
+    
+    if (!userRole) {
+      return <Navigate to="/" replace />;
+    }
+    
+    // If user is a client (role 1) trying to access non-client routes, redirect to home
+    if (userRole === 1 && !allowedRoles.includes(1)) {
+      return <Navigate to="/" replace />;
+    }
+    
+    // For other roles, check if they have the required role
+    if (!allowedRoles.includes(userRole)) {
+      return <Navigate to={redirectTo} replace />;
+    }
+  }
+
+  // User is authenticated and has required role (if any)
   return children ? <>{children}</> : <Outlet />;
 };

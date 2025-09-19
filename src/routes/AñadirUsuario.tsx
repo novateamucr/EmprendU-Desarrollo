@@ -54,8 +54,8 @@ export function AñadirUsuario() {
   const { registerUser, error } = useUserRegistration();
 
     const onSubmitProfile = async (data: any) => {
-      // Mapear el tipo de cuenta a role ID (asumiendo: comprador = 1, emprendedor = 2, administrador = 3)
-      let roleId = 1;
+      // Mapear el tipo de cuenta a role ID (cliente = 1, emprendedor = 2, administrador = 3)
+      let roleId = 1; // Default to client
       if (data.role === 'emprendedor') roleId = 2;
       if (data.role === 'administrador') roleId = 3;
       const userData = {

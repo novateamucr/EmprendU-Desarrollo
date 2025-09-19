@@ -42,21 +42,19 @@ export function useUserLogin() {
     setIsAuthenticated(false);
 
     try {
-      console.log('Creating login request to:', API_BASE_URL);
+      console.log('Creating login request to:', `${API_BASE_URL}/login`);
       
       // Create a clean axios instance for login
       const loginClient = axios.create({
         baseURL: API_BASE_URL,
-        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+          'Accept': 'application/json'
         },
         timeout: 10000 // 10 second timeout
       });
 
-      console.log('Sending login request with data:', loginData);
+      console.log('Sending login request to /api/login with data:', loginData);
       
       const response = await loginClient.post('/login', loginData).catch(error => {
         console.error('Login error:', {
@@ -89,8 +87,12 @@ export function useUserLogin() {
       
       setIsAuthenticated(true);
       
-      // The API returns user data at the root level
-      const { token, token_type, ...userData } = data;
+      // The API returns user data in a nested 'user' object
+      const { token, user: userData } = data;
+      
+      if (!userData) {
+        throw new Error('No se recibieron los datos del usuario');
+      }
       
       // Create complete user object with all required fields
       const user = {
