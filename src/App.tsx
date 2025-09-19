@@ -18,6 +18,7 @@ import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
+import { Feed1 } from './routes/FeedCafeluna';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -73,6 +74,7 @@ function App() {
                   <Route path="/profile" element={<Perfil />} />
                   <Route path="/perfil/editar/:id" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
+                  <Route path="/feed/emprendimiento/1" element={<Feed1 />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
                 </Route>
