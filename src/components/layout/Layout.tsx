@@ -12,14 +12,27 @@ export function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
   
   const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/' },
-    { type: 'link' as const, label: 'Mis Emprendimientos', to: '/entrepreneur' },
+   
+    { 
+      type: 'link' as const, 
+      label: 'Inicio', 
+      to: '/',
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2 || user?.role === 1
+    },
     { 
       type: 'link' as const, 
       label: 'Mis Emprendimientos', 
       to: '/entrepreneur',
-      // Only show to emprendedores (role 2)
-      visible: user?.role === 2 
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2
+    },
+    { 
+      type: 'link' as const, 
+      label: 'Gestor de Usuarios', 
+      to: '/gestor-usuarios',
+      // Only show to admins (role 3)
+      visible: user?.role === 3
     },
   ];
 
