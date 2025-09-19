@@ -105,6 +105,7 @@ export function AñadirUsuario() {
     }
   });
 
+
   const onSubmitProfile = async (data: any) => {
     // Validar contraseña antes de enviar
     if (!data.password || data.password.length < 6) {
@@ -126,6 +127,44 @@ export function AñadirUsuario() {
       address: data.location?.address || ''
     };
     try {
+
+
+    const profileForm = useForm({
+      defaultValues: {
+        name: '',
+        username: '',
+        role: 'comprador',
+        email: '',
+        phone: '',
+        location: {
+          province: '',
+          canton: '',
+          district: '',
+          address: ''
+        },
+        password: ''
+      }
+    });
+
+    // Placeholder for add user API
+
+  const { registerUser, error } = useUserRegistration();
+
+    const onSubmitProfile = async (data: any) => {
+      // Mapear el tipo de cuenta a role ID (cliente = 1, emprendedor = 2, administrador = 3)
+      let roleId = 1; // Default to client
+      if (data.role === 'emprendedor') roleId = 2;
+      if (data.role === 'administrador') roleId = 3;
+      const userData = {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        phone: data.phone,
+        location: data.location,
+        password: data.password,
+        role: roleId,
+      };
+
       const result = await registerUser(userData);
       if (result && result.token) {
         document.cookie = `auth_token=${result.token}; path=/; max-age=86400; secure; samesite=strict`;

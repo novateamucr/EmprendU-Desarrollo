@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import { getDashboardPath } from '../utils/routeUtils';
 import { useAuth } from '../context/AuthContext';
 import Input from "../components/ui/Input";
 import AuthForm from "../components/ui/AuthForm";
@@ -33,7 +34,7 @@ export default function RouteComponent() {
       return;
     }
 
-    // Mapear el tipo de cuenta a role ID (asumiendo: comprador = 1, emprendedor = 2)
+    // Mapear el tipo de cuenta a role ID (comprador = 1, emprendedor = 2)
     const roleId = formValues.tipoCuenta === "Soy emprendedor" ? 2 : 1;
 
     const userData = {
@@ -66,12 +67,9 @@ export default function RouteComponent() {
           }
         });
         
-        // Redirect based on role
-        if (result.role === 1) { // Admin
-          navigate('/gestor-usuarios');
-        } else { // Emprendedor (2) or Comprador (3)
-          navigate('/');
-        }
+        // Redirect based on role (3: Admin, 2: Entrepreneur, 1: Client)
+        const dashboardPath = getDashboardPath(result.role);
+        navigate(dashboardPath);
       }
     } catch (err: any) {
       console.error('Registration failed:', err);

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
+import { Layout } from '../components/layout/Layout';
 import logo from "../assets/logo.png";
 import hero from "../assets/hero.png";
 import herow from "../assets/hero-w.png";
@@ -7,6 +8,7 @@ import vision from "../assets/vision_8440711.png";
 
 export default function Landing() {
     return (
+        <Layout>
         <div className="bg-white text-gray-900">
             {/* Header / Hero Section */}
             <section className="max-w-7xl mx-auto md:px-12 py-16 grid md:grid-cols-2 items-center gap-12">
@@ -130,5 +132,6 @@ export default function Landing() {
                 </div>
             </footer>
         </div>
+        </Layout>
     );
 }

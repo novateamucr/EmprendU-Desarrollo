@@ -24,6 +24,7 @@ export default function EntrepreneurManager() {
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/entrepreneur' },
     { id: 'businesses', label: 'Mis emprendimientos', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
+
     { id: 'inventory', label: 'Inventario', icon: <Package size={20} />, path: '/entrepreneur/inventory' },
     { id: 'settings', label: 'Configuración', icon: <Settings size={20} />, path: '/entrepreneur/settings' },
   ];
@@ -75,6 +76,7 @@ export default function EntrepreneurManager() {
             >
               <Plus size={18} />
               <span>Nuevo emprendimiento</span>
+
             </Button>
           </div>
         )}

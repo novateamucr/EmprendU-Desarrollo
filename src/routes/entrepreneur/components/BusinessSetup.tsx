@@ -172,6 +172,7 @@ export default function BusinessSetup() {
       } else {
         await entrepreneurshipApi.create(businessData);
         toast.success('emprendimiento creado exitosamente');
+
       }
       
       navigate('/entrepreneur/businesses');
@@ -206,6 +207,7 @@ export default function BusinessSetup() {
         </Button>
         <h2 className="text-2xl font-bold text-gray-800">
           {isEditMode ? 'Editar emprendimiento' : 'Agregar Nuevo emprendimiento'}
+
         </h2>
       </div>
       
@@ -232,6 +234,7 @@ export default function BusinessSetup() {
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                     Nombre del emprendimiento <span className="text-red-500">*</span>
+
                   </label>
                   <Input
                     id="name"
@@ -282,6 +285,7 @@ export default function BusinessSetup() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Logo del emprendimiento
+
                   </label>
                   <div className="mt-1 flex items-center">
                     <div className="relative group">
@@ -447,6 +451,7 @@ export default function BusinessSetup() {
                 <>
                   <Save className="mr-2 h-4 w-4" />
                   {isEditMode ? 'Actualizar emprendimiento' : 'Crear emprendimiento'}
+
                 </>
               )}
             </Button>
