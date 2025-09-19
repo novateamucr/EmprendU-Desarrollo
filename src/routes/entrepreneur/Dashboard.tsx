@@ -111,7 +111,7 @@ export default function Dashboard() {
           setStats(prev => ({
             ...prev,
             loading: false,
-            error: 'No se ha seleccionado ningún negocio',
+            error: 'No se ha seleccionado ningún emprendimiento',
           }));
           return;
         }
@@ -193,11 +193,11 @@ export default function Dashboard() {
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <Store className="h-12 w-12 text-gray-400" />
         <p className="text-lg font-medium text-gray-700">
-          No hay ningún negocio seleccionado
+          No hay ningún emprendimiento seleccionado
         </p>
         <Button asChild>
           <Link to="/entrepreneur/businesses">
-            Ver mis negocios
+            Ver mis emprendimientos
           </Link>
         </Button>
       </div>
@@ -205,12 +205,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-12 px-4 sm:px-6">
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
           <div className="w-full max-w-2xl">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Seleccionar negocio
+              Seleccionar emprendimiento
             </label>
             <div className="flex items-start gap-3">
               <BusinessSelect
@@ -272,7 +272,7 @@ export default function Dashboard() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Información del negocio</h3>
+              <h3 className="text-lg font-medium">Información del emprendimiento</h3>
             </div>
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
@@ -405,12 +405,12 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-900">
                     {item === 1 && 'Nueva orden recibida #ORD-12345'}
                     {item === 2 && 'Nuevo cliente registrado'}
-                    {item === 3 && '¡Tu negocio ha sido destacado!'}
+                    {item === 3 && '¡Tu emprendimiento ha sido destacado!'}
                   </p>
                   <p className="text-sm text-gray-500">
                     {item === 1 && 'Se ha realizado un pedido en tu tienda de ropa'}
-                    {item === 2 && 'María González se ha registrado en tu negocio'}
-                    {item === 3 && 'Tu negocio ahora aparece en la página principal'}
+                    {item === 2 && 'María González se ha registrado en tu emprendimiento'}
+                    {item === 3 && 'Tu emprendimiento ahora aparece en la página principal'}
                   </p>
                   <p className="mt-1 text-xs text-gray-400">
                     {item === 1 && 'Hace 2 horas'}

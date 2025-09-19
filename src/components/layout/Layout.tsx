@@ -2,17 +2,38 @@ import { ReactNode } from 'react';
 import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 export function Layout({ children }: LayoutProps) {
+  const { user } = useAuth();
+  
   const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/' },
-    { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
-    { type: 'link' as const, label: 'Ferias', to: '/ferias' },
-    { type: 'link' as const, label: 'Mis Emprendimientos', to: '/entrepreneur' },
+   
+    { 
+      type: 'link' as const, 
+      label: 'Inicio', 
+      to: '/',
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2 || user?.role === 1
+    },
+    { 
+      type: 'link' as const, 
+      label: 'Mis Emprendimientos', 
+      to: '/entrepreneur',
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2
+    },
+    { 
+      type: 'link' as const, 
+      label: 'Gestor de Usuarios', 
+      to: '/gestor-usuarios',
+      // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
   ];
 
   const rightContent = <UserProfile />;
@@ -24,15 +45,17 @@ export function Layout({ children }: LayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen w-full bg-gray-50">
       <Navbar
         logo={logo}
-        items={navItems}
+        items={navItems.filter(item => item.visible === undefined || item.visible)}
         rightContent={rightContent}
-        className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm"
+        className="w-full z-50 bg-white shadow-sm"
       />
-      <main className="pt-20 pb-10 px-4 max-w-7xl mx-auto">
-        {children}
+      <main className="flex-1 w-full overflow-auto">
+        <div className="max-w-7xl mx-auto w-full h-full px-4 py-6">
+          {children}
+        </div>
       </main>
     </div>
   );

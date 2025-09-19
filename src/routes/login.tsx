@@ -1,37 +1,95 @@
-import { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { getDashboardPath } from '../utils/routeUtils';
+import { useState } from 'react';
 import { useUserLogin } from '../hooks/useUserLogin';
-import Input  from '../components/ui/Input';
+import { useAuth } from '../context/AuthContext';
+import Input from '../components/ui/Input';
 import AuthForm from '../components/ui/AuthForm';
 import OptionPanel from '../components/ui/OptionPanel';
 import Btn from '../components/ui/Btn';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",
   });
   
-  const { login, loading, error } = useUserLogin();
+  const { login, loading: isLoading, error } = useUserLogin();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({
-      email: formValues.email,
-      password: formValues.password
-    })
-    .then(result => {
-      if (result) {
-        // Redirect to home page or dashboard after successful login
-        navigate('/');
+    if (isLoading || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      console.log('Attempting login with:', formValues.email);
+      const response = await login({
+        email: formValues.email,
+        password: formValues.password
+      });
+      
+      if (response) {
+        console.log('Login successful, updating auth context');
+        
+        // Ensure we have a valid response with token and user
+        if (!response.token || !response.user) {
+          throw new Error('Invalid login response: missing token or user data');
+        }
+        
+        // Ensure the user object has all required fields
+        const userData = {
+          ...response.user,
+          role: typeof response.user.role === 'string' ? parseInt(response.user.role, 10) : response.user.role,
+          name: response.user.name || '',
+          username: response.user.username || '',
+          email: response.user.email || '',
+          phone: response.user.phone || '',
+          province: response.user.province || '',
+          canton: response.user.canton || '',
+          district: response.user.district || '',
+          address: response.user.address || '',
+          avatar_url: response.user.avatar_url || '',
+          role_relation: response.user.role_relation || null,
+          interests: response.user.interests || [],
+          entrepreneurships: response.user.entrepreneurships || [],
+          created_at: response.user.created_at || new Date().toISOString(),
+          updated_at: response.user.updated_at || new Date().toISOString()
+        };
+        
+        // Update auth context with the response
+        authLogin({
+          token: response.token,
+          user: userData
+        });
+        
+        console.log('User authenticated with role:', userData.role);
+        
+        // Redirect based on user role
+        const dashboardPath = getDashboardPath(userData.role);
+        console.log('Redirecting to:', dashboardPath);
+        navigate(dashboardPath, { replace: true });
       }
-    });
+    } catch (error: any) {
+      console.error('Login error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Show error message to user
+      // You can set an error state here to display in the UI
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Inputs del login
@@ -82,49 +140,44 @@ export default function Login() {
       key="iniciar"
       type="submit"
       className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
-      disabled={loading}
+      disabled={isLoading || isSubmitting}
     >
-      {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+      {(isLoading || isSubmitting) ? 'Iniciando sesión...' : 'Iniciar sesión'}
     </button>,
   ];
 
-  // Formulario de autenticación
-  const AuthFormLogin = [
-    <div key="auth-form" className="w-[75%] ">
-      <form  onSubmit={handleSubmit}>
-        <AuthForm
-          style="flex-2 flex flex-col items-center justify-center px-16 w-full "
-          title="Inicia sesión"
-          input={loginInputs}
-          newPw={pwLink}
-          button={loginBtn}
-        />
-      </form>
-      {error && (
-        <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-          {error}
-        </div>
-      )}
-    </div>
-  ];
-
   // Panel lateral
-  const optPanelInicia = [
+  const optPanelInicia = (
     <OptionPanel
-      style="w-[25%]"
+      style="w-[25%] h-screen"
       title="¡Inicia ahora!"
       text="Ingresa tus datos y comienza a explorar emprendimientos en tu zona"
       button={registerBtn}
       imgSrc="/small_white_logo.png"
       imgPosition="left"
     />
-  ];
+  );
 
   return (
-    <div className="flex min-h-screen ">
+    <div className="flex min-h-screen w-full">
       {optPanelInicia}
-      <div className="flex flex-col items-center justify-center  bg-background w-[65%]">
-        {AuthFormLogin}
+      <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
+        <div className="w-full max-w-md p-4">
+          <form onSubmit={handleSubmit} className="w-full">
+            <AuthForm
+              style="w-full"
+              title="Inicia sesión"
+              input={loginInputs}
+              newPw={pwLink}
+              button={loginBtn}
+            />
+          </form>
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

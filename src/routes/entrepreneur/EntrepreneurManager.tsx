@@ -23,7 +23,7 @@ export default function EntrepreneurManager() {
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/entrepreneur' },
-    { id: 'businesses', label: 'Mis Negocios', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
+    { id: 'businesses', label: 'Mis Emprendimientos', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
     { id: 'inventory', label: 'Inventario', icon: <Package size={20} />, path: '/entrepreneur/inventory' },
     { id: 'settings', label: 'Configuración', icon: <Settings size={20} />, path: '/entrepreneur/settings' },
   ];
@@ -33,10 +33,10 @@ export default function EntrepreneurManager() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen w-full">
       {/* Sidebar */}
-      <aside 
-        className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300 ease-in-out`}
+      <div 
+        className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex-shrink-0 fixed h-full`}
       >
         <div className="p-4 flex items-center justify-between border-b border-gray-200">
           {isSidebarOpen && <h1 className="text-xl font-bold text-primary">Emprendedor</h1>}
@@ -74,16 +74,18 @@ export default function EntrepreneurManager() {
               onClick={() => navigate('/entrepreneur/businesses/new')}
             >
               <Plus size={18} />
-              <span>Nuevo Negocio</span>
+              <span>Nuevo Emprendimiento</span>
             </Button>
           </div>
         )}
-      </aside>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6">
-        <Outlet />
-      </main>
+      {/* Main Content - Full Width */}
+      <div className="flex-1 ml-0 transition-all duration-300" style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
+        <div className="w-full h-full overflow-auto">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 }
