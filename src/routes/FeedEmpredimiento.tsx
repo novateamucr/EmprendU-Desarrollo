@@ -7,7 +7,7 @@ import rosas from "../assets/rosas.jpg";
 
 export function FeedEmprendimiento() {
   return (
-    <div className="p-6">
+    <div className="mt-6">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
         
 

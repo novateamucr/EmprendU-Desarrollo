@@ -5,7 +5,7 @@ export default function BusinessFeedback() {
     const [rating, setRating] = useState(0);
 
     return (
-        <div className='flex-1 flex flex-col items-center justify-center bg-background h-screen'>
+        <div className='flex-1 flex flex-col items-center justify-center h-screen mt-12'>
             <div className="items-center justify-center bg-white rounded-xl pb-16 w-1/2 ">
                 
                 {/* Encabezado */}
@@ -45,7 +45,7 @@ export default function BusinessFeedback() {
                         <Btn
                           style="hover:bg-green-600  bg-black text-white font-black p-3 rounded-full w-[90%]"
                           key="restablecerPw"
-                          text="Enviar enlace"
+                          text="Enviar"
                           onClick={() => alert('Gracias por tu feedback!')}
                         />
                       
