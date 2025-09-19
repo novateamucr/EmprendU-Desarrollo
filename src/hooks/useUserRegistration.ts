@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 export interface UserRegistrationData {
   name?: string;
-  username: string;
   email: string;
   password: string;
   role?: number;
@@ -17,7 +16,6 @@ export interface UserRegistrationData {
 export interface UserRegistrationResponse {
   id: number;
   name?: string;
-  username: string;
   email: string;
   role: number;
   phone?: string;

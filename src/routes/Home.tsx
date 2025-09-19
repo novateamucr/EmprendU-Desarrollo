@@ -498,12 +498,6 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                   <Apps sx={{ fontSize: 20 }} />
                   {selectedCategory === 'Todos' ? 'Emprendimientos Destacados' : `Categoría: ${selectedCategory}`}
                 </h2>
-                <Link 
-                  to="/feed/emprendimiento"
-                  className="text-primary hover:text-primary/80 font-medium text-sm"
-                >
-                  Ver todos →
-                </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

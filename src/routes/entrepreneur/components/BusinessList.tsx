@@ -57,7 +57,7 @@ export default function BusinessList() {
       try {
         await entrepreneurshipApi.delete(id);
         setBusinesses(businesses.filter(business => business.id !== id));
-        toast.success('Emprendimiento eliminado correctamente');
+        toast.success('emprendimiento eliminado correctamente');
       } catch (err) {
         console.error('Error deleting business:', err);
         toast.error('Error al eliminar el emprendimiento');
@@ -81,7 +81,7 @@ export default function BusinessList() {
             <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error al cargar los emprendimiento</h3>
+            <h3 className="text-sm font-medium text-red-800">Error al cargar los emprendimientos</h3>
             <div className="mt-2 text-sm text-red-700">
               <p>{error}</p>
             </div>
@@ -100,7 +100,7 @@ export default function BusinessList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Mis Emprendimientos</h2>
+          <h2 className="text-2xl font-bold">Mis emprendimientos</h2>
           <p className="text-sm text-gray-500">
             Administra tus emprendimientos y productos en un solo lugar
           </p>
@@ -108,7 +108,7 @@ export default function BusinessList() {
         <Button asChild>
           <Link to="/entrepreneur/businesses/new">
             <Plus className="h-4 w-4 mr-2" />
-            Agregar Emprendimiento
+            Agregar emprendimiento
           </Link>
         </Button>
       </div>
@@ -124,7 +124,7 @@ export default function BusinessList() {
             <Button asChild>
               <Link to="/entrepreneur/businesses/new">
                 <Plus className="h-4 w-4 mr-2" />
-                Crear Emprendimiento
+                Crear emprendimiento
               </Link>
             </Button>
           </div>
@@ -205,7 +205,7 @@ export default function BusinessList() {
                       size="sm"
                       className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                       onClick={() => handleDelete(business.id)}
-                      title="Eliminar Emprendimiento"
+                      title="Eliminar emprendimiento"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

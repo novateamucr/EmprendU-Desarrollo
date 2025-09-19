@@ -7,7 +7,7 @@ import AuthForm from "../components/ui/AuthForm";
 import OptionPanel from "../components/ui/OptionPanel";
 import Btn from "../components/ui/Btn";
 import Toggle from '../components/ui/ToggleAccountType';
-import { useUserRegistration, UserRegistrationResponse } from '../hooks/useUserRegistration';
+import { useUserRegistration } from '../hooks/useUserRegistration';
 
 export default function RouteComponent() {
   const { registerUser, loading, error } = useUserRegistration();
@@ -16,7 +16,6 @@ export default function RouteComponent() {
   
   const [formValues, setFormValues] = useState({
     name: "",
-    username: "",
     correo: "",
     password: "",
     confirm: "",
@@ -40,7 +39,6 @@ export default function RouteComponent() {
 
     const userData = {
       name: formValues.name,
-      username: formValues.username,
       email: formValues.correo,
       password: formValues.password,
       role: roleId,
@@ -56,7 +54,6 @@ export default function RouteComponent() {
           user: {
             id: result.id,
             name: result.name,
-            username: result.username,
             email: result.email,
             role: result.role,
             phone: result.phone,
@@ -126,14 +123,6 @@ export default function RouteComponent() {
               placeholder="Nombre completo"
               value={formValues.name}
               onChange={handleChange("name")}
-            />,
-            <Input
-              
-              key="username"
-              type="text"
-              placeholder="Nombre de usuario"
-              value={formValues.username}
-              onChange={handleChange("username")}
             />,
             <Input
               

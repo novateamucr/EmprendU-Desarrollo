@@ -61,8 +61,7 @@ export default function GestorUsuarios() {
     const searchLower = searchTerm.toLowerCase().trim();
     return usuarios.filter(user => 
       (user.name?.toLowerCase() || '').includes(searchLower) || 
-      (user.email?.toLowerCase() || '').includes(searchLower) ||
-      (user.username?.toLowerCase() || '').includes(searchLower)
+      (user.email?.toLowerCase() || '').includes(searchLower)
     );
   }, [usuarios, searchTerm]);
 
@@ -120,7 +119,6 @@ export default function GestorUsuarios() {
           break;
         }
         default:
-          alert(`Opción: ${option} para usuario ID: ${userId}`);
           setOpenMenuId(null);
           return;
       }
@@ -132,10 +130,8 @@ export default function GestorUsuarios() {
       // Refresh the user list
       refetch();
       setOpenMenuId(null);
-      alert(`Usuario ${option.toLowerCase()} correctamente`);
     } catch (error) {
       console.error('Error:', error);
-      alert('Ocurrió un error al procesar la solicitud');
     }
   };
 
@@ -150,9 +146,9 @@ export default function GestorUsuarios() {
       setShowDeleteModal(false);
       setOpenMenuId(null);
       setUserToDelete(null);
-      alert('Usuario eliminado correctamente');
+      
     } catch (error) {
-      alert('Ocurrió un error al eliminar el usuario');
+        console.error('Ocurrió un error al eliminar el usuario');
     }
   };
 
@@ -224,7 +220,6 @@ export default function GestorUsuarios() {
                         </div>
                         <div className="text-left">
                           <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-gray-500">@{user.username}</div>
                         </div>
                       </div>
                     </td>

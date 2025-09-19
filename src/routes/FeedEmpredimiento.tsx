@@ -1,12 +1,11 @@
 import { ProductCard } from '../components/ProductCard'; 
-import {useNavigate} from 'react-router-dom';
+
 
 // Importar imágenes desde src/assets
 import logoEmprendimiento from "../assets/logoEmprendimiento.jpg";
 import rosas from "../assets/rosas.jpg";
 
 export function FeedEmprendimiento() {
-  const navigate = useNavigate();
   return (
     <div className="p-6">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
