@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/layout/Layout';
 import { PanelPerfil } from '../components/PanelPerfil';
 import { InterestCard } from '../components/InterestCard';
@@ -20,8 +21,9 @@ interface ProfileData extends Omit<UserProfile, 'interests'> {
 }
 
 export function Perfil() {
-  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const { user: authUser, token } = useAuth(); // Get user and token from context
+
   const [user, setUser] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -30,31 +32,43 @@ export function Perfil() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [availableInterests] = useState(['Comida', 'Joyería', 'Ropa', 'Arte', 'Tecnología', 'Deportes', 'Música', 'Libros']);
 
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token, navigate]);
+
   // Create a dedicated API client for profile requests
   const createApiClient = useCallback(() => {
+    if (!token) return null;
     return axios.create({
       baseURL: 'http://emprendu-backend.test/api',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        'Authorization': `Bearer ${token}` // Use token from context
       },
       withCredentials: true,
       timeout: 10000
     });
-  }, []);
+  }, [token]);
 
   // Fetch user data
   const fetchUserData = useCallback(async () => {
+    if (!authUser) return; // Don't fetch if no authenticated user
+
     setIsLoading(true);
     setError(null);
     
     try {
-      const userId = id || 'me';
       const apiClient = createApiClient();
+      if (!apiClient) {
+        throw new Error("Authentication token not found.");
+      }
       
-      console.log(`Fetching user data for ID: ${userId}`);
-      const response = await apiClient.get(`/users/${userId}`).catch(error => {
+      console.log(`Fetching user data for ID: ${authUser.id}`);
+      const response = await apiClient.get(`/users/${authUser.id}`).catch(error => {
         console.error('Profile fetch error:', {
           message: error.message,
           code: error.code,
@@ -81,11 +95,13 @@ export function Perfil() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, createApiClient]);
+  }, [authUser, createApiClient]);
 
   useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+    if (authUser) { // Only fetch data if the user is authenticated
+      fetchUserData();
+    }
+  }, [authUser, fetchUserData]);
 
   // Map API response to profile data
   const mapApiResponseToProfile = (data: any): ProfileData => {
@@ -95,14 +111,14 @@ export function Perfil() {
       name: data.name,
       username: data.username,
       email: data.email,
-      phone: data.phone || '',
+      phone: data.phone || '---',
       location: {
-        province: data.province || '',
-        canton: data.canton || '',
-        district: data.district || '',
-        address: data.address || ''
+        province: data.province || '---',
+        canton: data.canton || '---',
+        district: data.district || '---',
+        address: data.address || '---'
       },
-      avatarUrl: data.avatar_url || '',
+      avatarUrl: data.avatar_url || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png',
       role: mapRoleFromBackend(data.role, data.role_relation),
       interests: Array.isArray(interests) ? interests : [],
       favorites: data.favorites || [],

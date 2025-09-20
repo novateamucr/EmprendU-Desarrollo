@@ -41,9 +41,9 @@ export function useUserRegistration() {
     setSuccess(false);
 
     try {
-      const apiUrl = "http://emprendu-backend.test";
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';
       
-      const response = await fetch(`${apiUrl}/api/users`, {
+      const response = await fetch(`${apiUrl}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,9 +77,9 @@ export function useUserRegistration() {
     setSuccess(false);
 
     try {
-        const apiUrl = import.meta.env.API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';
 
-      const response = await fetch(`${apiUrl}/api/users/${userId}`, {
+      const response = await fetch(`${apiUrl}/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

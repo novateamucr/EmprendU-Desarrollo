@@ -97,13 +97,9 @@ async function demo_uploadAvatar(imageData: string): Promise<{ avatarUrl: string
 // Función para obtener el usuario de la sesión actual
 const getSessionUser = async () => {
   try {
-    // Obtener el usuario autenticado desde la sesión
-    const response = await api.get('/api/user');
-    const userId = response.data.id;
-    
-    // Obtener los datos completos del usuario con sus relaciones
-    const userResponse = await api.get(`/api/users/${userId}`);
-    const userData = userResponse.data;
+    // Obtener los datos completos del usuario autenticado desde el endpoint /user
+    const response = await api.get('/users');
+    const userData = response.data;
     
     // Mapear la respuesta al formato esperado por la aplicación
     return {

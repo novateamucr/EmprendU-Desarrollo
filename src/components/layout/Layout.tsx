@@ -51,7 +51,7 @@ export function Layout({ children }: LayoutProps) {
         className="w-full z-50"
       />
       <main className="flex-1 w-full overflow-auto">
-        <div className="max-w-7xl mx-auto w-full h-full px-4 py-6 ">
+        <div className="max-w-7xl mx-auto w-full h-full px-4 py-6  ">
           {children}
         </div>
       </main>

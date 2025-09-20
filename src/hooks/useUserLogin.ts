@@ -1,7 +1,5 @@
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = "http://emprendu-backend.test/api";
+import { api } from '../lib/api';
 
 export interface UserLoginData {
   email: string;
@@ -42,21 +40,9 @@ export function useUserLogin() {
     setIsAuthenticated(false);
 
     try {
-      console.log('Creating login request to:', `${API_BASE_URL}/login`);
+      console.log('Sending login request to /login with data:', loginData);
       
-      // Create a clean axios instance for login
-      const loginClient = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        timeout: 10000 // 10 second timeout
-      });
-
-      console.log('Sending login request to /api/login with data:', loginData);
-      
-      const response = await loginClient.post('/login', loginData).catch(error => {
+      const response = await api.post('/login', loginData).catch((error: any) => {
         console.error('Login error:', {
           message: error.message,
           code: error.code,

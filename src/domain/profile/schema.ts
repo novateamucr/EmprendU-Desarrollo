@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const profileFormSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres'),
-  role: z.enum(['comprador', 'emprendedor']),
+  role: z.enum(['cliente', 'emprendedor', 'administrador']),
   phone: z.string().optional(),
   email: z.string().email('Ingresa un email válido'),
   location: z.object({

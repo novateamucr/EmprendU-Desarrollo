@@ -26,6 +26,7 @@ export function EditarPerfil() {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   
   const { data: user, isLoading, isError, error, refetch } = useProfile() as any;
+  console.log(user);
   const updateProfileMutation = useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
   const uploadAvatarMutation = useUploadAvatar();

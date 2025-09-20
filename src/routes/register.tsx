@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { getDashboardPath } from '../utils/routeUtils';
-import { useAuth } from '../context/AuthContext';
+
 import Input from "../components/ui/Input";
 import AuthForm from "../components/ui/AuthForm";
 import OptionPanel from "../components/ui/OptionPanel";
 import Btn from "../components/ui/Btn";
 import Toggle from '../components/ui/ToggleAccountType';
 import { useUserRegistration } from '../hooks/useUserRegistration';
+import { toast } from 'react-toastify';
 
 export default function RouteComponent() {
   const { registerUser, loading, error } = useUserRegistration();
   const navigate = useNavigate();
-  const { login } = useAuth();
   
   const [formValues, setFormValues] = useState({
     name: "",
@@ -47,29 +46,10 @@ export default function RouteComponent() {
     try {
       const result = await registerUser(userData);
       
-      if (result?.token) {
-        // The registration was successful, now log the user in with the response data
-        login({
-          token: result.token,
-          user: {
-            id: result.id,
-            name: result.name,
-            email: result.email,
-            role: result.role,
-            phone: result.phone,
-            province: result.province,
-            canton: result.canton,
-            district: result.district,
-            address: result.address,
-            avatar_url: result.avatar_url,
-            created_at: result.created_at,
-            updated_at: result.updated_at
-          }
-        });
-        
-        // Redirect based on role (3: Admin, 2: Entrepreneur, 1: Client)
-        const dashboardPath = getDashboardPath(result.role);
-        navigate(dashboardPath);
+      if (result) {
+        // Show success message and redirect to login
+        toast.success("¡Cuenta creada con éxito! Por favor, inicia sesión.");
+        navigate('/login');
       }
     } catch (err: any) {
       console.error('Registration failed:', err);

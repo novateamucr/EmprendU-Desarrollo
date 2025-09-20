@@ -72,7 +72,7 @@ function App() {
                   {/* These routes are accessible to both clients and entrepreneurs */}
                   <Route index element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
-                  <Route path="/perfil/editar/:id" element={<EditarPerfil />} />
+                  <Route path="/perfil/editar" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
                   <Route path="/feed/emprendimiento/1" element={<Feed1 />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
