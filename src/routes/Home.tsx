@@ -96,6 +96,8 @@ const GlowingCard = styled.div`
   }
 `;
 
+
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -502,40 +504,42 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {filteredBusinesses.map((business) => (
-    <Link 
-      key={business.id} 
-      to={`/feed/emprendimiento/${business.id}`} 
-      className="block"
-    >
-      <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div className="h-48 bg-gray-200 overflow-hidden">
-          <img 
-            src={business.image} 
-            alt={business.name}
-            className="w-full h-full object-cover"
-          />
+  <Link 
+    key={business.id} 
+    to={`/feed/emprendimiento/${business.id}`} 
+    className="block"
+    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+  >
+    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="h-48 bg-gray-200 overflow-hidden">
+        <img 
+          src={business.image} 
+          alt={business.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium text-gray-900">{business.name}</h3>
+          <button className="text-gray-400 hover:text-red-500 transition-colors">
+            <FavoriteBorder sx={{ fontSize: 18 }} />
+          </button>
         </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-medium text-gray-900">{business.name}</h3>
-            <button className="text-gray-400 hover:text-red-500 transition-colors">
-              <FavoriteBorder sx={{ fontSize: 18 }} />
-            </button>
+        <p className="text-gray-600 text-sm mb-3">{business.description}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Star sx={{ fontSize: 14 }} className="text-amber-500" />
+            <span className="text-sm text-gray-600">{business.rating}</span>
           </div>
-          <p className="text-gray-600 text-sm mb-3">{business.description}</p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-              <span className="text-sm text-gray-600">{business.rating}</span>
-            </div>
-            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-              {business.category}
-            </span>
-          </div>
+          <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+            {business.category}
+          </span>
         </div>
-      </AnimatedCard>
-    </Link>
-  ))}
+      </div>
+    </AnimatedCard>
+  </Link>
+))}
+
 </div>
             </div>
           </>
