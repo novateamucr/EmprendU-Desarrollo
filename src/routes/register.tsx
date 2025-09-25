@@ -82,13 +82,10 @@ export default function RouteComponent() {
 
   const handleSubmit = async () => {
     if (passwordMessage !== "La contraseña es válida") {
-      alert("La contraseña no cumple los requisitos");
-      return;
-    }
-    if (confirmMessage !== "Las contraseñas coinciden ") {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
+  toast.error("La contraseña no cumple los requisitos", { position: "bottom-center" });
+  return;
+}
+
 
     const roleId = formValues.tipoCuenta === "Soy emprendedor" ? 2 : 1;
 
@@ -108,7 +105,7 @@ export default function RouteComponent() {
     } catch (err: any) {
       console.error('Registration failed:', err);
       const errorMessage = err?.message || 'Error en el registro. Por favor intente nuevamente.';
-      alert(errorMessage);
+      toast.error(errorMessage, { position: "bottom-center" });
     }
   };
 
@@ -204,14 +201,18 @@ export default function RouteComponent() {
             toggle={toggleComponent}
             button={[
               <button
-                key="register"
-                type="button"
-                onClick={handleSubmit}
-                className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? 'Creando cuenta...' : 'Registrarme'}
-              </button>
+  key="register"
+  type="button"
+  onClick={handleSubmit}
+  className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
+  disabled={
+    loading ||
+    passwordMessage !== "La contraseña es válida" ||
+    confirmMessage !== "Las contraseñas coinciden"
+  }
+>
+  {loading ? 'Creando cuenta...' : 'Registrarme'}
+</button>
             ]}
           />
           {error && (
