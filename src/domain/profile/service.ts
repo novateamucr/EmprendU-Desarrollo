@@ -94,37 +94,29 @@ async function demo_uploadAvatar(imageData: string): Promise<{ avatarUrl: string
   return { avatarUrl: imageData };
 }
 
-// Función para obtener el usuario de la sesión actual
+// Función para obtener información básica del usuario autenticado (principalmente su ID)
 const getSessionUser = async () => {
+  // Intentar primero desde localStorage, donde AuthContext guarda { token, user }
   try {
-    // Obtener los datos completos del usuario autenticado desde el endpoint /user
-    const response = await api.get('/users');
-    const userData = response.data;
-    
-    // Mapear la respuesta al formato esperado por la aplicación
-    return {
-      id: userData.id,
-      name: userData.name,
-      username: userData.username,
-      email: userData.email,
-      phone: userData.phone,
-      location: {
-        province: userData.province,
-        canton: userData.canton,
-        district: userData.district,
-        address: userData.address
-      },
-      avatarUrl: userData.avatar_url,
-      role: mapRoleFromBackend(userData.role, userData.role_relation),
-      interests: userData.interests ? userData.interests.map((i: any) => i.interest || i) : [],
-      favorites: userData.favorites || [],
-      role_relation: userData.role_relation,
-      businesses: userData.entrepreneurships || []
-    };
-  } catch (error: any) {
-    console.error('Error fetching user data:', error);
-    throw error;
+    const authRaw = localStorage.getItem('auth');
+    if (authRaw) {
+      const auth = JSON.parse(authRaw);
+      if (auth?.user?.id) return auth.user;
+    }
+  } catch (e) {
+    // ignore JSON errors
   }
+
+  // Fallback: intentar endpoints comunes
+  try {
+    // Algunos backends exponen /user como "usuario actual"
+    const me = await api.get('/user').then(r => r.data).catch(() => null);
+    if (me?.id) return me;
+  } catch (_) {}
+
+  // Último recurso: /users podría devolver el listado; intentamos extraer el primero
+  const response = await api.get('/users');
+  return Array.isArray(response.data) ? response.data[0] : response.data;
 };
 
 // Helper function to map role ID to role name
@@ -143,9 +135,45 @@ const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): 
 };
 
 // Funciones reales (migradas a endpoints Laravel 10)
-const real_getProfile = async () => {
+const real_getProfile = async (): Promise<ProfileDTO> => {
   const sessionUser = await getSessionUser();
-  return sessionUser; // El usuario ya viene con toda la información necesaria
+  const userId = sessionUser?.id;
+  const response = await api.get(`/users/${userId}`);
+  const raw = response.data;
+
+  // Derivar role numérico desde raw.role (numérico) o role_relation.nombre (string)
+  const roleNumeric = typeof raw.role === 'number' ? raw.role : (() => {
+    const nombre = raw?.role_relation?.nombre?.toLowerCase?.();
+    if (nombre === 'administrador') return 3;
+    if (nombre === 'emprendedor') return 2;
+    return 1;
+  })();
+
+  const dto: ProfileDTO = {
+    id: raw.id,
+    name: raw.name,
+    username: raw.username,
+    role: roleNumeric,
+    email: raw.email,
+    phone: raw.phone,
+    province: raw.province,
+    canton: raw.canton,
+    district: raw.district,
+    address: raw.address,
+    avatar_url: raw.avatar_url,
+    banned: raw.banned,
+    roleRelation: raw.role_relation ? { id: raw.role_relation.id, name: raw.role_relation.nombre } : undefined,
+    interests: Array.isArray(raw.interests)
+      ? raw.interests
+          .filter((i: any) => i && (typeof i === 'string' || i.interest))
+          .map((i: any, idx: number) => (
+            typeof i === 'string' ? { id: idx + 1, user_id: raw.id, interest: i } : { id: i.id ?? idx + 1, user_id: i.user_id ?? raw.id, interest: i.interest }
+          ))
+      : undefined,
+    entrepreneurships: raw.entrepreneurships || []
+  };
+
+  return dto;
 };
 
 const real_updateProfile = async (payload: Partial<ProfileDTO>) => {
@@ -153,9 +181,21 @@ const real_updateProfile = async (payload: Partial<ProfileDTO>) => {
   return api.put<ProfileDTO>(`/users/${sessionUser.id}`, payload).then(r => r.data);
 };
 
+// Update a specific user's profile by ID (admin capability)
+const real_updateProfileById = async (userId: number | string, payload: Partial<ProfileDTO>) => {
+  return api.put<ProfileDTO>(`/users/${userId}`, payload).then(r => r.data);
+};
+
 const real_updatePassword = async (payload: PasswordUpdateDTO) => {
   const sessionUser = await getSessionUser();
   return api.put(`/users/${sessionUser.id}/password`, payload).then(r => r.data);
+};
+
+// Admin: reset another user's password by ID (no current_password required)
+// Backend expects password changes through the general update endpoint /users/:id
+// and will hash it if provided. The /users/:id/password endpoint requires current_password.
+const real_adminResetPasswordById = async (userId: number | string, payload: { password: string; password_confirmation: string; }) => {
+  return api.put(`/users/${userId}`, { password: payload.password }).then(r => r.data);
 };
 
 const real_getInterests = async () => {
@@ -210,6 +250,12 @@ const real_uploadAvatar = async (imageData: string) => {
     .then(r => ({ avatarUrl: r.data.avatar_url })); // Mapear snake_case a camelCase
 };
 
+// Upload avatar for a specific user by ID (admin capability)
+const real_uploadAvatarById = async (userId: number | string, imageData: string) => {
+  return api.post<{ avatar_url: string }>(`/users/${userId}/avatar`, { image: imageData })
+    .then(r => ({ avatarUrl: r.data.avatar_url }));
+};
+
 // Exports públicos con switch
 export const getProfile = () => 
   isDemoMode() ? demo_getProfile() : real_getProfile();
@@ -217,8 +263,14 @@ export const getProfile = () =>
 export const updateProfile = (payload: Partial<ProfileDTO>) => 
   isDemoMode() ? demo_updateProfile(payload) : real_updateProfile(payload);
 
+export const updateProfileById = (userId: number | string, payload: Partial<ProfileDTO>) => 
+  real_updateProfileById(userId, payload);
+
 export const updatePassword = (payload: PasswordUpdateDTO) => 
   isDemoMode() ? demo_updatePassword(payload) : real_updatePassword(payload);
+
+export const adminResetPasswordById = (userId: number | string, payload: { password: string; password_confirmation: string; }) => 
+  real_adminResetPasswordById(userId, payload);
 
 export const getInterests = () => 
   isDemoMode() ? demo_getInterests() : real_getInterests();
@@ -237,3 +289,6 @@ export const removeFavorite = (favoriteId: number) =>
 
 export const uploadAvatar = (imageData: string) => 
   isDemoMode() ? demo_uploadAvatar(imageData) : real_uploadAvatar(imageData);
+
+export const uploadAvatarById = (userId: number | string, imageData: string) => 
+  real_uploadAvatarById(userId, imageData);

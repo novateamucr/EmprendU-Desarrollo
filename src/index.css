@@ -9,3 +9,48 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Brand-wide minimal, lively accents */
+@layer base {
+  /* Text selection brand highlight */
+  ::selection {
+    background-color: rgba(118, 176, 205, 0.25); /* brand/25 */
+    color: #111827; /* slate-900-ish for readability */
+  }
+
+  /* Make links use brand by default */
+  a {
+    @apply text-brand hover:text-brandDark transition-colors;
+  }
+
+  /* Global body colors */
+  body {
+    @apply bg-white text-primary;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .btn-brand {
+    @apply btn bg-brand text-white hover:bg-brandDark;
+  }
+  .btn-outline {
+    @apply btn border border-border text-primary hover:bg-brand/10 hover:text-brand;
+  }
+  .focus-brand {
+    @apply focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+  }
+
+  /* Links that should look like buttons */
+  .link-brand {
+    @apply text-brand hover:text-brandDark transition-colors;
+  }
+
+  /* Icon button for small controls */
+  .icon-btn {
+    @apply w-8 h-8 rounded flex items-center justify-center hover:bg-brand/10 transition-colors;
+  }
+}

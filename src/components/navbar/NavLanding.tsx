@@ -91,7 +91,7 @@ export function Navbar() {
                 <Link
                   key={index}
                   to={item.href}
-                  className="text-gray-700 hover:text-primary font-medium"
+                  className="text-secondary hover:text-brand font-medium transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -102,7 +102,7 @@ export function Navbar() {
             <div className="flex items-center space-x-4">
               <HoverButton
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="md:hidden p-2 rounded-full hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                 aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                 aria-expanded={isMobileMenuOpen}
               >
@@ -127,7 +127,7 @@ export function Navbar() {
         >
           {/* Fondo oscuro */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="fixed inset-0 bg-primary bg-opacity-50"
             onClick={() => setIsMobileMenuOpen(false)}
           />
 
@@ -138,7 +138,7 @@ export function Navbar() {
               <span className="text-xl font-bold">MiLogo</span>
               <HoverButton
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="p-2 rounded-full hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                 aria-label="Cerrar menú"
               >
                 <X className="w-5 h-5 text-secondary" />
@@ -152,7 +152,7 @@ export function Navbar() {
                   key={index}
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-6 py-3 text-gray-700 hover:bg-gray-100 font-medium"
+                  className="block px-6 py-3 text-secondary hover:bg-brand/10 hover:text-brand font-medium transition-colors"
                 >
                   {item.label}
                 </Link>

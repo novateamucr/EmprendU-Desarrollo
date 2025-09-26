@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet, Link } from 'react-router-dom';
+import { Routes, Route, Outlet, Link, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
@@ -30,6 +30,9 @@ import ProductInventory from './routes/entrepreneur/components/ProductInventory'
 import NewPw from './routes/NewPw';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
+import { CartProvider } from './context/CartContext';
+import Cart from './routes/Cart';
+import CartDetail from './routes/CartDetail';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +44,7 @@ function App() {
       <AuthProvider>
         <UserProvider>
           <BusinessProvider>
+            <CartProvider>
             <Routes>
                 {/* Public routes */}
                 <Route path="/landing" element={<LandingPage />} />
@@ -57,7 +61,6 @@ function App() {
                     ROUTE ACCESS GUIDE:
                     - allowedRoles: Array of role IDs that can access these routes
                       * 1 = Client
-                      * 2 = Entrepreneur
                       * 3 = Admin
                 =========================================== */}
 
@@ -71,15 +74,17 @@ function App() {
                 }>
                   {/* These routes are accessible to both clients and entrepreneurs */}
                   <Route index element={<Home />} />
-                  <Route path="/profile" element={<Perfil />} />
-                  <Route path="/perfil/editar" element={<EditarPerfil />} />
+                  <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/card" element={<Navigate to="/cart" replace />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
                   <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
                   <Route path="/feed/emprendimiento/1" element={<Feed1 />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
                 </Route>
 
-                {/* ===========================================
+                {/* 
                     ADMIN ROUTES (Role 3 only)
                     These routes are only accessible to admins
                 =========================================== */}
@@ -94,6 +99,21 @@ function App() {
                   <ProtectedRoute allowedRoles={[3]}>
                     <Layout>
                       <AñadirUsuario />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                {/* Authenticated profile view for all roles */}
+                <Route path="/profile" element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <Layout>
+                      <Perfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile/edit/:id" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <EditarPerfil />
                     </Layout>
                   </ProtectedRoute>
                 } />
@@ -127,6 +147,7 @@ function App() {
                 {/* Redirect root to landing or home based on auth status */}
                 <Route path="/" element={<LandingPage />} />
               </Routes>
+            </CartProvider>
             </BusinessProvider>
           </UserProvider>
         </AuthProvider>
