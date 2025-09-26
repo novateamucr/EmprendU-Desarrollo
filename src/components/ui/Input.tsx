@@ -18,7 +18,7 @@ export default function Input({
   onChange,
   ...rest
 }: InputProps) {
-  const baseClasses = 'bg-gray-300 p-3 rounded-lg w-xl mb-4';
+  const baseClasses = 'bg-gray-300 p-3 rounded-lg w-xl ';
   const [currentClass, setCurrentClass] = React.useState(`${baseClasses} ${customClass} ${className}`.trim());
 
   React.useEffect(() => {

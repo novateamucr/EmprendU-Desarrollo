@@ -1,56 +1,33 @@
 import { useState } from "react";
-import Btn from '../components/ui/Btn';
+import Btn from "../components/ui/Btn";
+import BusinessFeedbackPopup from "../components/ui/BusinessFeedback"; // tu nuevo popup
 
-export default function BusinessFeedback() {
-    const [rating, setRating] = useState(0);
+export default function BusinessFeedbackTestPage() {
+  const [showPopup, setShowPopup] = useState(false);
 
-    return (
-        <div className='flex-1 flex flex-col items-center justify-center h-screen mt-12'>
-            <div className="items-center justify-center bg-white rounded-xl pb-16 w-1/2 ">
-                
-                {/* Encabezado */}
-                <div className="bg-slate-200 w-full h-[50%] flex flex-col items-center gap-6  justify-center rounded-xl">
-                    <h2 className="text-2xl font-bold text-slate-700 ">¡Califica tu experiencia!</h2>
-                    <img src=""
-                     className="w-32 h-32  rounded-full border-2 border-slate-300
-                     transition-transform duration-300 hover:scale-105 hover:-translate-y-2" 
-                     alt="" />
-                    <p className="text-slate-600 align-middle ">Nombre_del_producto</p>
-                </div>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-6">
+      <h1 className="text-3xl font-bold">Popup test</h1>
 
-                <div className="flex flex-col items-center mt-4 gap-4"> 
-                    <div className="flex gap-10">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <span
-                                key={star}
-                                onClick={() => setRating(star)}
-                                className={`cursor-pointer text-6xl transition-transform duration-300 ${
-                                    star <= rating ? "text-yellow-400" : "text-gray-300 hover:scale-125 hover:-translate-y-1 active:scale-90" 
-                                }`}
-                            >
-                                ★
-                            </span>
-                        ))}
-                    </div>
-                </div>
+      <Btn
+        style="bg-blue-600 text-white p-3 rounded-lg"
+        key="abrirPopup"
+        text="Abrir Feedback"
+        onClick={() => setShowPopup(true)}
+      />
 
-                {/* Comentarios */}
-                <div className="flex flex-col items-center m-6 gap-6">
-                    <p className="text-slate-500 self-start pl-10">Comentarios (opcional)</p>
-                    <textarea
-                        className="w-[90%] h-32 border border-gray-300 rounded-lg p-2 resize-none items-center text-slate-500 "
-                        placeholder="Escribe tus comentarios aquí..."
-                    ></textarea>
-                     
-                        <Btn
-                          style="hover:bg-green-600  bg-black text-white font-black p-3 rounded-full w-[90%]"
-                          key="restablecerPw"
-                          text="Enviar"
-                          onClick={() => alert('Gracias por tu feedback!')}
-                        />
-                      
-                </div>
-            </div>
-        </div>
-    );
+      {/* Aquí se muestra el popup solo si showPopup es true */}
+      <BusinessFeedbackPopup
+        show={showPopup}
+        title="¡Califica tu experiencia!"
+        imageUrl="https://via.placeholder.com/150"
+        productName="Nombre_producto"
+        onSubmit={(rating: number, comments: string) => {
+          alert(`Rating: ${rating}\nComentarios: ${comments}`);
+          setShowPopup(false); 
+        }}
+        onCancel={() => setShowPopup(false)}
+      />
+    </div>
+  );
 }

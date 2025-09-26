@@ -85,15 +85,15 @@ export default function NewPw() {
         <img src="/small_dark_logo.png" alt="Logo" className="w-12 h-12" />
       </Link>
 
-      <div className="items-center justify-center bg-white rounded-xl pb-16 w-1/2">
+      <div className="items-center justify-center bg-white rounded-xl pb-12 w-2/5">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-6 w-full px-10 mt-10"
         >
-          <h2 className="text-2xl font-bold self-start pl-8">
+          <h2 className="text-2xl font-bold self-start">
             Crear nueva contraseña
           </h2>
-          <p className="text-slate-500 self-start pl-8">
+          <p className="text-slate-500 self-start">
             Ingresa tu nueva contraseña y confírmala para continuar
           </p>
 
@@ -106,7 +106,7 @@ export default function NewPw() {
           />
 
           <Input
-            
+           
             type="password"
             placeholder="Confirmar contraseña"
             value={formValues.confirmPassword}
@@ -114,7 +114,7 @@ export default function NewPw() {
           />
 
           <Btn
-            style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-full w-[90%]"
+            style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-full w-full"
             key="newPw"
             text={loading ? "Actualizando..." : "Guardar contraseña"}
             //type="submit"
