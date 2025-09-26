@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Package, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Loader2, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
@@ -8,16 +8,32 @@ import { entrepreneurshipApi, Entrepreneurship } from '../../../services/entrepr
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 
-// Custom Business type that matches the API response and adds productCount
+// Enhanced Business type with all relationships
 type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
-  id: string; // Override id to be string for consistency with the rest of the app
+  id: string;
   productCount: number;
-  category: string; // Override to use the category name instead of ID
+  category: string;
   category_relation?: {
     id: number;
     nombre: string;
     created_at: string;
     updated_at: string;
+  };
+  products?: Array<{
+    id: number;
+    name: string;
+    stock: number;
+    price: number;
+    status: string;
+  }>;
+  favorites?: Array<{
+    id: number;
+    user_id: number;
+  }>;
+  owner?: {
+    id: number;
+    name: string;
+    email: string;
   };
 };
 
@@ -32,19 +48,18 @@ export default function BusinessList() {
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
-        // Get businesses for the current user (API already filters by authenticated user)
         const response = await entrepreneurshipApi.getAll({ 
-          per_page: 100
+          per_page: 100,
+          include: 'owner,category_relation,products,favorites'
         });
         
         if (response && response.data) {
-// Map API data to our local Business type
           const mappedData = response.data.map((business: Entrepreneurship) => ({
             ...business,
-            id: business.id.toString(), // Convert id to string
+            id: business.id.toString(),
             productCount: business.products?.length || 0,
-            category: business.category_relation?.nombre || 'Sin categoría', // Use category name from relation
-          })) as unknown as Business[]; // Type assertion to handle the category type difference
+            category: business.category_relation?.nombre || 'Sin categoría',
+          })) as unknown as Business[];
           
           setBusinesses(mappedData);
           setError(null);
@@ -62,14 +77,14 @@ export default function BusinessList() {
     };
 
     fetchBusinesses();
-  }, [user?.id]); // Re-fetch when user changes
+  }, [user?.id]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este emprendimiento? Esta acción no se puede deshacer.')) {
       try {
         await entrepreneurshipApi.delete(id);
         setBusinesses(businesses.filter(business => business.id !== id));
-        toast.success('emprendimiento eliminado correctamente');
+        toast.success('Emprendimiento eliminado correctamente');
       } catch (err) {
         console.error('Error deleting business:', err);
         toast.error('Error al eliminar el emprendimiento');
@@ -77,23 +92,64 @@ export default function BusinessList() {
     }
   };
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CR', {
+      style: 'currency',
+      currency: 'CRC',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // Calculate total stock across all products
+  const calculateTotalStock = (products: any[] = []) => {
+    return products.reduce((total, product) => total + (product.stock || 0), 0);
+  };
+
+  // Calculate total value of inventory
+  const calculateInventoryValue = (products: any[] = []) => {
+    return products.reduce((total, product) => {
+      return total + ((product.price || 0) * (product.stock || 0));
+    }, 0);
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-gray-500">Cargando tus emprendimientos...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+      <div className="bg-red-50 rounded-lg p-6 text-center max-w-2xl mx-auto my-8">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+          <AlertCircle className="h-6 w-6 text-red-600" />
+        </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar los emprendimientos</h3>
-        <p className="text-gray-500 mb-6">{error}</p>
-        <Button variant="primary" onClick={() => window.location.reload()}>
-          Reintentar
-        </Button>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <div className="flex justify-center gap-3">
+          <Button variant="primary" onClick={() => window.location.reload()}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Reintentar
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/entrepreneur/businesses/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Crear emprendimiento
+          </Button>
+        </div>
       </div>
     );
   }
@@ -102,35 +158,60 @@ export default function BusinessList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Mis emprendimientos</h2>
-          <p className="text-sm text-gray-500">
-            Administra tus emprendimientos y productos en un solo lugar
-          </p>
+          <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
+          <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
         </div>
         <Button asChild>
           <Link to="/entrepreneur/businesses/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar emprendimiento
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Emprendimiento
           </Link>
         </Button>
       </div>
-
+      
       {businesses.length === 0 ? (
-        <Card className="p-8 text-center">
-          <Package className="h-12 w-12 mx-auto text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">Aún no tienes emprendimientos registrados</h3>
-          <p className="mt-2 text-sm text-gray-500">
-            Comienza creando tu primer emprendimiento para vender productos en nuestra plataforma.
-          </p>
-          <div className="mt-6">
-            <Button asChild>
-              <Link to="/entrepreneur/businesses/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Crear emprendimiento
-              </Link>
-            </Button>
+        <div className="container mx-auto px-4 py-12">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center max-w-3xl mx-auto">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 mb-6">
+              <Package className="h-10 w-10 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Aún no tienes emprendimientos</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg">
+              Crea tu primer emprendimiento para comenzar a vender productos y llegar a más clientes en nuestra plataforma.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link to="/entrepreneur/businesses/new" className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Crear mi primer emprendimiento
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/explore" className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Ver ejemplos
+                </Link>
+              </Button>
+            </div>
+            <div className="mt-10 pt-8 border-t border-gray-100">
+              <h3 className="text-sm font-medium text-gray-500 mb-4">¿Necesitas ayuda para comenzar?</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">1</div>
+                  <p className="text-sm text-gray-600">Crea tu perfil de emprendedor</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">2</div>
+                  <p className="text-sm text-gray-600">Agrega los detalles de tu negocio</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">3</div>
+                  <p className="text-sm text-gray-600">Comienza a vender tus productos</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </Card>
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {businesses.map((business) => (
@@ -169,23 +250,39 @@ export default function BusinessList() {
                     <span className="text-gray-500">Categoría</span>
                     <span className="font-medium">{business.category}</span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Productos</span>
-                    <span className="font-medium">{business.products?.length || 0} productos</span>
+                  <div className="grid grid-cols-2 gap-4 mt-3">
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">Productos</span>
+                      <div className="font-medium flex items-center">
+                        <Package className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                        {business.products?.length || 0}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">En inventario</span>
+                      <div className="font-medium">
+                        {calculateTotalStock(business.products || [])} unidades
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">Valor total</span>
+                      <div className="font-medium">
+                        {formatCurrency(calculateInventoryValue(business.products || []))}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs text-gray-500">Favoritos</span>
+                      <div className="font-medium flex items-center">
+                        <Heart className="h-3.5 w-3.5 mr-1.5 text-red-500" />
+                        {business.favorites?.length || 0}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="text-sm text-gray-500">
-                      <span className="font-medium text-gray-700">{business.products?.length || 0}</span> productos
-                    </div>
-                    <div className="h-4 w-px bg-gray-200"></div>
-                    <div className="text-sm text-gray-500">
-                      <span className="font-medium text-gray-700">
-                        {business.products?.reduce((sum, p) => sum + (p.stock_quantity || 0), 0) || 0}
-                      </span> en stock
-                    </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <div className="text-xs text-gray-500">
+                    Actualizado el {formatDate(business.updated_at)}
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>

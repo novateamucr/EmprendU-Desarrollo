@@ -16,8 +16,8 @@ export function Layout({ children }: LayoutProps) {
     { 
       type: 'link' as const, 
       label: 'Inicio', 
-      to: '/',
-      // Only show to entrepreneurs (role 2)
+      to: '/home',
+      // Only show to entrepreneurs (role 2) and clients (role 1)
       visible: user?.role === 2 || user?.role === 1
     },
     { 

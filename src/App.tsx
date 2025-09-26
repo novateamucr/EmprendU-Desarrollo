@@ -19,6 +19,7 @@ import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import { Feed1 } from './routes/FeedCafeluna';
+import { RootRedirect } from './components/RootRedirect';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -46,8 +47,11 @@ function App() {
           <BusinessProvider>
             <CartProvider>
             <Routes>
-                {/* Public routes */}
-                <Route path="/landing" element={<LandingPage />} />
+                {/* Root route - Always show landing page */}
+                <Route path="/" element={<LandingPage />} />
+                
+                {/* Handle redirects for authenticated users */}
+                <Route path="/landing" element={<RootRedirect />} />
                 
                 {/* Auth routes with AuthLayout */}
                 <Route element={<AuthLayout><Outlet /></AuthLayout>}>
@@ -78,6 +82,8 @@ function App() {
                   <Route path="/card" element={<Navigate to="/cart" replace />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/profile" element={<Perfil />} />
                   <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
                   <Route path="/feed/emprendimiento/1" element={<Feed1 />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
@@ -144,8 +150,6 @@ function App() {
                   <Route path="inventory" element={<ProductInventory />} />
                 </Route>
 
-                {/* Redirect root to landing or home based on auth status */}
-                <Route path="/" element={<LandingPage />} />
               </Routes>
             </CartProvider>
             </BusinessProvider>

@@ -77,6 +77,8 @@ export interface PaginationParams {
   per_page?: number;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+  include?: string;
+  [key: string]: any; // Allow additional query parameters
 }
 
 export interface Product {
@@ -125,11 +127,14 @@ export const entrepreneurshipApi = {
     }
   },
 
-  // Get a single entrepreneurship by ID
+  // Get a single entrepreneurship by ID with relationships
   getById: async (id: string): Promise<Entrepreneurship> => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/entrepreneurships/${id}`, {
         withCredentials: true,
+        params: {
+          include: 'owner,category_relation,products,favorites'
+        }
       });
       return response.data;
     } catch (error) {

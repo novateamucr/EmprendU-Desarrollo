@@ -292,7 +292,7 @@ export function EditarPerfil() {
           logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
           maxWidth="max-w-2xl"
           items={[
-            { type: 'link', label: 'Inicio', to: '/' },
+            { type: 'link', label: 'Inicio', to: '/home' },
             { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
             { type: 'link', label: 'Ferias', to: '/ferias' },
           ]}
@@ -326,7 +326,7 @@ export function EditarPerfil() {
         logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
         maxWidth="max-w-2xl"
         items={[
-          { type: 'link', label: 'Inicio', to: '/' },
+          { type: 'link', label: 'Inicio', to: '/home' },
           { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
           { type: 'link', label: 'Ferias', to: '/ferias' },
         ]}
