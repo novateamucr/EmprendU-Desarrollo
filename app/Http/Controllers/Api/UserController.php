@@ -122,4 +122,25 @@ class UserController extends Controller
             'message' => 'Invalid credentials'
         ], 401);
     }
+
+    /**
+     * Update the user's password securely.
+     * Expects: current_password, password, password_confirmation
+     */
+    public function updatePassword(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'current_password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        if (!Hash::check($data['current_password'], $user->password)) {
+            return response()->json(['message' => 'La contraseña actual es incorrecta.'], 422);
+        }
+
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return response()->json(['message' => 'Contraseña actualizada correctamente.'], 200);
+    }
 }

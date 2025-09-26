@@ -23,3 +23,6 @@ Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
 Route::apiResource('users', UserController::class);
+
+// Secure password update route (expects current_password, password, password_confirmation)
+Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
