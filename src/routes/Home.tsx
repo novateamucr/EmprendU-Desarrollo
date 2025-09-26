@@ -96,6 +96,11 @@ const GlowingCard = styled.div`
   }
 `;
 
+const removeAccents = (str: string) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -283,62 +288,64 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
   ];
 
   // Filter businesses by category, search query, and selected zone
-  const filteredBusinesses = featuredBusinesses.filter(business => {
-    const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
-    const matchesSearch = searchQuery === '' || 
-      business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
-    return matchesCategory && matchesSearch && matchesZone;
-  });
+ const filteredBusinesses = featuredBusinesses.filter(business => {
+  const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
+  const matchesSearch = searchQuery === '' ||
+    removeAccents(business.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents(business.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()));
+  const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
+  return matchesCategory && matchesSearch && matchesZone;
+});
+
 
   // Filter products by category and search query for products view
   const filteredProducts = featuredBusinesses
-    .filter(business => selectedCategory === 'Todos' || business.category === selectedCategory)
-    .flatMap(business => 
-      business.products.filter(product => 
-        searchQuery === '' ||
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
-    );
+  .filter(business => selectedCategory === 'Todos' || business.category === selectedCategory)
+  .flatMap(business => 
+    business.products.filter(product => 
+      searchQuery === '' ||
+      removeAccents(product.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+      removeAccents(product.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+      removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()))
+    ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
+  );
 
   // Generate search suggestions based on current view mode
   const searchSuggestions = searchQuery.length > 0 ? [
-    ...new Set(
-      viewMode === 'emprendimientos' ? [
-        // Suggest business names
-        ...featuredBusinesses
-          .filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.name),
-        // Suggest categories
-        ...featuredBusinesses
-          .filter(b => b.category.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.category),
-        // Suggest business descriptions
-        ...featuredBusinesses
-          .filter(b => b.description.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.name)
-      ] : [
-        // Suggest product titles
-        ...featuredBusinesses
-          .flatMap(b => b.products)
-          .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(p => p.title),
-        // Suggest product descriptions
-        ...featuredBusinesses
-          .flatMap(b => b.products)
-          .filter(p => p.description.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(p => p.title),
-        // Suggest categories for products
-        ...featuredBusinesses
-          .filter(b => b.category.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.category)
-      ]
-    )
-  ].slice(0, 5) : [];
+  ...new Set(
+    viewMode === 'emprendimientos' ? [
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.name),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.category),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.name)
+    ] : [
+      ...featuredBusinesses
+        .flatMap(b => b.products)
+        .filter(p => removeAccents(p.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(p => p.title),
+      ...featuredBusinesses
+        .flatMap(b => b.products)
+        .filter(p => removeAccents(p.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(p => p.title),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.category)
+    ]
+  )
+].slice(0, 5) : [];
+
+
+  const filteredSuggestions = searchSuggestions.filter(suggestion =>
+  removeAccents(suggestion.toLowerCase()).includes(
+    removeAccents(searchQuery.toLowerCase())
+  )
+);
 
   return (
     <Layout>
@@ -452,9 +459,9 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
                   />
                   {/* Search Suggestions */}
-                  {showSuggestions && searchSuggestions.length > 0 && (
+                  {showSuggestions && filteredSuggestions.length > 0 && (
                     <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                      {searchSuggestions.map((suggestion, index) => (
+                      {filteredSuggestions.map((suggestion, index) => (
                         <button
                           key={index}
                           onClick={() => {
