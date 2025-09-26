@@ -19,6 +19,7 @@ import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import { Feed1 } from './routes/FeedCafeluna';
+import { RootRedirect } from './components/RootRedirect';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -42,8 +43,11 @@ function App() {
         <UserProvider>
           <BusinessProvider>
             <Routes>
-                {/* Public routes */}
-                <Route path="/landing" element={<LandingPage />} />
+                {/* Root route - Always show landing page */}
+                <Route path="/" element={<LandingPage />} />
+                
+                {/* Handle redirects for authenticated users */}
+                <Route path="/landing" element={<RootRedirect />} />
                 
                 {/* Auth routes with AuthLayout */}
                 <Route element={<AuthLayout><Outlet /></AuthLayout>}>
@@ -70,7 +74,7 @@ function App() {
                   </ProtectedRoute>
                 }>
                   {/* These routes are accessible to both clients and entrepreneurs */}
-                  <Route index element={<Home />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
                   <Route path="/perfil/editar" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
@@ -124,8 +128,6 @@ function App() {
                   <Route path="inventory" element={<ProductInventory />} />
                 </Route>
 
-                {/* Redirect root to landing or home based on auth status */}
-                <Route path="/" element={<LandingPage />} />
               </Routes>
             </BusinessProvider>
           </UserProvider>
