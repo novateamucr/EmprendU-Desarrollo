@@ -146,8 +146,8 @@ function App() {
                   <Route path="/entrepreneur" element={<Dashboard />} />
                   <Route path="/entrepreneur/businesses" element={<BusinessList />} />
                   <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
-                  <Route path="businesses/:id/edit" element={<BusinessSetup />} />
-                  <Route path="inventory" element={<ProductInventory />} />
+                  <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
+                  <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
                 </Route>
 
               </Routes>

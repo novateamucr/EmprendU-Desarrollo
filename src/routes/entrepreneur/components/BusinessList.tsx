@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Package, Loader2, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
+import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { entrepreneurshipApi, Entrepreneurship } from '../../../services/entrepreneurshipService';
@@ -43,6 +44,9 @@ export default function BusinessList() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchBusinesses = async () => {
@@ -50,7 +54,8 @@ export default function BusinessList() {
         setIsLoading(true);
         const response = await entrepreneurshipApi.getAll({ 
           per_page: 100,
-          include: 'owner,category_relation,products,favorites'
+          include: 'owner,category_relation,products,favorites',
+          user_id: user?.id,
         });
         
         if (response && response.data) {
@@ -79,40 +84,29 @@ export default function BusinessList() {
     fetchBusinesses();
   }, [user?.id]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este emprendimiento? Esta acción no se puede deshacer.')) {
-      try {
-        await entrepreneurshipApi.delete(id);
-        setBusinesses(businesses.filter(business => business.id !== id));
-        toast.success('Emprendimiento eliminado correctamente');
-      } catch (err) {
-        console.error('Error deleting business:', err);
-        toast.error('Error al eliminar el emprendimiento');
-      }
+  const requestDelete = (id: string) => {
+    setPendingDeleteId(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      setIsDeleting(true);
+      await entrepreneurshipApi.delete(pendingDeleteId);
+      setBusinesses(prev => prev.filter(b => b.id !== pendingDeleteId));
+      toast.success('Emprendimiento eliminado correctamente');
+    } catch (err) {
+      console.error('Error deleting business:', err);
+      toast.error('Error al eliminar el emprendimiento');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+      setPendingDeleteId(null);
     }
   };
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CR', {
-      style: 'currency',
-      currency: 'CRC',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  // Calculate total stock across all products
-  const calculateTotalStock = (products: any[] = []) => {
-    return products.reduce((total, product) => total + (product.stock || 0), 0);
-  };
-
-  // Calculate total value of inventory
-  const calculateInventoryValue = (products: any[] = []) => {
-    return products.reduce((total, product) => {
-      return total + ((product.price || 0) * (product.stock || 0));
-    }, 0);
-  };
+  // Helpers removed to keep UI minimal and avoid unused warnings
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -155,13 +149,13 @@ export default function BusinessList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-black hover:bg-black/90 text-white">
           <Link to="/entrepreneur/businesses/new">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
@@ -218,26 +212,26 @@ export default function BusinessList() {
             <Card key={business.id} className="overflow-hidden">
               <div className="p-6">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-gray-100 overflow-hidden">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 h-14 w-14 rounded-md bg-gray-100 overflow-hidden">
                       {business.image_url ? (
                         <img
                           src={business.image_url}
                           alt={`Logo de ${business.name}`}
-                          className="h-10 w-10 rounded-full object-cover"
+                          className="h-14 w-14 object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/placeholder-business.png';
                           }}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <Package className="h-5 w-5 text-gray-500" />
+                        <div className="h-14 w-14 bg-gray-200 flex items-center justify-center">
+                          <Package className="h-6 w-6 text-gray-500" />
                         </div>
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{business.name}</h3>
-                      <p className="text-sm text-gray-500 line-clamp-1">{business.description}</p>
+                      <h3 className="text-xl font-semibold text-gray-900 leading-snug">{business.name}</h3>
+                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">{business.description || 'Sin descripción'}</p>
                     </div>
                   </div>
                   <Badge variant={business.banned ? 'destructive' : 'success'}>
@@ -250,32 +244,14 @@ export default function BusinessList() {
                     <span className="text-gray-500">Categoría</span>
                     <span className="font-medium">{business.category}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mt-3">
-                    <div className="space-y-1">
-                      <span className="text-xs text-gray-500">Productos</span>
-                      <div className="font-medium flex items-center">
-                        <Package className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                        {business.products?.length || 0}
-                      </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Package className="h-4 w-4 text-primary" />
+                      <span className="text-sm"><span className="font-semibold">{business.products?.length || 0}</span> productos</span>
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-xs text-gray-500">En inventario</span>
-                      <div className="font-medium">
-                        {calculateTotalStock(business.products || [])} unidades
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-xs text-gray-500">Valor total</span>
-                      <div className="font-medium">
-                        {formatCurrency(calculateInventoryValue(business.products || []))}
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-xs text-gray-500">Favoritos</span>
-                      <div className="font-medium flex items-center">
-                        <Heart className="h-3.5 w-3.5 mr-1.5 text-red-500" />
-                        {business.favorites?.length || 0}
-                      </div>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Heart className="h-4 w-4 text-red-500" />
+                      <span className="text-sm"><span className="font-semibold">{business.favorites?.length || 0}</span> favoritos</span>
                     </div>
                   </div>
                 </div>
@@ -284,29 +260,29 @@ export default function BusinessList() {
                   <div className="text-xs text-gray-500">
                     Actualizado el {formatDate(business.updated_at)}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-                      <Link to={`/entrepreneur/businesses/${business.id}/edit`}>
-                        <Pencil className="h-3.5 w-3.5" />
+                  <div className="flex items-center space-x-2.5">
+                    <Button variant="secondary" size="icon" className="h-10 w-10" asChild>
+                      <Link to={`/entrepreneur/businesses/${business.id}`}>
+                        <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-8 w-8 p-0"
+                      variant="secondary" 
+                      size="icon" 
+                      className="h-10 w-10"
                       onClick={() => navigate(`/entrepreneur/inventory?businessId=${business.id}`)}
                       title="Ver productos"
                     >
-                      <Package className="h-3.5 w-3.5" />
+                      <Package className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => handleDelete(business.id)}
+                      variant="destructive"
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => requestDelete(business.id)}
                       title="Eliminar emprendimiento"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -315,6 +291,34 @@ export default function BusinessList() {
           ))}
         </div>
       )}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => { if (!isDeleting) { setDeleteModalOpen(false); setPendingDeleteId(null); } }}
+        title="Eliminar emprendimiento"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Eliminar tu emprendimiento no se puede deshacer y esto eliminará todos los productos, ventas y registros asociados.
+          </p>
+          <p className="text-gray-700 font-medium">¿Deseas continuar?</p>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => { if (!isDeleting) { setDeleteModalOpen(false); setPendingDeleteId(null); } }}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar definitivamente'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

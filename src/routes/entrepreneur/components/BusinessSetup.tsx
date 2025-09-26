@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
@@ -133,16 +133,23 @@ export default function BusinessSetup() {
         products: []
       };
       
+      let result;
       if (isEditMode && id) {
-        await entrepreneurshipApi.update(id, businessData);
-        toast.success('emprendimiento actualizado exitosamente');
+        result = await entrepreneurshipApi.update(id, businessData);
+        if (!result || !result.id) {
+          throw new Error('La API no devolvió una respuesta válida al actualizar.');
+        }
+        toast.success('Emprendimiento actualizado exitosamente');
       } else {
-        await entrepreneurshipApi.create(businessData);
-        toast.success('emprendimiento creado exitosamente');
-
+        result = await entrepreneurshipApi.create(businessData);
+        if (!result || !result.id) {
+          throw new Error('La API no devolvió una respuesta válida al crear.');
+        }
+        toast.success('Emprendimiento creado exitosamente');
       }
-      
-      navigate('/entrepreneur/businesses');
+
+      // Only redirect after success; use SPA navigation (no full reload)
+      navigate('/entrepreneur/businesses', { replace: true });
     } catch (err: any) {
       console.error('Error saving business:', err);
       const errorMessage = err.response?.data?.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
@@ -172,7 +179,7 @@ export default function BusinessSetup() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">
           {isEditMode ? 'Editar Emprendimiento' : 'Crear Nuevo Emprendimiento'}
@@ -228,7 +235,7 @@ export default function BusinessSetup() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Ej: Mi Tienda Online"
+                    placeholder={isEditMode && formData.name ? formData.name : 'Ej: Mi Tienda Online'}
                     required
                     className="w-full"
                   />
@@ -268,7 +275,7 @@ export default function BusinessSetup() {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    placeholder="Describe tu emprendimiento..."
+                    placeholder={isEditMode && formData.description ? formData.description : 'Describe tu emprendimiento...'}
                     rows={4}
                     className="w-full"
                   />

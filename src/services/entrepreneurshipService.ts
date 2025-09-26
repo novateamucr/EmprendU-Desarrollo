@@ -111,10 +111,9 @@ export const entrepreneurshipApi = {
         `${API_BASE_URL}/api/entrepreneurships`,
         {
           params: {
-            page: params?.page || 1,
-            per_page: params?.per_page || 15,
-            sort_by: params?.sort_by,
-            sort_order: params?.sort_order
+            ...(params || {}),
+            page: params?.page ?? 1,
+            per_page: params?.per_page ?? 15,
           },
           withCredentials: true,
         }
@@ -186,8 +185,12 @@ export const entrepreneurshipApi = {
           formData.append(key, formValue);
         }
       });
-      
-      const response = await axios.post(
+      // Explicitly include the id in the payload (backend reads it from body)
+      formData.append('id', id);
+
+      // Use PATCH to the resource URL to satisfy Laravel route-model binding
+      console.debug('Updating entrepreneurship (PATCH resource URL)', { id, url: `${API_BASE_URL}/api/entrepreneurships/${id}` });
+      const response = await axios.patch(
         `${API_BASE_URL}/api/entrepreneurships/${id}`,
         formData,
         {
@@ -277,7 +280,7 @@ export const productApi = {
       const formData = new FormData();
       
       // Add all product data as JSON
-      const { image, ...productDataWithoutImage } = productData;
+      const { image } = productData;
       formData.append('name', productData.name);
       formData.append('description', productData.description || '');
       formData.append('sku', productData.sku);
@@ -320,7 +323,7 @@ export const productApi = {
       const formData = new FormData();
       
       // Add all product data as JSON
-      const { image, ...productDataWithoutImage } = productData;
+      const { image } = productData;
       
       // Only append fields that are defined
       if (productData.name !== undefined) formData.append('name', productData.name);

@@ -87,48 +87,33 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user's entrepreneurships from the API
+  // Fetch user's entrepreneurships from the API (guarded and with minimal dependencies)
   useEffect(() => {
+    if (!user?.id) return;
+
+    let isMounted = true;
+
     const fetchUserBusinesses = async () => {
-      // Get user from localStorage to ensure we have the latest data
-      const authData = localStorage.getItem('auth');
-      let userId: number | null = null;
-      
-      if (authData) {
-        try {
-          const parsed = JSON.parse(authData);
-          if (parsed?.user?.id) {
-            userId = parsed.user.id;
-          }
-        } catch (error) {
-          console.error('Error parsing auth data:', error);
-        }
-      }
-      
-      // Fallback to default ID if no user ID found
-      const targetUserId = userId || 323823;
-      
       try {
         setIsLoading(true);
-        
-        console.log('Fetching businesses for user ID:', targetUserId);
-        
+
         // Fetch businesses for the current user with products included
         const businessesResponse = await entrepreneurshipApi.getAll({
-          user_id: targetUserId,
+          user_id: user.id,
           per_page: 100,
-          include: 'products' // Include products to count them
+          include: 'products'
         });
-        
+
+        if (!isMounted) return;
+
         // Handle case where the user has no entrepreneurships
         if (!businessesResponse || !businessesResponse.data || businessesResponse.data.length === 0) {
           setBusinesses([]);
           setSelectedBusiness(null);
           setError(null);
-          setIsLoading(false);
           return;
         }
-        
+
         // Convert API response to our BusinessOption type
         const businessOptions = businessesResponse.data.map((business: ApiBusiness) => {
           const businessOption: BusinessOption = {
@@ -142,39 +127,36 @@ export default function Dashboard() {
             updated_at: business.updated_at || new Date().toISOString(),
             image_url: business.image_url,
             products_count: business.products?.length || 0,
-            sales_total: 0, // This would come from stats in a real app
-            customers_count: 0 // This would come from stats in a real app
+            sales_total: 0,
+            customers_count: 0
           };
           return businessOption;
         });
-        
+
         setBusinesses(businessOptions);
-        
-        // If no business is selected but we have businesses, select the first one
-        if (businessOptions.length > 0) {
-          // Create a minimal valid Entrepreneurship object with required fields
+
+        // If no business is selected but we have businesses, select the first one (do not override existing selection)
+        if (businessOptions.length > 0 && !selectedBusiness) {
           const firstBusiness: Entrepreneurship = {
             id: parseInt(businessOptions[0].id, 10),
             name: businessOptions[0].name,
             description: businessOptions[0].description || '',
-            category: businessOptions[0].category as any, // Type assertion since category can be string or number in API
+            category: businessOptions[0].category as any,
             image_url: businessOptions[0].image_url || null,
             user_id: businessOptions[0].user_id,
             created_at: businessOptions[0].created_at,
             updated_at: businessOptions[0].updated_at,
             products: [],
-            // Complete owner object with all required User properties
             owner: { 
               id: businessOptions[0].user_id,
               name: 'Usuario',
               email: 'usuario@ejemplo.com',
               username: `user_${businessOptions[0].user_id}`,
               email_verified_at: null,
-              password: 'temporary-password', // Required field
+              password: 'temporary-password',
               role: 2,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              // Additional required fields from User type
               phone: '',
               province: '',
               canton: '',
@@ -183,8 +165,7 @@ export default function Dashboard() {
               description: '',
               profile_photo_path: null,
               is_active: true
-            } as any, // Using type assertion as a last resort to satisfy TypeScript
-            // Minimal category_relation with required fields
+            } as any,
             category_relation: { 
               id: typeof businessOptions[0].category === 'number' ? businessOptions[0].category : 0,
               nombre: businessOptions[0].category?.toString() || 'Sin categoría',
@@ -194,12 +175,11 @@ export default function Dashboard() {
           };
           setSelectedBusiness(firstBusiness);
         }
-        
+
         setError(null);
       } catch (error: any) {
+        if (!isMounted) return;
         console.error('Error loading user businesses:', error);
-        
-        // Handle unauthorized (401) - user needs to log in again
         if (error?.response?.status === 401) {
           toast.error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
           logout();
@@ -211,12 +191,13 @@ export default function Dashboard() {
           toast.error('No se pudieron cargar tus emprendimientos');
         }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
-    
+
     fetchUserBusinesses();
-  }, [user, selectedBusiness, setSelectedBusiness, navigate, logout]);
+    return () => { isMounted = false; };
+  }, [user?.id]);
 
   if (isLoading) {
     return (
@@ -358,7 +339,7 @@ export default function Dashboard() {
                 asChild
                 className="h-[42px] w-[42px] p-0 flex-shrink-0"
               >
-                <Link to={`/entrepreneur/businesses/${currentBusiness.id}/edit`}>
+                <Link to={`/entrepreneur/businesses/${currentBusiness.id}`}>
                   <Pencil className="h-4 w-4" />
                 </Link>
               </Button>
