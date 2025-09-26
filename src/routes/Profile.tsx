@@ -7,8 +7,10 @@ import { PanelPerfil } from '../components/PanelPerfil';
 import { InterestCard } from '../components/InterestCard';
 import { FavoriteCard } from '../components/FavoriteCard';
 import { Modal } from '../components/Modal';
-import axios from 'axios';
+import { api } from '../lib/api';
+import { useUpdateInterests } from '../domain/profile/queries';
 import { UserProfile } from '../domain/profile/types';
+import { ConfettiOverlay } from '../components/Confetti';
 
 interface ProfileData extends Omit<UserProfile, 'interests'> {
   role_relation?: {
@@ -31,6 +33,8 @@ export function Perfil() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [availableInterests] = useState(['Comida', 'Joyería', 'Ropa', 'Arte', 'Tecnología', 'Deportes', 'Música', 'Libros']);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const updateInterests = useUpdateInterests();
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -39,20 +43,8 @@ export function Perfil() {
     }
   }, [token, navigate]);
 
-  // Create a dedicated API client for profile requests
-  const createApiClient = useCallback(() => {
-    if (!token) return null;
-    return axios.create({
-      baseURL: 'http://emprendu-backend.test/api',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}` // Use token from context
-      },
-      withCredentials: true,
-      timeout: 10000
-    });
-  }, [token]);
+  // Use shared API client (configured with token via interceptors/localStorage)
+  const createApiClient = useCallback(() => api, []);
 
   // Fetch user data
   const fetchUserData = useCallback(async () => {
@@ -63,10 +55,6 @@ export function Perfil() {
     
     try {
       const apiClient = createApiClient();
-      if (!apiClient) {
-        throw new Error("Authentication token not found.");
-      }
-      
       console.log(`Fetching user data for ID: ${authUser.id}`);
       const response = await apiClient.get(`/users/${authUser.id}`).catch(error => {
         console.error('Profile fetch error:', {
@@ -103,9 +91,26 @@ export function Perfil() {
     }
   }, [authUser, fetchUserData]);
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  // Trigger confetti if coming from Editar Perfil (celebration flag)
+  useEffect(() => {
+    const flag = localStorage.getItem('celebrate');
+    if (flag === 'profile_saved') {
+      setShowConfetti(true);
+      localStorage.removeItem('celebrate');
+    }
+  }, []);
+
   // Map API response to profile data
   const mapApiResponseToProfile = (data: any): ProfileData => {
-    const interests = data.interests || [];
+    const interestsRaw = data.interests || [];
+    const interests = Array.isArray(interestsRaw)
+      ? interestsRaw.map((i: any) => (typeof i === 'string' ? i : (i?.interest ?? ''))).filter(Boolean)
+      : [];
     return {
       id: data.id,
       name: data.name,
@@ -118,7 +123,7 @@ export function Perfil() {
         district: data.district || '---',
         address: data.address || '---'
       },
-      avatarUrl: data.avatar_url || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png',
+      avatarUrl: data.avatar_url || 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg',
       role: mapRoleFromBackend(data.role, data.role_relation),
       interests: Array.isArray(interests) ? interests : [],
       favorites: data.favorites || [],
@@ -128,16 +133,16 @@ export function Perfil() {
   };
 
   // Helper function to map role
-  const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): 'cliente' | 'emprendedor' | 'administrador' => {
+  const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): 'comprador' | 'emprendedor' | 'administrador' => {
     if (roleRelation?.nombre) {
       const role = roleRelation.nombre.toLowerCase();
       if (role === 'emprendedor') return 'emprendedor';
       if (role === 'administrador') return 'administrador';
-      return 'cliente';
+      return 'comprador';
     }
     if (roleId === 3) return 'administrador';
     if (roleId === 2) return 'emprendedor';
-    return 'cliente';
+    return 'comprador';
   };
 
   // Handle interest toggle
@@ -151,10 +156,8 @@ export function Perfil() {
     try {
       // Update local state optimistically
       setUser(prev => prev ? { ...prev, interests: newInterests } : null);
-      
-      // Make API call to update interests
-      const apiClient = createApiClient();
-      await apiClient.put(`/users/${user.id}`, { interests: newInterests });
+      // Persist using domain hook (will also update cached profile)
+      updateInterests.mutate(newInterests);
     } catch (err) {
       console.error('Error updating interests:', err);
       // Revert on error
@@ -177,20 +180,20 @@ export function Perfil() {
           <div className="lg:col-span-1 mt-6">
             <div className="bg-white rounded-card shadow-soft border border-border p-6">
               <div className="text-center mb-6">
-                <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto animate-pulse"></div>
+                <div className="w-32 h-32 bg-brand/10 rounded-full mx-auto animate-pulse"></div>
                 <div className="mt-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-brand/10 rounded animate-pulse"></div>
+                  <div className="h-3 bg-brand/10 rounded animate-pulse w-3/4 mx-auto"></div>
                 </div>
               </div>
             </div>
           </div>
           <div className="lg:col-span-2 mt-6">
             <div className="bg-white rounded-card shadow-soft border border-border p-6">
-              <div className="h-6 bg-gray-200 rounded animate-pulse mb-4"></div>
+              <div className="h-6 bg-brand/10 rounded animate-pulse mb-4"></div>
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="w-[136px] h-[96px] bg-gray-200 rounded-card animate-pulse"></div>
+                  <div key={i} className="w-[136px] h-[96px] bg-brand/10 rounded-card animate-pulse"></div>
                 ))}
               </div>
             </div>
@@ -208,7 +211,7 @@ export function Perfil() {
             <p className="text-red-600 font-medium">Error al cargar el perfil: {error.message}</p>
             <button 
               onClick={() => window.location.reload()} 
-              className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+              className="mt-2 px-4 py-2 rounded-lg border border-border hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
             >
               Reintentar
             </button>
@@ -226,7 +229,7 @@ export function Perfil() {
             <p className="text-gray-600 font-medium">No se pudo cargar el perfil del usuario</p>
             <button 
               onClick={() => navigate('/')} 
-              className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+              className="mt-2 px-4 py-2 rounded-lg border border-border hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
             >
               Volver al inicio
             </button>
@@ -236,9 +239,88 @@ export function Perfil() {
     );
   }
 
+  // Robust admin detection: by mapped role string or role_relation
+  const isAdmin =
+    user.role === 'administrador' ||
+    user.role_relation?.id === 3 ||
+    user.role_relation?.nombre?.toLowerCase?.() === 'administrador';
+
+  // Admin-only view: center profile and hide interests/favorites
+  if (isAdmin) {
+    return (
+      <Layout>
+        <ConfettiOverlay active={showConfetti} durationMs={1200} />
+        <div className="mt-8 lg:mt-10 flex justify-center px-4">
+          <div className="w-full max-w-3xl mt-6">
+            <PanelPerfil
+              user={user}
+              onContactInfoClick={() => setShowContactModal(true)}
+              onLocationInfoClick={() => setShowLocationModal(true)}
+              hideEdit
+            />
+          </div>
+        </div>
+
+        {/* Modal de Información de Contacto */}
+        <Modal
+          isOpen={showContactModal}
+          onClose={() => setShowContactModal(false)}
+          title="Sobre tu información de contacto"
+        >
+          <div className="space-y-4 text-sm text-secondary">
+            <p>
+              Tu información de contacto es visible para otros usuarios cuando interactúas 
+              en la plataforma. Esto incluye tu correo electrónico y número de teléfono.
+            </p>
+            <p>
+              Puedes controlar qué información compartes en la configuración de privacidad 
+              de tu perfil.
+            </p>
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal de Información de Ubicación */}
+        <Modal
+          isOpen={showLocationModal}
+          onClose={() => setShowLocationModal(false)}
+          title="Sobre tu ubicación"
+        >
+          <div className="space-y-4 text-sm text-secondary">
+            <p>
+              Tu ubicación nos ayuda a conectarte con emprendimientos cercanos 
+              y eventos locales en tu área.
+            </p>
+            <p>
+              La información de ubicación es opcional y puedes elegir qué tan 
+              específica quieres que sea. Solo se muestra tu provincia y cantón 
+              a otros usuarios.
+            </p>
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => setShowLocationModal(false)}
+                className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </Modal>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <ConfettiOverlay active={showConfetti} durationMs={1200} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 lg:mt-10">
         {/* Panel izquierdo - Información del usuario */}
         <div className="lg:col-span-1 mt-6">
           <PanelPerfil 
@@ -250,48 +332,54 @@ export function Perfil() {
 
         {/* Contenido principal */}
         <div className="lg:col-span-2 space-y-8 mt-6">
-          {/* Sección de Intereses */}
-          <div className="bg-white rounded-card shadow-soft border border-border p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-primary">Intereses</h2>
-              <button
-                onClick={() => setShowInterestModal(true)}
-                className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
-                aria-label="Agregar interés"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex flex-wrap gap-4">
-              {user.interests?.map((interest: string) => (
-                <InterestCard
-                  key={interest}
-                  title={interest}
-                  onRemove={() => toggleInteres(interest)}
-                />
-              )) || []}
-            </div>
-          </div>
+          {/* Secciones estándar (no admin) */}
+          <>
+              {/* Sección de Intereses */}
+              <div className="bg-white rounded-card shadow-soft border border-border p-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-primary">Intereses</h2>
+                  <button
+                    onClick={() => setShowInterestModal(true)}
+                    className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brandDark transition-colors focus-brand"
+                    aria-label="Agregar interés"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                  </div>
+                  <div className="mt-2 h-0.5 w-16 bg-brand/40 rounded"></div>
+                </div>
+                
+                <div className="flex flex-wrap gap-4">
+                  {user.interests?.map((interest: string) => (
+                    <InterestCard
+                      key={interest}
+                      title={interest}
+                      onRemove={() => toggleInteres(interest)}
+                    />
+                  )) || []}
+                </div>
+              </div>
 
-          {/* Sección de Favoritos */}
-          <div className="bg-white rounded-card shadow-soft border border-border p-6">
-            <h2 className="text-xl font-semibold text-primary mb-6">Favoritos</h2>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {user.favorites?.map((favorito: any) => (
-                <FavoriteCard
-                  key={favorito.id}
-                  title={favorito.name}
-                  imgUrl={favorito.imageUrl}
-                />
-              )) || []}
-            </div>
-          </div>
+              {/* Sección de Favoritos */}
+              <div className="bg-white rounded-card shadow-soft border border-border p-6">
+                <h2 className="text-xl font-semibold text-primary mb-6">Favoritos</h2>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {user.favorites?.map((favorito: any) => (
+                    <FavoriteCard
+                      key={favorito.id}
+                      title={favorito.name}
+                      imgUrl={favorito.imageUrl}
+                    />
+                  )) || []}
+                </div>
+              </div>
+          </>
         </div>
       </div>
 
-      {/* Modal de Editar Intereses */}
+      {/* Modal de Editar Intereses (no admin) */}
       <Modal
         isOpen={showInterestModal}
         onClose={() => setShowInterestModal(false)}
@@ -309,7 +397,7 @@ export function Perfil() {
                   type="checkbox"
                   checked={user.interests?.includes(interes) || false}
                   onChange={() => toggleInteres(interes)}
-                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary focus:ring-2"
+                  className="w-4 h-4 accent-brand border-border rounded focus:ring-brand focus:ring-2"
                 />
                 <span className="text-sm text-primary">{interes}</span>
               </label>
@@ -319,7 +407,7 @@ export function Perfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={handleSaveInterests}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
             >
               Guardar
             </button>
@@ -345,7 +433,7 @@ export function Perfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setShowContactModal(false)}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
             >
               Entendido
             </button>
@@ -372,7 +460,7 @@ export function Perfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setShowLocationModal(false)}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
             >
               Entendido
             </button>

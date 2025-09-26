@@ -77,6 +77,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         expiresAt: new Date().getTime() + expiresIn
       };
       localStorage.setItem('auth', JSON.stringify(authData));
+      // Also store plain token for shared API client (lib/api.ts)
+      localStorage.setItem('token', token);
       
       return true;
     } catch (error) {
@@ -94,6 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setLoading(false);
     localStorage.removeItem('auth');
+    localStorage.removeItem('token');
   }, []);
 
   // Initial auth check on mount
@@ -121,6 +124,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Always update with the latest token and user from localStorage
           setToken(parsed.token);
           setUser(parsed.user);
+          // Keep plain token in sync for the shared API client
+          localStorage.setItem('token', parsed.token);
         }
       } catch (error) {
         console.error('Auth check error:', error);

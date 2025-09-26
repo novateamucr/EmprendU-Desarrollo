@@ -12,33 +12,37 @@ export function FeedEmprendimiento() {
         
 
         {/* Banner y descripción del emprendimiento */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <img
             src={logoEmprendimiento}
             alt="Banner"
-            className="mx-auto md:h-72 object-cover rounded-2xl"
+            className="mx-auto md:h-72 object-cover rounded-2xl border border-border shadow-soft"
           />
-          <h1 className="text-2xl md:text-3xl font-bold mt-4">HASU</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto px-2">
+          <h1 className="text-2xl md:text-3xl font-bold mt-4 text-primary">HASU</h1>
+          <div className="h-0.5 w-16 bg-brand/40 rounded mx-auto mt-2 mb-3" />
+          <p className="text-secondary max-w-2xl mx-auto px-2">
             En Hasu realizamos flores eternas hechas a mano, detalles hermosos para regalar en una ocasión especial
           </p>
-          <button className="mt-3 px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+          <button className="mt-4 px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors focus-brand">
             Agregar a favoritos
           </button>
         </div>
 
         {/* Likes */}
-        <div className="flex justify-center items-center gap-2 mb-4">
-          <button className="text-3xl md:text-4xl text-gray-400 hover:text-red-500">♡</button>
-          <button className="text-3xl md:text-4xl text-gray-400 hover:text-red-500">♡</button>
-          <button className="text-3xl md:text-4xl text-gray-400 hover:text-red-500">♡</button>
-          <button className="text-3xl md:text-4xl text-gray-400 hover:text-red-500">♡</button>
-          <button className="text-3xl md:text-4xl text-gray-400 hover:text-red-500">♡</button>
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
+          <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
+          <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
+          <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
+          <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
         </div>
-        <p className="text-center text-gray-500 text-sm md:text-base">3.8 / 5</p>
+        <p className="text-center text-secondary text-sm md:text-base">3.8 / 5</p>
 
         {/* Productos */}
-        <h2 className="text-xl md:text-2xl font-semibold mt-8 mb-4">Productos</h2>
+        <div className="mt-8 mb-4">
+          <h2 className="text-xl md:text-2xl font-semibold text-primary">Productos</h2>
+          <div className="h-0.5 w-12 bg-brand/40 rounded mt-2" />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductCard
             imgUrl={rosas}

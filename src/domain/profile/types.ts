@@ -1,4 +1,4 @@
-export type Rol = 'cliente' | 'emprendedor' | 'administrador';
+export type Rol = 'comprador' | 'emprendedor' | 'administrador';
 
 export interface Ubicacion {
   province?: string;

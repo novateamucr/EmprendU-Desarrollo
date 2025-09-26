@@ -6,10 +6,28 @@ interface PanelPerfilProps {
   user: UserProfile;
   onContactInfoClick: () => void;
   onLocationInfoClick: () => void;
+  hideEdit?: boolean;
 }
 
-export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick }: PanelPerfilProps) {
+export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hideEdit = false }: PanelPerfilProps) {
   const navigate = useNavigate();
+  const defaultAvatarUrl = 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg';
+  // Derivar rol de manera robusta, priorizando id numérico si existe
+  const rr: any = (user as any)?.role_relation;
+  let displayedRole = '';
+  if (rr?.id === 3) {
+    displayedRole = 'Administrador';
+  } else if (rr?.id === 2) {
+    displayedRole = 'Emprendedor';
+  } else if (rr?.id === 1) {
+    displayedRole = 'Comprador';
+  } else {
+    const rawRole = (user as any)?.role || rr?.nombre || '';
+    const normalizedRole = String(rawRole).toLowerCase();
+    if (normalizedRole) {
+      displayedRole = normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1);
+    }
+  }
 
   return (
     <div className="bg-white rounded-card shadow-soft border border-border p-6 sticky top-20 ">
@@ -17,25 +35,32 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick }: P
       <div className="text-center mb-6">
         <div className="relative inline-block">
           <img
-            src={user.avatarUrl}
+            src={user.avatarUrl || defaultAvatarUrl}
             alt={`Avatar de ${user.name}`}
             className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto"
+            onError={(e) => {
+              // Reemplazar por el avatar por defecto si falla la carga
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = defaultAvatarUrl;
+            }}
           />
-          <button
-            onClick={() => navigate('/perfil/editar')}
-            className="absolute -bottom-1 -right-1 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
-            aria-label="Editar perfil"
-          >
-            <Pencil className="w-5 h-5" />
-          </button>
+          {!hideEdit && (
+            <button
+              onClick={() => navigate('/profile/edit')}
+              className="absolute -bottom-1 -right-1 w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brandDark transition-colors focus-brand"
+              aria-label="Editar perfil"
+            >
+              <Pencil className="w-5 h-5" />
+            </button>
+          )}
         </div>
         
         <div className="mt-4">
-          <span className="inline-block px-3 py-1 bg-background text-secondary text-xs font-medium rounded-full mb-2">
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-          </span>
+          <p className="inline-block bg-brand/5 text-secondary px-2 py-0.5 rounded-full text-xs mb-2">
+            {displayedRole}
+          </p>
           <h1 className="text-xl font-semibold text-primary">{user.name}</h1>
-          <p className="text-secondary">@{user.username}</p>
+          <p className="text-secondary">{user.username}</p>
         </div>
       </div>
 
@@ -45,12 +70,13 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick }: P
           <h3 className="font-semibold text-primary">Información de contacto</h3>
           <button
             onClick={onContactInfoClick}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre contacto"
           >
             <Info className="w-4 h-4 text-secondary" />
           </button>
         </div>
+        <div className="mt-1 h-0.5 w-12 bg-brand/40 rounded"></div>
         <div className="space-y-2 text-sm">
           <p className="text-secondary">
             <span className="font-medium">Email:</span> {user.email}
@@ -69,12 +95,13 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick }: P
           <h3 className="font-semibold text-primary">Ubicación</h3>
           <button
             onClick={onLocationInfoClick}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre ubicación"
           >
             <Info className="w-4 h-4 text-secondary" />
           </button>
         </div>
+        <div className="mt-1 h-0.5 w-12 bg-brand/40 rounded"></div>
         <div className="space-y-1 text-sm text-secondary">
           {user.location.province && (
             <p>{user.location.province}</p>

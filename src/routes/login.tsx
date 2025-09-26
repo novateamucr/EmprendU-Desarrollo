@@ -116,7 +116,7 @@ export default function Login() {
   // Botón de registro usando navigate de react-router-dom
   const registerBtn = [
     <Btn
-      style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-gray-200 hover:text-gray-800 "
+      style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-white hover:text-primary focus-brand "
       key="crear"
       text="Crear cuenta"
       onClick={() => navigate("/register")}
@@ -128,7 +128,7 @@ export default function Login() {
     <Link
       key="forgot"
       to="/pwreset"
-      className="text-blue-600 hover:underline mt-4 text-sm place-self-end"
+      className="text-brand hover:text-brandDark hover:underline underline-offset-4 mt-4 text-sm place-self-end"
     >
       ¿Olvidaste tu contraseña?
     </Link>
@@ -139,7 +139,7 @@ export default function Login() {
     <button
       key="iniciar"
       type="submit"
-      className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
+      className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
       disabled={isLoading || isSubmitting}
     >
       {(isLoading || isSubmitting) ? 'Iniciando sesión...' : 'Iniciar sesión'}
