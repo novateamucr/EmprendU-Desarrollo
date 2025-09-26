@@ -66,7 +66,7 @@ export default function GestorUsuarios() {
   }, [usuarios, searchTerm]);
 
   const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/' },
+    { type: 'link' as const, label: 'Inicio', to: '/home' },
     { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
     { type: 'link' as const, label: 'Ferias', to: '/ferias' },
   ];

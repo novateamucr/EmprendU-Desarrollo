@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { entrepreneurshipApi, Entrepreneurship } from '../services/entrepreneurshipService';
 
 interface BusinessContextType {
@@ -16,30 +16,8 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBusiness = async () => {
-    try {
-      setLoading(true);
-      const response = await entrepreneurshipApi.getAll({ per_page: 1 });
-      if (response?.data?.length > 0) {
-        setSelectedBusiness(response.data[0]);
-      }
-      setError(null);
-      return response?.data || [];
-    } catch (err) {
-      console.error('Error fetching business:', err);
-      setError('Error al cargar el negocio');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load initial business if none is selected
-  useEffect(() => {
-    if (!selectedBusiness) {
-      fetchBusiness();
-    }
-  }, [selectedBusiness]);
+  // Business loading logic has been moved to the component level
+  // to prevent unwanted API calls
 
   const refreshBusiness = async () => {
     try {
@@ -47,14 +25,9 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
         const business = await entrepreneurshipApi.getById(selectedBusiness.id.toString());
         setSelectedBusiness(business);
         return business;
-      } else {
-        // If no business is selected, refresh the list and select the first one
-        const businesses = await fetchBusiness();
-        if (businesses.length > 0) {
-          setSelectedBusiness(businesses[0]);
-          return businesses[0];
-        }
       }
+      // If no business is selected, return undefined instead of fetching all
+      return undefined;
     } catch (err) {
       console.error('Error refreshing business:', err);
       setError('Error al actualizar la información del negocio');
