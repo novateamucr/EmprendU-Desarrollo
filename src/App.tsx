@@ -12,13 +12,13 @@ import Home from './routes/Home';
 import { Perfil } from './routes/Profile';
 import { EditarPerfil } from './routes/EditarPerfil';
 import LandingPage from './routes/Landing';
-import { FeedEmprendimiento } from './routes/FeedEmpredimiento';
+import { FeedEmpredimientoDetalle } from './routes/FeedEmpredimientoDetalle';
 import BusinessFeedback from './routes/BusinessFeedback';
 import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
-import { Feed1 } from './routes/FeedCafeluna';
+import GestorEmprendimientos from './routes/GestorEmprendimientos';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -30,6 +30,7 @@ import ProductInventory from './routes/entrepreneur/components/ProductInventory'
 import NewPw from './routes/NewPw';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
+import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
 
 const queryClient = new QueryClient();
 
@@ -73,8 +74,7 @@ function App() {
                   <Route index element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
                   <Route path="/perfil/editar" element={<EditarPerfil />} />
-                  <Route path="/feed/emprendimiento" element={<FeedEmprendimiento />} />
-                  <Route path="/feed/emprendimiento/1" element={<Feed1 />} />
+                  <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
                 </Route>
@@ -94,6 +94,20 @@ function App() {
                   <ProtectedRoute allowedRoles={[3]}>
                     <Layout>
                       <AñadirUsuario />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/gestor-emprendimientos" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <GestorEmprendimientos />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/añadir-emprendimientos" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <AñadirEmprendimiento />
                     </Layout>
                   </ProtectedRoute>
                 } />

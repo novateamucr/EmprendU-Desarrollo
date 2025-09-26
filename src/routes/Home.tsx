@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import useEntrepreneurships from '../hooks/useEntrepreneurships';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { ProductCard } from '../components/ProductCard';
@@ -86,24 +87,13 @@ const SoftButton = styled.button`
   }
 `;
 
-const GlowingCard = styled.div`
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-  will-change: transform, box-shadow;
-  
-  &:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(59, 130, 246, 0.08);
-    transform: translateY(-1px);
-  }
-`;
-
-
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [viewMode, setViewMode] = useState<'emprendimientos' | 'productos'>('emprendimientos');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedZone, setSelectedZone] = useState('Todas');
+  // const [selectedZone, setSelectedZone] = useState('Todas');
 
   interface CategoriesProps {
   selectedCategory: string;
@@ -202,143 +192,33 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 };
 
 
-  const featuredBusinesses = [
-    { 
-      id: 1,
-      name: "Café Luna",
-      description: "Café artesanal con granos locales y ambiente acogedor",
-      category: "Comida",
-      zone: "Esparza",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Café Especial",
-          description: "Mezcla única de granos tostados artesanalmente",
-          price: 3500,
-          imgUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop"
-        },
-        {
-          title: "Pastel de Chocolate",
-          description: "Delicioso pastel casero con chocolate belga",
-          price: 2800,
-          imgUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "Artesanías Bella",
-      description: "Productos hechos a mano con materiales sostenibles",
-      category: "Arte",
-      zone: "Puntarenas",
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Maceta Decorativa",
-          description: "Maceta de cerámica pintada a mano",
-          price: 8500,
-          imgUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: "Tech Solutions",
-      description: "Soluciones tecnológicas innovadoras para empresas",
-      category: "Tecnología",
-      zone: "San Ramón",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "App Móvil",
-          description: "Desarrollo de aplicaciones móviles personalizadas",
-          price: 150000,
-          imgUrl: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: "Joyería Elegante",
-      description: "Joyas únicas diseñadas con piedras preciosas",
-      category: "Joyería",
-      zone: "Liberia",
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Collar de Plata",
-          description: "Collar artesanal de plata 925 con diseño único",
-          price: 15000,
-          imgUrl: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop"
-        }
-      ]
-    }
-  ];
+  // Usar hook para obtener emprendimientos desde la API
+  const { entrepreneurships, loading: loadingEntrepreneurships, error: errorEntrepreneurships } = useEntrepreneurships();
 
-  // Get unique zones for selector
-  const zones = [
-    ...new Set(featuredBusinesses.map(b => b.zone))
-  ];
 
-  // Filter businesses by category, search query, and selected zone
-  const filteredBusinesses = featuredBusinesses.filter(business => {
-    const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
+
+  // Filtrar emprendimientos por categoría y búsqueda (case-insensitive, robust)
+  const filteredBusinesses = entrepreneurships.filter(business => {
+    const normalize = (str: string | undefined | null) => (str || '').toLowerCase().trim();
+    const selectedCat = normalize(selectedCategory);
+    const businessCat = normalize(business.category_relation?.nombre);
+    const matchesCategory = selectedCat === 'todos' || (businessCat && businessCat === selectedCat);
     const matchesSearch = searchQuery === '' || 
       business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       business.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
-    return matchesCategory && matchesSearch && matchesZone;
+      (businessCat && businessCat.includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesSearch;
   });
 
-  // Filter products by category and search query for products view
-  const filteredProducts = featuredBusinesses
-    .filter(business => selectedCategory === 'Todos' || business.category === selectedCategory)
-    .flatMap(business => 
-      business.products.filter(product => 
-        searchQuery === '' ||
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.category.toLowerCase().includes(searchQuery.toLowerCase())
-      ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
-    );
+  // Productos populares: a futuro se puede implementar usando los productos de los emprendimientos
+  const filteredProducts: any[] = [];
 
-  // Generate search suggestions based on current view mode
+  // Sugerencias de búsqueda solo para emprendimientos
   const searchSuggestions = searchQuery.length > 0 ? [
     ...new Set(
-      viewMode === 'emprendimientos' ? [
-        // Suggest business names
-        ...featuredBusinesses
-          .filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.name),
-        // Suggest categories
-        ...featuredBusinesses
-          .filter(b => b.category.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.category),
-        // Suggest business descriptions
-        ...featuredBusinesses
-          .filter(b => b.description.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.name)
-      ] : [
-        // Suggest product titles
-        ...featuredBusinesses
-          .flatMap(b => b.products)
-          .filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(p => p.title),
-        // Suggest product descriptions
-        ...featuredBusinesses
-          .flatMap(b => b.products)
-          .filter(p => p.description.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(p => p.title),
-        // Suggest categories for products
-        ...featuredBusinesses
-          .filter(b => b.category.toLowerCase().includes(searchQuery.toLowerCase()))
-          .map(b => b.category)
-      ]
+      filteredBusinesses
+        .filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(b => b.name)
     )
   ].slice(0, 5) : [];
 
@@ -392,61 +272,15 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
         {viewMode === 'emprendimientos' ? (
           <>
-            {/* Emprendimiento del Día */}
-            <AnimatedContainer className="mb-8">
-              <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
-                <FloatingElement>
-                  <Diamond sx={{ fontSize: 20 }} />
-                </FloatingElement>
-                Emprendimiento del Día
-              </h2>
-              <GlowingCard className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-32 md:h-32 w-full h-48 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" 
-                      alt="HASU"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">HASU</h3>
-                      <div className="flex items-center gap-1">
-                        <Star sx={{ fontSize: 16 }} className="text-amber-500" />
-                        <span className="text-sm text-gray-600">4.8</span>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-3">
-                      Flores eternas hechas a mano, detalles hermosos para regalar en ocasiones especiales. 
-                      Cada pieza es única y creada con amor y dedicación.
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="bg-white text-gray-700 px-3 py-1 rounded-full text-xs border flex items-center gap-1">
-                        <Palette sx={{ fontSize: 12 }} />
-                        Arte
-                      </span>
-                      <Link 
-                        to="/feed/emprendimiento"
-                        className="text-gray-900 hover:text-gray-700 text-sm font-medium"
-                      >
-                        Ver emprendimiento →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </GlowingCard>
-            </AnimatedContainer>
-
-            {/* Search Bar + Zone Selector */}
+            {/* Search Bar */}
             <div className="mb-8  rounded-lg ">
-              <h2 className="text-lg font-semibold text-primary mb-4">Buscar {viewMode === 'emprendimientos' ? 'emprendimientos' : 'productos'}</h2>
+              <h2 className="text-lg font-semibold text-primary mb-4">Buscar emprendimientos</h2>
               <div className="flex flex-col md:flex-row items-center gap-4 w-full">
                 <div className="relative flex-1 w-full">
                   <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
                   <input
                     type="text"
-                    placeholder={`Buscar ${viewMode}...`}
+                    placeholder="Buscar emprendimientos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setShowSuggestions(true)}
@@ -472,75 +306,68 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     </AnimatedContainer>
                   )}
                 </div>
-                <div className="w-full md:w-48">
-                  <select
-                    value={selectedZone}
-                    onChange={e => setSelectedZone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-navbar border border-border bg-white text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="Todas">Todas las zonas</option>
-                    {zones.map(zone => (
-                      <option key={zone} value={zone}>{zone}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
             </div>
 
             {/* Categories */}
             <Categories
-            selectedCategory={selectedCategory} 
-            setSelectedCategory={setSelectedCategory}
-           />
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
 
             {/* Featured Businesses */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-primary flex items-center gap-2">
                   <Apps sx={{ fontSize: 20 }} />
-                  {selectedCategory === 'Todos' ? 'Emprendimientos Destacados' : `Categoría: ${selectedCategory}`}
+                  {selectedCategory === 'Todos' ? 'Emprendimientos' : `Categoría: ${selectedCategory}`}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {filteredBusinesses.map((business) => (
-  <Link 
-    key={business.id} 
-    to={`/feed/emprendimiento/${business.id}`} 
-    className="block"
-    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-  >
-    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="h-48 bg-gray-200 overflow-hidden">
-        <img 
-          src={business.image} 
-          alt={business.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-gray-900">{business.name}</h3>
-          <button className="text-gray-400 hover:text-red-500 transition-colors">
-            <FavoriteBorder sx={{ fontSize: 18 }} />
-          </button>
-        </div>
-        <p className="text-gray-600 text-sm mb-3">{business.description}</p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-            <span className="text-sm text-gray-600">{business.rating}</span>
-          </div>
-          <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-            {business.category}
-          </span>
-        </div>
-      </div>
-    </AnimatedCard>
-  </Link>
-))}
-
-</div>
+              {loadingEntrepreneurships ? (
+                <div className="text-center py-8 text-gray-500">Cargando emprendimientos...</div>
+              ) : errorEntrepreneurships ? (
+                <div className="text-center py-8 text-red-500">Error al cargar los emprendimientos.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredBusinesses.map((business) => (
+                    <Link
+                      key={business.id}
+                      to={`/feed/emprendimiento/${business.id}`}
+                      className="block"
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                    >
+                      <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                        <div className="h-48 bg-gray-200 overflow-hidden">
+                          <img
+                            src={business.image_url || 'https://placehold.co/500x300?text=Sin+imagen'}
+                            alt={business.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-medium text-gray-900">{business.name}</h3>
+                            <button className="text-gray-400 hover:text-red-500 transition-colors">
+                              <FavoriteBorder sx={{ fontSize: 18 }} />
+                            </button>
+                          </div>
+                          <p className="text-gray-600 text-sm mb-3">{business.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Star sx={{ fontSize: 14 }} className="text-amber-500" />
+                              <span className="text-sm text-gray-600">--</span> {/* Placeholder para rating */}
+                            </div>
+                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                              {business.category_relation?.nombre || 'Sin categoría'}
+                            </span>
+                          </div>
+                        </div>
+                      </AnimatedCard>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         ) : (

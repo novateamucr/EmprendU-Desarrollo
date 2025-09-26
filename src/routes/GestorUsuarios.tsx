@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Modal } from '../components/Modal';
-import { Navbar } from '../components/navbar';
 import { Link } from "react-router-dom";
-import { Person } from '@mui/icons-material';
 import useUsers from "../hooks/useUsers";
 
 const button = (
@@ -65,27 +63,6 @@ export default function GestorUsuarios() {
     );
   }, [usuarios, searchTerm]);
 
-  const navItems = [
-    { type: 'link' as const, label: 'Inicio', to: '/' },
-    { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' },
-    { type: 'link' as const, label: 'Ferias', to: '/ferias' },
-  ];
-
-  const logo = (
-    <Link to="/" className="flex items-center">
-      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
-    </Link>
-  );
-
-  const rightContent = (
-    <Link
-      to="/perfil"
-      className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
-      aria-label="Ir al perfil"
-    >
-      <Person sx={{ fontSize: 20 }} />
-    </Link>
-  );
 
   const handleActionClick = (userId: number) => {
     setOpenMenuId(openMenuId === userId ? null : userId);
@@ -154,12 +131,6 @@ export default function GestorUsuarios() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Navbar
-        logo={logo}
-        items={navItems}
-        rightContent={rightContent}
-        maxWidth="max-w-3xl"
-      />
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex flex-col gap-4 mt-6">
           <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de usuarios</h1>
@@ -183,7 +154,8 @@ export default function GestorUsuarios() {
           <table className="w-full text-center border-collapse bg-white rounded-card shadow-soft border border-border">
             <thead>
               <tr className="bg-gray-50">
-                <th className="py-3 px-2">Nombre de usuario</th>
+                <th className="py-3 px-2">Nombre completo</th>
+                <th className="py-3 px-2">Correo electrónico</th>
                 <th className="py-3 px-2">Tipo</th>
                 <th className="py-3 px-2">Estado</th>
                 <th className="py-3 px-2">Última modificación</th>
@@ -223,6 +195,7 @@ export default function GestorUsuarios() {
                         </div>
                       </div>
                     </td>
+                    <td className="py-3 px-2">{user.email}</td>
                     <td className="py-3 px-2">{getRoleName(user.role)}</td>
                     <td className="py-3 px-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'

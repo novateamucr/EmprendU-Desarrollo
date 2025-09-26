@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 type LayoutProps = {
@@ -31,6 +30,13 @@ export function Layout({ children }: LayoutProps) {
       type: 'link' as const, 
       label: 'Gestor de Usuarios', 
       to: '/gestor-usuarios',
+      // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
+    { 
+      type: 'link' as const, 
+      label: 'Gestor de Emprendimientos', 
+      to: '/gestor-emprendimientos',
       // Only show to admins (role 3)
       visible: user?.role === 3
     },
