@@ -188,7 +188,7 @@ export default function Landing() {
             gestionar y dar visibilidad a los proyectos emprendedores.
           </p>
           <div className="flex gap-4">
-            <Link to="/login">
+            <Link to="/register">
               <button className="px-6 py-3 border border-black rounded-full hover:bg-gray-100">
                 Registrarse gratis
               </button>
