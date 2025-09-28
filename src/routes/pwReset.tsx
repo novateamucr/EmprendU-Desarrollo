@@ -5,6 +5,8 @@ import Input from "../components/ui/Input";
 import PwForm from "../components/ui/PwForm";
 import Btn from "../components/ui/Btn";
 import { usePasswordReset } from "../hooks/usePasswordReset";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function PwReset() {
   const { requestPasswordReset, loading, error } = usePasswordReset();
@@ -23,7 +25,14 @@ export default function PwReset() {
     // Validar email simple
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      alert("Por favor ingresa un correo válido");
+      toast.error("Por favor ingresa un correo válido", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
@@ -32,6 +41,23 @@ export default function PwReset() {
     if (result) {
       setSuccess(true);
       setFormValues({ correo: "" });
+      toast.success("Correo enviado correctamente", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } else if (error) {
+      toast.error("Ocurrió un error. Intenta de nuevo más tarde.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -61,6 +87,7 @@ export default function PwReset() {
             Volver al login
           </Link>
         </div>
+        <ToastContainer />
       </div>
     );
   }
@@ -73,10 +100,9 @@ export default function PwReset() {
 
       <PwForm
         title="Restablecer contraseña"
-        text="Introduce tu correo y, si existe una cuenta, te enviaremos un enlace para restablecer tu contraseña"
+        text="Introduce tu correo electrónico, si existe una cuenta te enviaremos un enlace para restablecer tu contraseña"
         input={[
           <Input
-            
             key="correo"
             type="email"
             placeholder="Correo electrónico"
@@ -86,7 +112,7 @@ export default function PwReset() {
         ]}
         button={[
           <Btn
-            style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-full w-full"
+            style="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-full w-full"
             key="restablecerPw"
             text={loading ? "Enviando..." : "Enviar enlace"}
             onClick={handleSubmit}
@@ -95,11 +121,7 @@ export default function PwReset() {
         ]}
       />
 
-      {error && (
-        <p className="text-red-500 text-sm mt-4">
-          Ocurrió un error. Intenta de nuevo más tarde.
-        </p>
-      )}
+      <ToastContainer />
     </div>
   );
 }

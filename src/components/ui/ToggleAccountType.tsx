@@ -21,7 +21,7 @@ export default function Toggle(props: ToggleAccountTypeProps) {
           key={option}
           onClick={() => handleClick(option)}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-            selected === option ? "bg-black text-white" : "text-gray-900"
+            selected === option ? "bg-brandDark text-white" : "text-gray-900"
           }`}
         >
           {option}
