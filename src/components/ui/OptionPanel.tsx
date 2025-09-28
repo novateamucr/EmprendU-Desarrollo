@@ -1,31 +1,33 @@
-//import Input from "./Input";
-//import Divider from "./Divider";
-//import Btn from "./Btn";
-
 interface OptionPanelProps {
-
-    style?: string;
-    title: string;
-    text : string;
-    button: React.ReactNode[];
-    imgSrc?: string;
-    imgPosition?: "left" | "right";
-
+  style?: string;
+  title: string;
+  text: string;
+  button: React.ReactNode[];
+  imgSrc?: string;
+  imgPosition?: "left" | "right";
 }
 
 export default function OptionPanel(props: OptionPanelProps) {
-   return (
-    <div className={` relative flex-1 flex flex-col justify-center items-center bg-primary px-12 gap-6 ${props.style || ""}`}>
+  return (
+    <div
+      className={`relative flex flex-col justify-center items-center px-16 py-20 gap-6 shadow-lg w-[600px] max-w-full rounded-tr-2xl rounded-br-2xl bg-gradient-to-b  from-[#76b0cd] to-[#417895] ${props.style || ""}`}
+    >
       {props.imgSrc && (
         <img
           src={props.imgSrc}
           alt="logo"
-          className={`absolute top-6 ${props.imgPosition === "left" ? "left-6" : "right-6"} w-12 h-12`}
+          className={`absolute top-6 ${
+            props.imgPosition === "left" ? "left-6" : "right-6"
+          } w-12 h-12`}
         />
       )}
 
-      <h1 className="text-3xl font-bold text-white mb-4">{props.title}</h1>
-      <p className="text-white text-center mb-6">{props.text}</p>
+      <h1 className="text-4xl font-extrabold text-white mb-4 text-center">
+        {props.title}
+      </h1>
+      <p className="text-white text-center mb-6 leading-relaxed text-lg">
+        {props.text}
+      </p>
       {props.button}
     </div>
   );
