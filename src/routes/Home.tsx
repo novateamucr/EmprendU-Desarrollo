@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import useEntrepreneurships from '../hooks/useEntrepreneurships';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { ProductCard } from '../components/ProductCard';
@@ -85,17 +86,6 @@ const SoftButton = styled.button`
     transform: translateY(0);
   }
 `;
-
-const GlowingCard = styled.div`
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-  will-change: transform, box-shadow;
-  
-  &:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(59, 130, 246, 0.08);
-    transform: translateY(-1px);
-  }
-`;
-
 const removeAccents = (str: string) => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
@@ -106,7 +96,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [viewMode, setViewMode] = useState<'emprendimientos' | 'productos'>('emprendimientos');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedZone, setSelectedZone] = useState('Todas');
+  // const [selectedZone, setSelectedZone] = useState('Todas');
 
   interface CategoriesProps {
   selectedCategory: string;
@@ -311,7 +301,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
     ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
   );
 
-  // Generate search suggestions based on current view mode
+  // Sugerencias de búsqueda solo para emprendimientos
   const searchSuggestions = searchQuery.length > 0 ? [
   ...new Set(
     viewMode === 'emprendimientos' ? [
@@ -445,13 +435,13 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
             {/* Search Bar + Zone Selector */}
             <div className="mb-8  rounded-lg ">
-              <h2 className="text-lg font-semibold text-primary mb-4">Buscar {viewMode === 'emprendimientos' ? 'emprendimientos' : 'productos'}</h2>
+              <h2 className="text-lg font-semibold text-primary mb-4">Buscar emprendimientos</h2>
               <div className="flex flex-col md:flex-row items-center gap-4 w-full">
                 <div className="relative flex-1 w-full">
                   <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
                   <input
                     type="text"
-                    placeholder={`Buscar ${viewMode}...`}
+                    placeholder="Buscar emprendimientos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setShowSuggestions(true)}
@@ -477,33 +467,21 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     </AnimatedContainer>
                   )}
                 </div>
-                <div className="w-full md:w-48">
-                  <select
-                    value={selectedZone}
-                    onChange={e => setSelectedZone(e.target.value)}
-                    className="w-full px-4 py-3 rounded-navbar border border-border bg-white text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="Todas">Todas las zonas</option>
-                    {zones.map(zone => (
-                      <option key={zone} value={zone}>{zone}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
             </div>
 
             {/* Categories */}
             <Categories
-            selectedCategory={selectedCategory} 
-            setSelectedCategory={setSelectedCategory}
-           />
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
 
             {/* Featured Businesses */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-primary flex items-center gap-2">
                   <Apps sx={{ fontSize: 20 }} />
-                  {selectedCategory === 'Todos' ? 'Emprendimientos Destacados' : `Categoría: ${selectedCategory}`}
+                  {selectedCategory === 'Todos' ? 'Emprendimientos' : `Categoría: ${selectedCategory}`}
                 </h2>
               </div>
 
