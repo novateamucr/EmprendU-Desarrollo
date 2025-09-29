@@ -1,18 +1,25 @@
 import { useState } from 'react';
-import { Rol } from '../types/user';
+import type { Rol } from '../domain/profile/types';
 import { Modal } from './Modal';
 
 interface RoleSelectorProps {
   value: Rol;
   onChange: (role: Rol) => void;
   onRoleChangeWarning?: (fromRole: Rol, toRole: Rol) => void;
+  suppressWarnings?: boolean; // When true, no modals/warnings are shown
+  showAdminOption?: boolean;  // When true, show the Administrator toggle button
 }
 
-export function RoleSelector({ value, onChange, onRoleChangeWarning }: RoleSelectorProps) {
+export function RoleSelector({ value, onChange, onRoleChangeWarning, suppressWarnings = false, showAdminOption = false }: RoleSelectorProps) {
   const [showEmprendedorModal, setShowEmprendedorModal] = useState(false);
   const [showCompradorModal, setShowCompradorModal] = useState(false);
 
   const handleRoleChange = (newRole: Rol) => {
+    if (suppressWarnings) {
+      onChange(newRole);
+      return;
+    }
+
     // Verificar si necesita mostrar advertencia para cambio emprendedor -> comprador
     if (value === 'emprendedor' && newRole === 'comprador' && onRoleChangeWarning) {
       onRoleChangeWarning(value, newRole);
@@ -64,6 +71,19 @@ export function RoleSelector({ value, onChange, onRoleChangeWarning }: RoleSelec
         >
           Emprendedor
         </button>
+        {showAdminOption && (
+          <button
+            type="button"
+            onClick={() => handleRoleChange('administrador')}
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+              value === 'administrador'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-secondary hover:text-primary'
+            }`}
+          >
+            Administrador
+          </button>
+        )}
       </div>
 
       {/* Modal de confirmación para Emprendedor */}

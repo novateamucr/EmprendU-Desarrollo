@@ -5,7 +5,7 @@ import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 
-import Logo from "../assets/logo.png";
+import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero.png";
 import vision from "../assets/vision_8440711.png";
 
@@ -178,7 +178,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12">
         <div>
-          <img src={Logo} alt="EmprendU Logo" className="w-28 mb-6" />
+          <img src={emprendu} alt="EmprendU Logo" className="w-28 mb-6" />
           <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-6">
             Haz que tu idea llegue más lejos. Comparte, conecta y haz crecer tu
             emprendimiento con EmprendU.
@@ -188,7 +188,7 @@ export default function Landing() {
             gestionar y dar visibilidad a los proyectos emprendedores.
           </p>
           <div className="flex gap-4">
-            <Link to="/login">
+            <Link to="/register">
               <button className="px-6 py-3 border border-black rounded-full hover:bg-gray-100">
                 Registrarse gratis
               </button>

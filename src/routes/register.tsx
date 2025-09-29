@@ -125,7 +125,7 @@ export default function RouteComponent() {
       button={[
         <Btn
           key="login"
-          style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-gray-200 hover:text-gray-800"
+          style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-white hover:text-primary focus-brand"
           text="Iniciar sesión"
           onClick={() => navigate("/login")}
         />
@@ -204,7 +204,7 @@ export default function RouteComponent() {
   key="register"
   type="button"
   onClick={handleSubmit}
-  className="hover:bg-green-600 bg-black text-white font-black p-3 rounded-lg w-full disabled:opacity-50"
+  className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
   disabled={
     loading ||
     passwordMessage !== "La contraseña es válida" ||

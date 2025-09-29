@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Info, Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Navbar } from '../components/navbar';
 import { User } from 'lucide-react';
@@ -10,12 +10,10 @@ import { Link } from 'react-router-dom';
 import { RoleSelector } from '../components/RoleSelector';
 import { Modal } from '../components/Modal';
 import { TextField } from '../components/Form/TextField';
-import { SelectField } from '../components/Form/SelectField';
 import { ImageUpload } from '../components/ImageUpload';
-import { useProfile, useProfileById, useUpdateProfile, useUpdatePassword, useUploadAvatar } from '../domain/profile/queries';
-import { useLocations } from '../hooks/useLocations';
-import { profileFormSchema, passwordSchema } from '../domain/profile/schema';
-import type { ProfileFormData, PasswordFormData } from '../domain/profile/schema';
+import { useProfile, useProfileById, useUpdateProfile, useUpdatePassword, useUploadAvatar, useUpdateProfileById, useUploadAvatarById, useAdminResetPasswordById } from '../domain/profile/queries';
+import { profileFormSchema, passwordSchema, adminPasswordSchema } from '../domain/profile/schema';
+import type { ProfileFormData, PasswordFormData, AdminPasswordFormData } from '../domain/profile/schema';
 // TODO: reactivar cuando el equipo de auth dé el flujo final
 // import { getToken } from '../domain/auth';
 
@@ -24,13 +22,22 @@ export function EditarPerfil() {
   const { id } = useParams();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
   
-  const { data: user, isLoading, isError, error, refetch } = useProfile() as any;
-  console.log(user);
-  const updateProfileMutation = useUpdateProfile();
+  const isEditingOther = !!id;
+  const { data: user, isLoading, isError, error, refetch } = (isEditingOther ? useProfileById(id as string) : useProfile()) as any;
+  const updateProfileMutation = isEditingOther ? useUpdateProfileById(id as string) : useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
-  const uploadAvatarMutation = useUploadAvatar();
-  const { provincias, cantones, distritos, loadCantones, loadDistritos } = useLocations();
+  const uploadAvatarMutation = isEditingOther ? useUploadAvatarById(id as string) : useUploadAvatar();
+  const adminResetPasswordMutation = isEditingOther ? useAdminResetPasswordById(id as string) : null;
+
+  // Estados y efectos para ubicación usando la misma API que AñadirUsuario
+  const [provincias, setProvincias] = useState<{ id: string, nombre: string }[]>([]);
+  const [cantonesFiltrados, setCantonesFiltrados] = useState<{ id: string, nombre: string }[]>([]);
+  const [distritosFiltrados, setDistritosFiltrados] = useState<{ id: string, nombre: string }[]>([]);
+  const [provinciaId, setProvinciaId] = useState<string>('');
+
+  // (watchers y efectos se declaran después de crear profileForm)
 
   // Estado para el rol anterior
   const [, setPreviousRole] = useState<string | null>(null);
@@ -40,7 +47,6 @@ export function EditarPerfil() {
     resolver: zodResolver(profileFormSchema),
     defaultValues: user ? {
       name: user.name,
-      username: user.username,
       role: user.role,
       email: user.email,
       phone: user.phone || '',
@@ -53,10 +59,113 @@ export function EditarPerfil() {
     } : undefined
   });
 
+  // Register 'role' field so setValue(..., { shouldDirty: true }) updates isDirty
+  useEffect(() => {
+    profileForm.register('role');
+  }, []);
+
+  // Watchers de ubicación (después de crear profileForm)
+  const provinciaSeleccionada = useWatch({ control: profileForm.control, name: 'location.province' as any });
+  const cantonSeleccionado = useWatch({ control: profileForm.control, name: 'location.canton' as any });
+
+  // Cargar provincias al montar
+  useEffect(() => {
+    fetch('https://ubicaciones.paginasweb.cr/provincias.json')
+      .then(res => res.json())
+      .then(data => {
+        const provs = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+        setProvincias(provs);
+      });
+  }, []);
+
+  // Cuando cambia la provincia, cargar cantones
+  useEffect(() => {
+    if (!provinciaSeleccionada) {
+      setCantonesFiltrados([]);
+      setDistritosFiltrados([]);
+      setProvinciaId('');
+      return;
+    }
+    const prov = provincias.find(p => p.nombre === provinciaSeleccionada);
+    if (prov) {
+      setProvinciaId(prov.id);
+      fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/cantones.json`)
+        .then(res => res.json())
+        .then(data => {
+          const cantones = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+          setCantonesFiltrados(cantones);
+          setDistritosFiltrados([]);
+        });
+    } else {
+      setCantonesFiltrados([]);
+      setDistritosFiltrados([]);
+      setProvinciaId('');
+    }
+  }, [provinciaSeleccionada, provincias]);
+
+  // Cuando cambia el cantón, cargar distritos
+  useEffect(() => {
+    if (!provinciaId || !cantonSeleccionado) {
+      setDistritosFiltrados([]);
+      return;
+    }
+    const canton = cantonesFiltrados.find(c => c.nombre === cantonSeleccionado);
+    if (canton) {
+      fetch(`https://ubicaciones.paginasweb.cr/provincia/${provinciaId}/canton/${canton.id}/distritos.json`)
+        .then(res => res.json())
+        .then(data => {
+          const distritos = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+          setDistritosFiltrados(distritos);
+        });
+    } else {
+      setDistritosFiltrados([]);
+    }
+  }, [provinciaId, cantonSeleccionado, cantonesFiltrados]);
+
+  // Helper: target being edited is admin (role 3)
+  const isTargetAdmin = isEditingOther && user?.role === 'administrador';
+
+  // Helpers: generate strong password and copy to clipboard
+  const generateStrongPassword = () => {
+    const length = 14;
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]<>?';
+    let pass = '';
+    for (let i = 0; i < length; i++) {
+      pass += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return pass;
+  };
+
+  const handleGenerateAdminPassword = () => {
+    const p = generateStrongPassword();
+    adminPasswordForm.setValue('password', p, { shouldDirty: true });
+    adminPasswordForm.setValue('password_confirmation', p, { shouldDirty: true });
+    setGeneratedAdminPassword(p);
+  };
+
+  
+
   const passwordForm = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       current_password: '',
+      password: '',
+      password_confirmation: ''
+    }
+  });
+
+  // Formulario de restablecimiento de contraseña para admin (sin contraseña actual)
+  const [showAdminPasswordForm, setShowAdminPasswordForm] = useState(false);
+  const [showAdminPasswordSuccess, setShowAdminPasswordSuccess] = useState(false);
+  const [generatedAdminPassword, setGeneratedAdminPassword] = useState<string | null>(null);
+  const [showGeneratedVisible, setShowGeneratedVisible] = useState(false);
+  const adminPasswordForm = useForm<AdminPasswordFormData>({
+    resolver: zodResolver(adminPasswordSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
       password: '',
       password_confirmation: ''
     }
@@ -69,25 +178,103 @@ export function EditarPerfil() {
     }
   }, [user?.role]);
 
+  // Prefill del formulario: ejecutar una sola vez por usuario (evita loops)
+  const lastPrefilledUserIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    if (lastPrefilledUserIdRef.current === user.id) return;
+
+    // Reset de valores del formulario para asegurar prellenado correcto
+    profileForm.reset({
+      name: user.name,
+      role: user.role,
+      email: user.email,
+      phone: user.phone || '',
+      location: {
+        province: user.location?.province || '',
+        canton: user.location?.canton || '',
+        district: user.location?.district || '',
+        address: user.location?.address || ''
+      }
+    });
+
+    // No es necesario llamar hooks; los efectos de provincias/cantones/distritos manejarán el prefill
+
+    lastPrefilledUserIdRef.current = user.id;
+  }, [user?.id]);
+
+  // Enviar perfil
   const onSubmitProfile = (data: ProfileFormData) => {
-    updateProfileMutation.mutate(data, {
+    // If target is admin, force role to remain as 'administrador'
+    const safeData = { ...data };
+    if (isTargetAdmin) {
+      safeData.role = 'administrador' as any;
+    }
+    updateProfileMutation.mutate(safeData, {
       onSuccess: () => {
-        navigate('/profile');
+        // Bandera para celebrar en Perfil solo para self-edit
+        if (!isEditingOther) {
+          localStorage.setItem('celebrate', 'profile_saved');
+          navigate('/profile');
+        } else {
+          navigate('/gestor-usuarios');
+        }
       }
     });
   };
 
+  // Auto-ocultar el banner de éxito a los 3s y cerrar la sección
+  useEffect(() => {
+    if (!showPasswordSuccess) return;
+    const t = setTimeout(() => {
+      setShowPasswordSuccess(false);
+      setShowPasswordForm(false); // cerrar la sección automáticamente
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [showPasswordSuccess]);
+
+  // Enviar cambio de contraseña
   const onSubmitPassword = (data: PasswordFormData) => {
     updatePasswordMutation.mutate(data, {
       onSuccess: () => {
+        passwordForm.clearErrors();
         passwordForm.reset();
-        setShowPasswordForm(false);
+        // Mantener visible la sección para mostrar el aviso de éxito
+        setShowPasswordSuccess(true);
+      },
+      onError: (err: any) => {
+        const status = err?.response?.status;
+        const message: string = err?.response?.data?.message || err?.message || 'Error al actualizar la contraseña.';
+        if (status === 422 || String(message).includes('422')) {
+          // Mostrar mensaje claro en el campo
+          passwordForm.setError('current_password', { type: 'server', message: 'Contraseña incorrecta' });
+          return;
+        }
+      }
+    });
+  };
+
+  // Enviar restablecimiento de contraseña por admin
+  const onSubmitAdminPassword = (data: AdminPasswordFormData) => {
+    if (!adminResetPasswordMutation) return;
+    adminResetPasswordMutation.mutate(data, {
+      onSuccess: () => {
+        adminPasswordForm.clearErrors();
+        adminPasswordForm.reset();
+        setShowAdminPasswordSuccess(true);
+        setTimeout(() => setShowAdminPasswordSuccess(false), 3000);
+        // Clear generated password after saving so it's no longer available
+        setGeneratedAdminPassword(null);
       }
     });
   };
 
   const handleCancel = () => {
-    navigate('/profile');
+    if (isEditingOther) {
+      navigate('/gestor-usuarios');
+    } else {
+      navigate('/profile');
+    }
   };
 
   if (isLoading) {
@@ -105,7 +292,7 @@ export function EditarPerfil() {
           logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
           maxWidth="max-w-2xl"
           items={[
-            { type: 'link', label: 'Inicio', to: '/' },
+            { type: 'link', label: 'Inicio', to: '/home' },
             { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
             { type: 'link', label: 'Ferias', to: '/ferias' },
           ]}
@@ -121,9 +308,9 @@ export function EditarPerfil() {
         />
         <div className="pt-20 px-4 max-w-4xl mx-auto">
           <div className="py-12">
-            <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
+            <div className="rounded-xl border border-border p-4 bg-white shadow-sm">
               <p className="text-red-600 font-medium">Error al cargar el perfil</p>
-              <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+              <button onClick={() => refetch()} className="mt-2 px-4 py-2 rounded-lg border border-border hover:bg-brand/10 hover:text-brand transition-colors focus-brand">
                 Reintentar
               </button>
             </div>
@@ -139,14 +326,14 @@ export function EditarPerfil() {
         logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
         maxWidth="max-w-2xl"
         items={[
-          { type: 'link', label: 'Inicio', to: '/' },
+          { type: 'link', label: 'Inicio', to: '/home' },
           { type: 'link', label: 'Emprendimientos', to: '/feed/emprendimiento' },
           { type: 'link', label: 'Ferias', to: '/ferias' },
         ]}
         rightContent={
           <Link
             to="/profile"
-            className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 text-primary bg-gray-50"
+            className="p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand text-primary bg-brand/5"
             aria-label="Ir al perfil"
           >
             <User className="w-5 h-5" />
@@ -159,13 +346,13 @@ export function EditarPerfil() {
           {/* Formulario principal */}
           <div className="w-full max-w-3xl mt-6">
             <div className="bg-white rounded-card shadow-soft border border-border p-6">
-              <h1 className="text-2xl font-semibold text-primary mb-8">Editar Perfil</h1>
+              <h1 className="text-2xl font-semibold text-primary mb-8">{isEditingOther ? `Editar Perfil: ${user?.name ?? ''}` : 'Editar Perfil'}</h1>
 
               <form onSubmit={profileForm.handleSubmit(onSubmitProfile)}>
                 {/* Avatar */}
                 <div className="flex justify-center mb-8">
                   <ImageUpload
-                    currentImage={user.avatarUrl}
+                    currentImage={user.avatarUrl || 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg'}
                     onImageChange={(imageData) => {
                       uploadAvatarMutation.mutate(imageData);
                     }}
@@ -173,7 +360,7 @@ export function EditarPerfil() {
                 </div>
 
                 {/* Información básica */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1  gap-6 mb-8">
                   <TextField
                     name="name"
                     label="Nombre completo"
@@ -183,14 +370,7 @@ export function EditarPerfil() {
                     required
                   />
 
-                  <TextField
-                    name="username"
-                    label="Nombre de usuario"
-                    register={profileForm.register}
-                    error={profileForm.formState.errors.username}
-                    placeholder="Ingresa tu nombre de usuario"
-                    required
-                  />
+                  
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-primary mb-2">
@@ -198,13 +378,26 @@ export function EditarPerfil() {
                     </label>
                     <RoleSelector
                       value={profileForm.watch('role')}
-                      onChange={(role) => profileForm.setValue('role', role)}
-                      onRoleChangeWarning={(fromRole, toRole) => {
+                      onChange={(role) => {
+                        // Block changing role for admin users being edited
+                        if (isTargetAdmin && role !== 'administrador') {
+                          return;
+                        }
+                        profileForm.setValue('role', role, { shouldDirty: true, shouldValidate: true });
+                      }}
+                      onRoleChangeWarning={isEditingOther ? undefined : ((fromRole, toRole) => {
                         if (fromRole === 'emprendedor' && toRole === 'comprador') {
                           setShowRoleChangeWarning(true);
                         }
-                      }}
+                      })}
+                      suppressWarnings={isEditingOther}
+                      showAdminOption={isEditingOther}
                     />
+                    {isTargetAdmin && (
+                      <p className="mt-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded p-2">
+                        Este usuario tiene rol Administrador (3). Por seguridad, no se puede cambiar su rol desde esta pantalla.
+                      </p>
+                    )}
                   </div>
 
                   <TextField
@@ -229,58 +422,83 @@ export function EditarPerfil() {
 
               {/* Ubicación */}
               <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-lg font-semibold text-primary">Ubicación</h3>
-                  <button
-                    onClick={() => setShowLocationModal(true)}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                    aria-label="Información sobre ubicación"
-                  >
+                <div className="mb-4">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-primary">Ubicación</h3>
+                    <button
+                      onClick={() => setShowLocationModal(true)}
+                      className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
+                      aria-label="Información sobre ubicación"
+                    >
                     <Info className="w-4 h-4 text-secondary" />
-                  </button>
+                    </button>
+                  </div>
+                  <div className="mt-2 h-0.5 w-16 bg-brand/40 rounded"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <SelectField
-                    name="location.province"
-                    label="Provincia"
-                    register={profileForm.register}
-                    error={profileForm.formState.errors.location?.province}
-                    options={provincias.map(p => ({ value: p.nombre, label: p.nombre }))}
-                    placeholder="Seleccionar provincia"
-                    onChange={(value) => {
-                      profileForm.setValue('location.canton', '');
-                      profileForm.setValue('location.district', '');
-                      loadCantones(value);
-                    }}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-primary mb-2">Provincia</label>
+                    <select
+                      {...profileForm.register('location.province', { required: true })}
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      value={profileForm.watch('location.province')}
+                      onChange={e => {
+                        profileForm.setValue('location.province', e.target.value, { shouldDirty: true });
+                        profileForm.setValue('location.canton', '');
+                        profileForm.setValue('location.district', '');
+                      }}
+                    >
+                      <option value="">Seleccionar provincia</option>
+                      {provincias.map((prov) => (
+                        <option key={prov.id} value={prov.nombre}>{prov.nombre}</option>
+                      ))}
+                    </select>
+                    {profileForm.formState.errors?.location?.province && (
+                      <span className="text-red-500 text-xs">Provincia requerida</span>
+                    )}
+                  </div>
 
-                  <SelectField
-                    name="location.canton"
-                    label="Cantón"
-                    register={profileForm.register}
-                    error={profileForm.formState.errors.location?.canton}
-                    options={cantones.map(c => ({ value: c.nombre, label: c.nombre }))}
-                    placeholder="Seleccionar cantón"
-                    disabled={!profileForm.watch('location.province')}
-                    onChange={(value) => {
-                      profileForm.setValue('location.district', '');
-                      const province = profileForm.watch('location.province');
-                      if (province) {
-                        loadDistritos(province, value);
-                      }
-                    }}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-primary mb-2">Cantón</label>
+                    <select
+                      {...profileForm.register('location.canton', { required: true })}
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      value={profileForm.watch('location.canton')}
+                      onChange={e => {
+                        profileForm.setValue('location.canton', e.target.value, { shouldDirty: true });
+                        profileForm.setValue('location.district', '');
+                      }}
+                      disabled={!profileForm.watch('location.province')}
+                    >
+                      <option value="">Seleccionar cantón</option>
+                      {cantonesFiltrados.map((canton) => (
+                        <option key={canton.id} value={canton.nombre}>{canton.nombre}</option>
+                      ))}
+                    </select>
+                    {profileForm.formState.errors?.location?.canton && (
+                      <span className="text-red-500 text-xs">Cantón requerido</span>
+                    )}
+                  </div>
 
-                  <SelectField
-                    name="location.district"
-                    label="Distrito"
-                    register={profileForm.register}
-                    error={profileForm.formState.errors.location?.district}
-                    options={distritos.map(d => ({ value: d.nombre, label: d.nombre }))}
-                    placeholder="Seleccionar distrito"
-                    disabled={!profileForm.watch('location.canton')}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-primary mb-2">Distrito</label>
+                    <select
+                      {...profileForm.register('location.district', { required: true })}
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      value={profileForm.watch('location.district')}
+                      onChange={e => profileForm.setValue('location.district', e.target.value, { shouldDirty: true })}
+                      disabled={!profileForm.watch('location.canton')}
+                    >
+                      <option value="">Seleccionar distrito</option>
+                      {distritosFiltrados.map((distrito) => (
+                        <option key={distrito.id} value={distrito.nombre}>{distrito.nombre}</option>
+                      ))}
+                    </select>
+                    {profileForm.formState.errors?.location?.district && (
+                      <span className="text-red-500 text-xs">Distrito requerido</span>
+                    )}
+                  </div>
                 </div>
 
                 <TextField
@@ -297,14 +515,15 @@ export function EditarPerfil() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-3 border border-border text-secondary rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-3 border border-border text-secondary rounded-lg font-medium hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    disabled={updateProfileMutation.isPending}
-                    className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    disabled={updateProfileMutation.isPending || !profileForm.formState.isDirty}
+                    title={!profileForm.formState.isDirty ? 'No hay cambios por guardar' : undefined}
+                    className="px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
                   >
                     {updateProfileMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                     Guardar cambios
@@ -312,14 +531,15 @@ export function EditarPerfil() {
                 </div>
               </form>
 
-              {/* Contraseña */}
+              {/* Contraseña: solo visible cuando el usuario edita su propia cuenta */}
+              {!isEditingOther && (
               <div className="mt-8 pt-8 border-t border-border">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-primary">Contraseña</h3>
                   <button
                     type="button"
                     onClick={() => setShowPasswordForm(!showPasswordForm)}
-                    className="px-4 py-2 text-sm bg-gray-100 text-secondary rounded-lg hover:bg-gray-200 transition-colors"
+                    className="px-4 py-2 text-sm bg-brand/10 text-secondary rounded-lg hover:bg-brand/20 transition-colors focus-brand"
                   >
                     {showPasswordForm ? 'Cancelar' : 'Cambiar contraseña'}
                   </button>
@@ -333,7 +553,6 @@ export function EditarPerfil() {
                         label="Contraseña actual"
                         type="password"
                         register={passwordForm.register}
-                        error={passwordForm.formState.errors.current_password}
                         placeholder="••••••••"
                         required
                       />
@@ -359,17 +578,38 @@ export function EditarPerfil() {
                       />
                     </div>
 
-                    {updatePasswordMutation.isError && (
-                      <div className="text-red-600 text-sm">
-                        Error al actualizar la contraseña. Inténtalo de nuevo.
-                      </div>
-                    )}
+                    {/* Mensajes de estado */}
+                    <div aria-live="polite" className="space-y-2">
+                      {showPasswordSuccess && (
+                        <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm">
+                          Contraseña actualizada correctamente.
+                        </div>
+                      )}
+
+                      {updatePasswordMutation.isError && (() => {
+                        const err: any = updatePasswordMutation.error;
+                        const status = err?.response?.status;
+                        const message = err?.response?.data?.message || err?.message;
+                        if (status === 422 || String(message).includes('422')) {
+                          return (
+                            <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm">
+                              Contraseña incorrecta
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm">
+                            {message || 'Error al actualizar la contraseña.'}
+                          </div>
+                        );
+                      })()}
+                    </div>
 
                     <div className="flex justify-end">
                       <button
                         type="submit"
                         disabled={updatePasswordMutation.isPending}
-                        className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
                       >
                         {updatePasswordMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                         Actualizar contraseña
@@ -378,6 +618,100 @@ export function EditarPerfil() {
                   </form>
                 )}
               </div>
+              )}
+              {/* Restablecer contraseña (admin editando a otro usuario) */}
+              {isEditingOther && (
+              <div className="mt-8 pt-8 border-t border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-primary">Restablecer contraseña</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminPasswordForm(!showAdminPasswordForm)}
+                    className="px-4 py-2 text-sm bg-brand/10 text-secondary rounded-lg hover:bg-brand/20 transition-colors focus-brand"
+                  >
+                    {showAdminPasswordForm ? 'Cancelar' : 'Restablecer contraseña'}
+                  </button>
+                </div>
+
+                {showAdminPasswordForm && (
+                  <form onSubmit={adminPasswordForm.handleSubmit(onSubmitAdminPassword)} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <TextField
+                        name="password"
+                        label="Nueva contraseña"
+                        type="password"
+                        register={adminPasswordForm.register}
+                        error={adminPasswordForm.formState.errors.password}
+                        placeholder="••••••••"
+                        required
+                      />
+
+                      <TextField
+                        name="password_confirmation"
+                        label="Confirmar contraseña"
+                        type="password"
+                        register={adminPasswordForm.register}
+                        error={adminPasswordForm.formState.errors.password_confirmation}
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+
+                    <div aria-live="polite" className="space-y-2">
+                      {showAdminPasswordSuccess && (
+                        <div className="text-green-700 bg-green-50 border border-green-200 rounded p-2 text-sm">
+                          Contraseña restablecida correctamente.
+                        </div>
+                      )}
+                      {adminResetPasswordMutation?.isError && (
+                        <div className="text-red-700 bg-red-50 border border-red-200 rounded p-2 text-sm">
+                          {(adminResetPasswordMutation.error as any)?.message || 'Error al restablecer la contraseña.'}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleGenerateAdminPassword}
+                          className="px-3 py-1 text-sm bg-brand/10 text-secondary rounded hover:bg-brand/20 focus-brand"
+                        >
+                          Generar contraseña
+                        </button>
+                      </div>
+                      {generatedAdminPassword && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <input
+                            type={showGeneratedVisible ? 'text' : 'password'}
+                            readOnly
+                            value={generatedAdminPassword}
+                            className="w-full md:w-auto px-3 py-2 border border-border rounded text-sm"
+                            aria-label="Contraseña generada"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowGeneratedVisible(v => !v)}
+                            className="px-3 py-1 text-sm bg-brand/10 text-secondary rounded hover:bg-brand/20 focus-brand"
+                            aria-label={showGeneratedVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          >
+                            {showGeneratedVisible ? 'Ocultar' : 'Mostrar'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={adminResetPasswordMutation?.isPending}
+                        className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
+                      >
+                        {adminResetPasswordMutation?.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Guardar nueva contraseña
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+              )}
             </div>
           </div>
 
@@ -403,7 +737,7 @@ export function EditarPerfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setShowLocationModal(false)}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
             >
               Entendido
             </button>
@@ -446,7 +780,7 @@ export function EditarPerfil() {
             </button>
             <button
               onClick={() => {
-                profileForm.setValue('role', 'comprador');
+                profileForm.setValue('role', 'comprador', { shouldDirty: true, shouldValidate: true });
                 setShowRoleChangeWarning(false);
               }}
               className="px-6 py-2 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-colors"

@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet, Link } from 'react-router-dom';
+import { Routes, Route, Outlet, Link, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
@@ -19,6 +19,8 @@ import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import GestorEmprendimientos from './routes/GestorEmprendimientos';
+import { RootRedirect } from './components/RootRedirect';
+
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -42,9 +44,13 @@ function App() {
       <AuthProvider>
         <UserProvider>
           <BusinessProvider>
+            <CartProvider>
             <Routes>
-                {/* Public routes */}
-                <Route path="/landing" element={<LandingPage />} />
+                {/* Root route - Always show landing page */}
+                <Route path="/" element={<LandingPage />} />
+                
+                {/* Handle redirects for authenticated users */}
+                <Route path="/landing" element={<RootRedirect />} />
                 
                 {/* Auth routes with AuthLayout */}
                 <Route element={<AuthLayout><Outlet /></AuthLayout>}>
@@ -58,7 +64,6 @@ function App() {
                     ROUTE ACCESS GUIDE:
                     - allowedRoles: Array of role IDs that can access these routes
                       * 1 = Client
-                      * 2 = Entrepreneur
                       * 3 = Admin
                 =========================================== */}
 
@@ -72,6 +77,11 @@ function App() {
                 }>
                   {/* These routes are accessible to both clients and entrepreneurs */}
                   <Route index element={<Home />} />
+                  <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/card" element={<Navigate to="/cart" replace />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
                   <Route path="/perfil/editar" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
@@ -79,7 +89,7 @@ function App() {
                   <Route path="/logout" element={<Logout />} />
                 </Route>
 
-                {/* ===========================================
+                {/* 
                     ADMIN ROUTES (Role 3 only)
                     These routes are only accessible to admins
                 =========================================== */}
@@ -134,13 +144,12 @@ function App() {
                   <Route path="/entrepreneur" element={<Dashboard />} />
                   <Route path="/entrepreneur/businesses" element={<BusinessList />} />
                   <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
-                  <Route path="businesses/:id/edit" element={<BusinessSetup />} />
-                  <Route path="inventory" element={<ProductInventory />} />
+                  <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
+                  <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
                 </Route>
 
-                {/* Redirect root to landing or home based on auth status */}
-                <Route path="/" element={<LandingPage />} />
               </Routes>
+            </CartProvider>
             </BusinessProvider>
           </UserProvider>
         </AuthProvider>

@@ -6,7 +6,7 @@ import useUsers from "../hooks/useUsers";
 const button = (
   <Link
     to="/añadir-usuario"
-    className="bg-black text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
+    className="bg-brand text-white rounded-full px-6 py-3 text-base font-medium hover:bg-brandDark hover:text-white transition-colors focus-brand"
   >
     + Añadir usuario
   </Link>
@@ -134,6 +134,7 @@ export default function GestorUsuarios() {
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex flex-col gap-4 mt-6">
           <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de usuarios</h1>
+          <div className="h-0.5 w-24 bg-brand/40 rounded self-center md:self-start" />
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 mb-2">
             <h3 className="text-lg font-medium text-secondary">Usuarios: {filteredUsers?.length || 0}</h3>
             <div className="w-full md:w-1/2">
@@ -142,7 +143,7 @@ export default function GestorUsuarios() {
                 placeholder="Buscar"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-full text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 border border-border rounded-full text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div className="w-full md:w-auto flex justify-end">
@@ -166,7 +167,7 @@ export default function GestorUsuarios() {
             <tbody>
               {loading && allUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                  <td colSpan={6} className="py-4 text-center text-secondary">
                     Cargando usuarios...
                   </td>
                 </tr>
@@ -178,16 +179,16 @@ export default function GestorUsuarios() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                  <td colSpan={6} className="py-4 text-center text-secondary">
                     No se encontraron usuarios
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map(user => (
-                  <tr key={user.id} className="relative hover:bg-gray-50">
+                  <tr key={user.id} className="relative hover:bg-brand/10">
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="text-left">
@@ -211,30 +212,30 @@ export default function GestorUsuarios() {
                           e.stopPropagation();
                           handleActionClick(user.id);
                         }}
-                        className="px-2 py-1 hover:bg-gray-100 rounded-full"
+                        className="px-2 py-1 hover:bg-brand/10 rounded-full focus-brand"
                         aria-label="Acciones"
                       >
                         ⋮
                       </button>
                       {openMenuId === user.id && (
                         <div
-                          className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden"
+                          className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-border rounded-md overflow-hidden"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            to={`/perfil/editar/${user.id}`}
-                            className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
+                            to={`/profile/edit/${user.id}`}
+                            className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm focus-brand"
                           >
                             Editar
                           </Link>
                           <button
-                            className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm"
+                            className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-red-600 text-sm focus-brand"
                             onClick={() => handleOptionClick("Eliminar", user.id)}
                           >
                             Eliminar
                           </button>
                           <button
-                            className={`block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm ${user.banned ? 'text-green-600' : 'text-yellow-600'
+                            className={`block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm focus-brand ${user.banned ? 'text-green-600' : 'text-yellow-600'
                               }`}
                             onClick={() => handleOptionClick(
                               user.banned ? 'Habilitar' : 'Deshabilitar',
@@ -269,7 +270,7 @@ export default function GestorUsuarios() {
               </button>
               <button
                 onClick={() => { setShowDeleteModal(false); setUserToDelete(null); }}
-                className="px-6 py-2 bg-gray-200 text-secondary rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                className="px-6 py-2 bg-brand/10 text-secondary rounded-lg font-medium hover:bg-brand/20 transition-colors"
               >
                 No
               </button>

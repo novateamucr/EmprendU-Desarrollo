@@ -124,7 +124,7 @@ export function Navbar({
               {visibleItems.length > 0 && (
                 <HoverButton
                   onClick={toggleMobileMenu}
-                  className="md:hidden p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="md:hidden p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand"
                   aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
                   aria-expanded={isMobileMenuOpen}
                 >
@@ -150,7 +150,7 @@ export function Navbar({
         >
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            className="fixed inset-0 bg-primary bg-opacity-50 transition-opacity"
             onClick={closeMobileMenu}
           />
           
@@ -163,7 +163,7 @@ export function Navbar({
               </div>
               <HoverButton
                 onClick={closeMobileMenu}
-                className="p-2 rounded-full transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand"
                 aria-label="Cerrar menú"
               >
                 <X className="w-5 h-5 text-secondary" />

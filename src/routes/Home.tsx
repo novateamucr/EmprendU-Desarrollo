@@ -86,6 +86,9 @@ const SoftButton = styled.button`
     transform: translateY(0);
   }
 `;
+const removeAccents = (str: string) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
 
 
 export default function Home() {
@@ -147,7 +150,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
           <button
             onClick={() => scrollCategories("left")}
             aria-label="Anterior categorías"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-gray-100"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
           >
             <ChevronLeft sx={{ fontSize: 20 }} />
           </button>
@@ -165,8 +168,8 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 onClick={() => setSelectedCategory(category.name)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                   selectedCategory === category.name
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white text-secondary border-border hover:border-primary/50"
+                    ? "bg-brand text-white border-brand"
+                    : "bg-white text-secondary border-border hover:border-brand/50"
                 }`}
               >
                 <IconComponent sx={{ fontSize: 16 }} />
@@ -181,7 +184,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
           <button
             onClick={() => scrollCategories("right")}
             aria-label="Siguiente categorías"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-gray-100"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
           >
             <ChevronRight sx={{ fontSize: 20 }} />
           </button>
@@ -192,35 +195,147 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 };
 
 
-  // Usar hook para obtener emprendimientos desde la API
-  const { entrepreneurships, loading: loadingEntrepreneurships, error: errorEntrepreneurships } = useEntrepreneurships();
+  const featuredBusinesses = [
+    { 
+      id: 1,
+      name: "Café Luna",
+      description: "Café artesanal con granos locales y ambiente acogedor",
+      category: "Comida",
+      zone: "Esparza",
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&h=300&fit=crop",
+      products: [
+        {
+          title: "Café Especial",
+          description: "Mezcla única de granos tostados artesanalmente",
+          price: 3500,
+          imgUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop"
+        },
+        {
+          title: "Pastel de Chocolate",
+          description: "Delicioso pastel casero con chocolate belga",
+          price: 2800,
+          imgUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop"
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Artesanías Bella",
+      description: "Productos hechos a mano con materiales sostenibles",
+      category: "Arte",
+      zone: "Puntarenas",
+      rating: 4.6,
+      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&h=300&fit=crop",
+      products: [
+        {
+          title: "Maceta Decorativa",
+          description: "Maceta de cerámica pintada a mano",
+          price: 8500,
+          imgUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=300&fit=crop"
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "Tech Solutions",
+      description: "Soluciones tecnológicas innovadoras para empresas",
+      category: "Tecnología",
+      zone: "San Ramón",
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=300&fit=crop",
+      products: [
+        {
+          title: "App Móvil",
+          description: "Desarrollo de aplicaciones móviles personalizadas",
+          price: 150000,
+          imgUrl: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop"
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: "Joyería Elegante",
+      description: "Joyas únicas diseñadas con piedras preciosas",
+      category: "Joyería",
+      zone: "Liberia",
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&h=300&fit=crop",
+      products: [
+        {
+          title: "Collar de Plata",
+          description: "Collar artesanal de plata 925 con diseño único",
+          price: 15000,
+          imgUrl: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop"
+        }
+      ]
+    }
+  ];
+
+  // Get unique zones for selector
+  const zones = [
+    ...new Set(featuredBusinesses.map(b => b.zone))
+  ];
+
+  // Filter businesses by category, search query, and selected zone
+ const filteredBusinesses = featuredBusinesses.filter(business => {
+  const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
+  const matchesSearch = searchQuery === '' ||
+    removeAccents(business.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents(business.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()));
+  const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
+  return matchesCategory && matchesSearch && matchesZone;
+});
 
 
-
-  // Filtrar emprendimientos por categoría y búsqueda (case-insensitive, robust)
-  const filteredBusinesses = entrepreneurships.filter(business => {
-    const normalize = (str: string | undefined | null) => (str || '').toLowerCase().trim();
-    const selectedCat = normalize(selectedCategory);
-    const businessCat = normalize(business.category_relation?.nombre);
-    const matchesCategory = selectedCat === 'todos' || (businessCat && businessCat === selectedCat);
-    const matchesSearch = searchQuery === '' || 
-      business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      business.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (businessCat && businessCat.includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-
-  // Productos populares: a futuro se puede implementar usando los productos de los emprendimientos
-  const filteredProducts: any[] = [];
+  // Filter products by category and search query for products view
+  const filteredProducts = featuredBusinesses
+  .filter(business => selectedCategory === 'Todos' || business.category === selectedCategory)
+  .flatMap(business => 
+    business.products.filter(product => 
+      searchQuery === '' ||
+      removeAccents(product.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+      removeAccents(product.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+      removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()))
+    ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
+  );
 
   // Sugerencias de búsqueda solo para emprendimientos
   const searchSuggestions = searchQuery.length > 0 ? [
-    ...new Set(
-      filteredBusinesses
-        .filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  ...new Set(
+    viewMode === 'emprendimientos' ? [
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.name),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.category),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
         .map(b => b.name)
-    )
-  ].slice(0, 5) : [];
+    ] : [
+      ...featuredBusinesses
+        .flatMap(b => b.products)
+        .filter(p => removeAccents(p.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(p => p.title),
+      ...featuredBusinesses
+        .flatMap(b => b.products)
+        .filter(p => removeAccents(p.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(p => p.title),
+      ...featuredBusinesses
+        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+        .map(b => b.category)
+    ]
+  )
+].slice(0, 5) : [];
+
+
+  const filteredSuggestions = searchSuggestions.filter(suggestion =>
+  removeAccents(suggestion.toLowerCase()).includes(
+    removeAccents(searchQuery.toLowerCase())
+  )
+);
 
   return (
     <Layout>
@@ -238,7 +353,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
         {/* Filter Toggle */}
         <AnimatedContainer className="mb-6">
-          <div className="flex bg-gray-100 rounded-lg p-1 max-w-md">
+          <div className="flex bg-brand/5 rounded-lg p-1 max-w-md">
             <SoftButton
               onClick={() => {
                 setViewMode('emprendimientos');
@@ -248,7 +363,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'emprendimientos'
                   ? 'bg-white text-primary shadow-sm'
-                  : 'text-secondary hover:text-primary'
+                  : 'text-secondary hover:text-primary hover:bg-brand/10'
               }`}
             >
               Emprendimientos
@@ -262,7 +377,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'productos'
                   ? 'bg-white text-primary shadow-sm'
-                  : 'text-secondary hover:text-primary'
+                  : 'text-secondary hover:text-primary hover:bg-brand/10'
               }`}
             >
               Productos
@@ -272,7 +387,53 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
         {viewMode === 'emprendimientos' ? (
           <>
-            {/* Search Bar */}
+            {/* Emprendimiento del Día */}
+            <AnimatedContainer className="mb-8">
+              <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
+                <FloatingElement>
+                  <Diamond sx={{ fontSize: 20 }} />
+                </FloatingElement>
+                Emprendimiento del Día
+              </h2>
+              <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-6 border border-border">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="md:w-32 md:h-32 w-full h-48 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
+                    <img 
+                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" 
+                      alt="HASU"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-lg font-semibold text-primary">HASU</h3>
+                      <div className="flex items-center gap-1">
+                        <Star sx={{ fontSize: 16 }} className="text-amber-500" />
+                        <span className="text-sm text-secondary">4.8</span>
+                      </div>
+                    </div>
+                    <p className="text-secondary text-sm mb-3">
+                      Flores eternas hechas a mano, detalles hermosos para regalar en ocasiones especiales. 
+                      Cada pieza es única y creada con amor y dedicación.
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
+                        <Palette sx={{ fontSize: 12 }} />
+                        Arte
+                      </span>
+                      <Link 
+                        to="/feed/emprendimiento"
+                        className="text-brand hover:text-brandDark text-sm font-medium"
+                      >
+                        Ver emprendimiento →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </GlowingCard>
+            </AnimatedContainer>
+
+            {/* Search Bar + Zone Selector */}
             <div className="mb-8  rounded-lg ">
               <h2 className="text-lg font-semibold text-primary mb-4">Buscar emprendimientos</h2>
               <div className="flex flex-col md:flex-row items-center gap-4 w-full">
@@ -288,19 +449,19 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
                   />
                   {/* Search Suggestions */}
-                  {showSuggestions && searchSuggestions.length > 0 && (
+                  {showSuggestions && filteredSuggestions.length > 0 && (
                     <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                      {searchSuggestions.map((suggestion, index) => (
+                      {filteredSuggestions.map((suggestion, index) => (
                         <button
                           key={index}
                           onClick={() => {
                             setSearchQuery(suggestion);
                             setShowSuggestions(false);
                           }}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-3"
+                          className="w-full text-left px-4 py-3 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3"
                         >
-                          <Search sx={{ fontSize: 16 }} className="text-gray-400" />
-                          <span className="text-gray-700">{suggestion}</span>
+                          <Search sx={{ fontSize: 16 }} className="text-secondary" />
+                          <span className="text-primary">{suggestion}</span>
                         </button>
                       ))}
                     </AnimatedContainer>
@@ -324,50 +485,44 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 </h2>
               </div>
 
-              {loadingEntrepreneurships ? (
-                <div className="text-center py-8 text-gray-500">Cargando emprendimientos...</div>
-              ) : errorEntrepreneurships ? (
-                <div className="text-center py-8 text-red-500">Error al cargar los emprendimientos.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredBusinesses.map((business) => (
-                    <Link
-                      key={business.id}
-                      to={`/feed/emprendimiento/${business.id}`}
-                      className="block"
-                      onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                    >
-                      <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="h-48 bg-gray-200 overflow-hidden">
-                          <img
-                            src={business.image_url || 'https://placehold.co/500x300?text=Sin+imagen'}
-                            alt={business.name}
-                            className="w-full h-full object-cover"
-                          />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredBusinesses.map((business) => (
+                  <Link 
+                    key={business.id} 
+                    to={`/feed/emprendimiento/${business.id}`} 
+                    className="block"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                  >
+                    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="h-48 bg-brand/10 overflow-hidden">
+                        <img 
+                          src={business.image} 
+                          alt={business.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium text-primary">{business.name}</h3>
+                          <button className="text-secondary hover:text-red-500 transition-colors">
+                            <FavoriteBorder sx={{ fontSize: 18 }} />
+                          </button>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-medium text-gray-900">{business.name}</h3>
-                            <button className="text-gray-400 hover:text-red-500 transition-colors">
-                              <FavoriteBorder sx={{ fontSize: 18 }} />
-                            </button>
+                        <p className="text-secondary text-sm mb-3">{business.description}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <Star sx={{ fontSize: 14 }} className="text-amber-500" />
+                            <span className="text-sm text-secondary">{business.rating}</span>
                           </div>
-                          <p className="text-gray-600 text-sm mb-3">{business.description}</p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                              <span className="text-sm text-gray-600">--</span> {/* Placeholder para rating */}
-                            </div>
-                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                              {business.category_relation?.nombre || 'Sin categoría'}
-                            </span>
-                          </div>
+                          <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
+                            {business.category}
+                          </span>
                         </div>
-                      </AnimatedCard>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                      </div>
+                    </AnimatedCard>
+                  </Link>
+                ))}
+              </div>
             </div>
           </>
         ) : (

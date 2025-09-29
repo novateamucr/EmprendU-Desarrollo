@@ -12,9 +12,9 @@ export const getDashboardPath = (role: number): string => {
     case 3: // Admin (role 3)
       return '/gestor-usuarios';
     case 2: // Entrepreneur (role 2)
-      return '/';
+      return '/home';
     case 1: // Client (role 1)
-      return '/';
+      return '/home';
     default:
       console.warn(`Unknown role ${role}, redirecting to login`);
       return '/login';

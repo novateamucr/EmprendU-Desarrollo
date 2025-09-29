@@ -84,7 +84,8 @@ export default function EntrepreneurManager() {
             <Route path="/" element={<Dashboard />} />
             <Route path="businesses" element={<BusinessList />} />
             <Route path="businesses/new" element={<BusinessForm />} />
-            <Route path="businesses/:id" element={<BusinessSetup />} />          
+            <Route path="businesses/:id" element={<BusinessSetup />} />
+          
           </Routes>
           <Outlet />
         </div>

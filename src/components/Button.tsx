@@ -23,12 +23,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
     
     const variantStyles = {
-      primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-      secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-      destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-      outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-      ghost: 'hover:bg-accent hover:text-accent-foreground',
-      link: 'text-primary underline-offset-4 hover:underline',
+      primary: 'bg-brand text-white hover:bg-brandDark',
+      secondary: 'bg-gray-100 text-primary hover:bg-gray-200',
+      destructive: 'bg-red-600 text-white hover:bg-red-700',
+      outline: 'border border-border bg-white hover:bg-brand/10 hover:text-brand',
+      ghost: 'hover:bg-brand/10 hover:text-brand',
+      link: 'text-brand underline-offset-4 hover:underline',
     };
 
     const sizeStyles = {
