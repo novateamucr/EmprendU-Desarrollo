@@ -18,6 +18,7 @@ import { BusinessSelect } from '../../components/ui/BusinessSelect';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
 
+
 import { Entrepreneurship } from '../../services/entrepreneurshipService';
 
 // Type for the business data we get from the API
@@ -267,58 +268,10 @@ export default function Dashboard() {
               </Link>
             </Button>
           </div>
-          <div className="mt-10 pt-8 border-t border-gray-100">
-            <h3 className="text-sm font-medium text-gray-500 mb-4">¿Necesitas ayuda para comenzar?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">1</div>
-                <p className="text-sm text-gray-600">Crea tu perfil de emprendedor</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">2</div>
-                <p className="text-sm text-gray-600">Agrega los detalles de tu negocio</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">3</div>
-                <p className="text-sm text-gray-600">Comienza a vender tus productos</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
   }
-
-  if (!currentBusiness || businesses.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-4">
-            <Store className="h-6 w-6 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No tienes emprendimientos</h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Aún no has creado ningún emprendimiento. Crea tu primer emprendimiento para comenzar a vender tus productos.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Link to="/entrepreneur/businesses/new" className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                Crear mi primer emprendimiento
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/explore" className="flex items-center gap-2">
-                <Eye className="h-5 w-5" />
-                Explorar emprendimientos
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 pt-12 px-4 sm:px-6">
       <div className="mb-6">
@@ -331,7 +284,52 @@ export default function Dashboard() {
               <BusinessSelect
                 businesses={businesses}
                 selectedBusiness={currentBusiness}
-                onSelect={(business) => setSelectedBusiness(business)}
+                onSelect={(option) => {
+                  const found = businesses.find(b => b.id === option.id);
+                  if (!found) return;
+                  const mapped: Entrepreneurship = {
+                    id: parseInt(found.id, 10),
+                    name: found.name,
+                    description: found.description || '',
+                    category: (typeof found.category === 'number' ? found.category : parseInt(found.category || '0', 10)) || 0,
+                    image_url: found.image_url || null,
+                    user_id: found.user_id,
+                    created_at: found.created_at,
+                    updated_at: found.updated_at,
+                    products: [],
+                    owner: {
+                      id: found.user_id,
+                      name: 'Usuario',
+                      email: 'usuario@ejemplo.com',
+                      username: `user_${found.user_id}`,
+                      email_verified_at: null,
+                      password: 'temporary-password',
+                      role: 2,
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                      phone: null,
+                      province: null,
+                      canton: null,
+                      district: null,
+                      address: null,
+                      banned: false,
+                      avatar_url: null,
+                      remember_token: null,
+                    },
+                    category_relation: {
+                      id: typeof found.category === 'number' ? found.category : 0,
+                      nombre: (found.category ?? '').toString() || 'Sin categoría',
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    },
+                    address: found.address,
+                    phone: found.phone,
+                    email: found.email,
+                    website: found.website,
+                    banned: false,
+                  } as Entrepreneurship;
+                  setSelectedBusiness(mapped);
+                }}
                 className="flex-1"
               />
               <Button 
@@ -365,7 +363,7 @@ export default function Dashboard() {
           />
         </div>
       </div>
-
+      
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -373,10 +371,10 @@ export default function Dashboard() {
           </div>
           <div className="space-y-4">
             <div className="flex items-start space-x-4">
-              {selectedBusiness.image_url ? (
+              {currentBusiness.image_url ? (
                 <img 
-                  src={selectedBusiness.image_url} 
-                  alt={selectedBusiness.name}
+                  src={currentBusiness.image_url} 
+                  alt={currentBusiness.name}
                   className="h-16 w-16 rounded-md object-cover"
                 />
               ) : (
@@ -385,41 +383,41 @@ export default function Dashboard() {
                 </div>
               )}
               <div>
-                <h4 className="font-medium">{selectedBusiness.name}</h4>
+                <h4 className="font-medium">{currentBusiness.name}</h4>
                 <p className="text-sm text-gray-500">
-                  {selectedBusiness.description || 'Sin descripción'}
+                  {currentBusiness.description || 'Sin descripción'}
                 </p>
-                {selectedBusiness.address && (
+                {currentBusiness.address && (
                   <p className="text-sm text-gray-500 mt-1">
-                    {selectedBusiness.address}
+                    {currentBusiness.address}
                   </p>
                 )}
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              {selectedBusiness.phone && (
+              {currentBusiness.phone && (
                 <div>
                   <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                  <p>{selectedBusiness.phone}</p>
+                  <p>{currentBusiness.phone}</p>
                 </div>
               )}
-              {selectedBusiness.email && (
+              {currentBusiness.email && (
                 <div>
                   <p className="text-sm font-medium text-gray-500">Email</p>
-                  <p>{selectedBusiness.email}</p>
+                  <p>{currentBusiness.email}</p>
                 </div>
               )}
-              {selectedBusiness.website && (
+              {currentBusiness.website && (
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-gray-500">Sitio web</p>
                   <a 
-                    href={selectedBusiness.website.startsWith('http') ? selectedBusiness.website : `https://${selectedBusiness.website}`}
+                    href={currentBusiness.website.startsWith('http') ? currentBusiness.website : `https://${currentBusiness.website}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    {selectedBusiness.website}
+                    {currentBusiness.website}
                   </a>
                 </div>
               )}
