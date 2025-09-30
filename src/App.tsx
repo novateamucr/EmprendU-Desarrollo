@@ -33,6 +33,9 @@ import NewPw from './routes/NewPw';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
 import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
+import { CartProvider } from './context/CartContext';
+import Cart from './routes/Cart';
+import CartDetail from './routes/CartDetail';
 
 const queryClient = new QueryClient();
 

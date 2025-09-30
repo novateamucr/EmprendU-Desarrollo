@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import useEntrepreneurships from '../hooks/useEntrepreneurships';
+
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { ProductCard } from '../components/ProductCard';
@@ -19,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from '@mui/icons-material';
+
 
 // Soft animations with Emotion
 const fadeInUp = keyframes`
@@ -52,6 +54,13 @@ const float = keyframes`
   }
 `;
 
+// Subtle glow animation for featured cards
+const glow = keyframes`
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+`;
+
 // Styled components with softer animations
 const AnimatedContainer = styled.div`
   animation: ${fadeInUp} 0.4s ease-out;
@@ -66,6 +75,33 @@ const AnimatedCard = styled.div`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+`;
+
+// Glowing card used for the "Emprendimiento del Día" section
+const GlowingCard = styled.div`
+  position: relative;
+  border-radius: 0.5rem;
+  animation: ${scaleIn} 0.25s ease-out;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  will-change: transform, box-shadow;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.18), transparent 60%),
+                radial-gradient(120% 120% at 100% 100%, rgba(59, 130, 246, 0.18), transparent 60%);
+    filter: blur(10px);
+    z-index: -1;
+    pointer-events: none;
+    animation: ${glow} 4s ease-in-out infinite;
   }
 `;
 
@@ -96,7 +132,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [viewMode, setViewMode] = useState<'emprendimientos' | 'productos'>('emprendimientos');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // const [selectedZone, setSelectedZone] = useState('Todas');
+  const [selectedZone, setSelectedZone] = useState('Todas');
+  const { entrepreneurships, loading } = useEntrepreneurships();
 
   interface CategoriesProps {
   selectedCategory: string;
@@ -195,140 +232,49 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 };
 
 
-  const featuredBusinesses = [
-    { 
-      id: 1,
-      name: "Café Luna",
-      description: "Café artesanal con granos locales y ambiente acogedor",
-      category: "Comida",
-      zone: "Esparza",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Café Especial",
-          description: "Mezcla única de granos tostados artesanalmente",
-          price: 3500,
-          imgUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop"
-        },
-        {
-          title: "Pastel de Chocolate",
-          description: "Delicioso pastel casero con chocolate belga",
-          price: 2800,
-          imgUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "Artesanías Bella",
-      description: "Productos hechos a mano con materiales sostenibles",
-      category: "Arte",
-      zone: "Puntarenas",
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Maceta Decorativa",
-          description: "Maceta de cerámica pintada a mano",
-          price: 8500,
-          imgUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: "Tech Solutions",
-      description: "Soluciones tecnológicas innovadoras para empresas",
-      category: "Tecnología",
-      zone: "San Ramón",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "App Móvil",
-          description: "Desarrollo de aplicaciones móviles personalizadas",
-          price: 150000,
-          imgUrl: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop"
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: "Joyería Elegante",
-      description: "Joyas únicas diseñadas con piedras preciosas",
-      category: "Joyería",
-      zone: "Liberia",
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&h=300&fit=crop",
-      products: [
-        {
-          title: "Collar de Plata",
-          description: "Collar artesanal de plata 925 con diseño único",
-          price: 15000,
-          imgUrl: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop"
-        }
-      ]
-    }
-  ];
-
-  // Get unique zones for selector
+  // Derive zones from backend data if available (owner.canton or address)
   const zones = [
-    ...new Set(featuredBusinesses.map(b => b.zone))
+    ...new Set(
+      entrepreneurships
+        .map(b => (b as any)?.owner?.canton || (b.address ? 'Zona' : null))
+        .filter(Boolean) as string[]
+    )
   ];
+  
 
-  // Filter businesses by category, search query, and selected zone
- const filteredBusinesses = featuredBusinesses.filter(business => {
-  const matchesCategory = selectedCategory === 'Todos' || business.category === selectedCategory;
+  // Filter businesses by category, search query, and selected zone (backend data)
+ const filteredBusinesses = entrepreneurships.filter((business: any) => {
+  const categoryName = business?.category_relation?.nombre || '';
+  const matchesCategory = selectedCategory === 'Todos' || categoryName === selectedCategory;
   const matchesSearch = searchQuery === '' ||
-    removeAccents(business.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
-    removeAccents(business.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
-    removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()));
-  const matchesZone = selectedZone === 'Todas' || business.zone === selectedZone;
+    removeAccents((business.name || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents((business.description || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+    removeAccents(categoryName.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()));
+  const businessZone = (business as any)?.owner?.canton || null;
+  const matchesZone = selectedZone === 'Todas' || businessZone === selectedZone;
   return matchesCategory && matchesSearch && matchesZone;
 });
 
 
-  // Filter products by category and search query for products view
-  const filteredProducts = featuredBusinesses
-  .filter(business => selectedCategory === 'Todos' || business.category === selectedCategory)
-  .flatMap(business => 
-    business.products.filter(product => 
-      searchQuery === '' ||
-      removeAccents(product.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
-      removeAccents(product.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
-      removeAccents(business.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()))
-    ).map(product => ({ ...product, businessName: business.name, businessCategory: business.category }))
-  );
+  // Products view placeholder (global products listing not connected yet)
+  const filteredProducts: any[] = [];
 
   // Sugerencias de búsqueda solo para emprendimientos
   const searchSuggestions = searchQuery.length > 0 ? [
-  ...new Set(
-    viewMode === 'emprendimientos' ? [
-      ...featuredBusinesses
-        .filter(b => removeAccents(b.name.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(b => b.name),
-      ...featuredBusinesses
-        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(b => b.category),
-      ...featuredBusinesses
-        .filter(b => removeAccents(b.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(b => b.name)
-    ] : [
-      ...featuredBusinesses
-        .flatMap(b => b.products)
-        .filter(p => removeAccents(p.title.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(p => p.title),
-      ...featuredBusinesses
-        .flatMap(b => b.products)
-        .filter(p => removeAccents(p.description.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(p => p.title),
-      ...featuredBusinesses
-        .filter(b => removeAccents(b.category.toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
-        .map(b => b.category)
-    ]
-  )
-].slice(0, 5) : [];
+    ...new Set(
+      viewMode === 'emprendimientos' ? [
+        ...entrepreneurships
+          .filter(b => removeAccents((b.name || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+          .map(b => b.name),
+        ...entrepreneurships
+          .filter(b => removeAccents((b.category_relation?.nombre || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+          .map(b => b.category_relation?.nombre || ''),
+        ...entrepreneurships
+          .filter(b => removeAccents((b.description || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())))
+          .map(b => b.name)
+      ] : []
+    )
+  ].slice(0, 5) : [];
 
 
   const filteredSuggestions = searchSuggestions.filter(suggestion =>
@@ -399,30 +345,29 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="md:w-32 md:h-32 w-full h-48 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
                     <img 
-                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop" 
-                      alt="HASU"
+                      src={(filteredBusinesses[0] ?? entrepreneurships[0])?.image_url || "https://placehold.co/400x300?text=Sin+imagen"} 
+                      alt={(filteredBusinesses[0] ?? entrepreneurships[0])?.name || "Emprendimiento"}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-primary">HASU</h3>
+                      <h3 className="text-lg font-semibold text-primary">{(filteredBusinesses[0] ?? entrepreneurships[0])?.name || "Emprendimiento"}</h3>
                       <div className="flex items-center gap-1">
                         <Star sx={{ fontSize: 16 }} className="text-amber-500" />
-                        <span className="text-sm text-secondary">4.8</span>
+                        <span className="text-sm text-secondary">-</span>
                       </div>
                     </div>
                     <p className="text-secondary text-sm mb-3">
-                      Flores eternas hechas a mano, detalles hermosos para regalar en ocasiones especiales. 
-                      Cada pieza es única y creada con amor y dedicación.
+                      {(filteredBusinesses[0] ?? entrepreneurships[0])?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
                     </p>
                     <div className="flex items-center justify-between">
                       <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
                         <Palette sx={{ fontSize: 12 }} />
-                        Arte
+                        {(filteredBusinesses[0] ?? entrepreneurships[0])?.category_relation?.nombre || "General"}
                       </span>
                       <Link 
-                        to="/feed/emprendimiento"
+                        to={`/feed/emprendimiento/${(filteredBusinesses[0] ?? entrepreneurships[0])?.id ?? ''}`}
                         className="text-brand hover:text-brandDark text-sm font-medium"
                       >
                         Ver emprendimiento →
@@ -467,6 +412,19 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     </AnimatedContainer>
                   )}
                 </div>
+                {/* Zone Selector */}
+                <div className="w-full md:w-64">
+                  <select
+                    value={selectedZone}
+                    onChange={(e) => setSelectedZone(e.target.value)}
+                    className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                  >
+                    <option value="Todas">Todas las zonas</option>
+                    {zones.map((z) => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -485,8 +443,11 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 </h2>
               </div>
 
+              {loading ? (
+                <div className="text-secondary">Cargando emprendimientos...</div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredBusinesses.map((business) => (
+                {filteredBusinesses.map((business: any) => (
                   <Link 
                     key={business.id} 
                     to={`/feed/emprendimiento/${business.id}`} 
@@ -496,7 +457,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                     <AnimatedCard className="bg-white rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
                       <div className="h-48 bg-brand/10 overflow-hidden">
                         <img 
-                          src={business.image} 
+                          src={business.image_url || "https://placehold.co/600x300?text=Sin+imagen"} 
                           alt={business.name}
                           className="w-full h-full object-cover"
                         />
@@ -512,10 +473,10 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
                             <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                            <span className="text-sm text-secondary">{business.rating}</span>
+                            <span className="text-sm text-secondary">-</span>
                           </div>
                           <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
-                            {business.category}
+                            {business.category_relation?.nombre || 'General'}
                           </span>
                         </div>
                       </div>
@@ -523,6 +484,7 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                   </Link>
                 ))}
               </div>
+              )}
             </div>
           </>
         ) : (
