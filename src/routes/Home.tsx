@@ -1,25 +1,30 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import useEntrepreneurships from '../hooks/useEntrepreneurships';
 
-import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
+import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-import { 
-  Search, 
-  Star, 
-  Apps,
-  Restaurant,
-  Diamond,
-  Checkroom,
-  Palette,
-  Computer,
-  SportsBaseball,
-  FavoriteBorder,
-  ChevronLeft,
-  ChevronRight
-} from '@mui/icons-material';
+import { productApi, categoryApi, type Product, type Category } from '../services/entrepreneurshipService';
+import { api } from '../lib/api';
+import { useProfile, useAddFavorite, useRemoveFavorite } from '../domain/profile/queries';
+import type { UserProfile } from '../domain/profile/types';
+import { useAuth } from '../context/AuthContext';
+import { categoryIconUrl } from '../utils/categoryIcons';
+import { Modal } from '../components/Modal';
+  import { 
+    Search, 
+    Star, 
+    Apps,
+    Palette,
+    Diamond,
+    FavoriteBorder,
+    Favorite,
+    ChevronLeft,
+    ChevronRight
+  } from '@mui/icons-material';
 
 
 // Soft animations with Emotion
@@ -134,102 +139,200 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedZone, setSelectedZone] = useState('Todas');
   const { entrepreneurships, loading } = useEntrepreneurships();
+  // Categories map for product.category_id -> name
+  const { data: allCategories } = useQuery<Category[]>({
+    queryKey: ['categories', 'products-view'],
+    queryFn: () => categoryApi.getAll(),
+    select: (d) => d ?? [],
+    staleTime: 5 * 60 * 1000,
+  });
+  const categoryNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.nombre); });
+    return map;
+  }, [allCategories]);
+
+  // Map de categoría del emprendimiento (id -> nombre de categoría del negocio)
+  const bizCategoryByEntreId = useMemo(() => {
+    const m = new Map<number, string>();
+    entrepreneurships.forEach((b: any) => {
+      m.set(b.id, b?.category_relation?.nombre || 'General');
+    });
+    return m;
+  }, [entrepreneurships]);
+
+  // Load user interests from profile (cast to UserProfile to access interests safely)
+  const { data: profileData } = useProfile() as unknown as { data?: UserProfile };
+  // Favorites support
+  const favorites = (profileData?.favorites ?? []) as any[];
+  const favByEntreId = useMemo(() => new Map<number, any>(favorites.map((f: any) => [Number(f.entrepreneurship_id), f])), [favorites]);
+  const [pendingById, setPendingById] = useState<Record<number, boolean>>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<{ favoriteId: number; bizId: number } | null>(null);
+  const addFav = useAddFavorite();
+  const removeFav = useRemoveFavorite();
+  const { user: authUser } = useAuth();
+  const authInterests: string[] = Array.isArray(authUser?.interests)
+    ? (authUser!.interests as any[]).map(i => (typeof i === 'string' ? i : (i?.name ?? i?.interest ?? ''))).filter(Boolean)
+    : [];
+  // Derive interest names directly from backend (format=names)
+  const { data: derivedInterestNames } = useQuery<string[]>({
+    queryKey: ['interests', 'home', authUser?.id],
+    enabled: !!authUser?.id && !(profileData?.interests && profileData.interests.length > 0) && authInterests.length === 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const res = await api.get('/interests', { params: { user_id: authUser!.id, format: 'names' } }).then(r => r.data);
+      const names = Array.isArray(res?.interests) ? res.interests : [];
+      return Array.from(new Set(names as string[]));
+    }
+  });
+  // Merge and de-duplicate interests from both sources
+  const mergedInterests = Array.from(new Set([...
+    ((profileData?.interests ?? []) as string[]),
+    ...authInterests,
+    ...(derivedInterestNames ?? []),
+  ]));
+  const userInterests: string[] = mergedInterests;
+  const interestsSet = useMemo(() => new Set(userInterests.map(i => removeAccents((i || '').toLowerCase()))), [userInterests]);
 
   interface CategoriesProps {
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
-}
-const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
-  const categoryScrollRef = useRef<HTMLDivElement | null>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
-
-  const categories = [
-    { name: 'Todos', icon: Apps, count: 120 },
-    { name: 'Comida', icon: Restaurant, count: 45 },
-    { name: 'Joyería', icon: Diamond, count: 23 },
-    { name: 'Ropa', icon: Checkroom, count: 18 },
-    { name: 'Arte', icon: Palette, count: 15 },
-    { name: 'Tecnología', icon: Computer, count: 12 },
-    { name: 'Deportes', icon: SportsBaseball, count: 7 }
-  ];
-  const scrollCategories = (direction: "left" | "right") => {
-    if (!categoryScrollRef.current) return;
-    const scrollAmount = 220;
-    categoryScrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
+    selectedCategory: string;
+    setSelectedCategory: (category: string) => void;
+  }
+  const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
+    const categoryScrollRef = useRef<HTMLDivElement | null>(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(false);
+    // Fetch categories from backend
+    const { data: categoriesData, isLoading: loadingCategories } = useQuery<Category[]>({
+      queryKey: ['categories', 'home'],
+      queryFn: () => categoryApi.getAll(),
+      select: (d) => d ?? [],
+      staleTime: 5 * 60 * 1000,
     });
-  };
-  const checkScroll = () => {
-    if (!categoryScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
-    setShowLeftArrow(scrollLeft > 0);
-    setShowRightArrow(scrollLeft + clientWidth < scrollWidth);
-  };
 
-  useEffect(() => {
-    checkScroll();
-    const ref = categoryScrollRef.current;
-    ref?.addEventListener("scroll", checkScroll);
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      ref?.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
+    // Build counts depending on view: products per category or entrepreneurships per category
+    const counts = useMemo(() => {
+      const map = new Map<string, number>();
+      if (viewMode === 'productos') {
+        (allProducts || []).forEach((p) => {
+          const productCatName = p?.category_id != null
+            ? (categoryNameById.get(Number(p.category_id)) || 'General')
+            : (bizCategoryByEntreId.get(p.entrepreneurship_id) || 'General');
+          map.set(productCatName, (map.get(productCatName) || 0) + 1);
+        });
+      } else {
+        entrepreneurships.forEach((b: any) => {
+          const name = b?.category_relation?.nombre || 'General';
+          map.set(name, (map.get(name) || 0) + 1);
+        });
+      }
+      return map;
+    }, [viewMode, entrepreneurships, allProducts, categoryNameById, bizCategoryByEntreId]);
+    const totalCount = viewMode === 'productos' ? (allProducts?.length || 0) : entrepreneurships.length;
+    // Count items for "Mis intereses"
+    const misInteresesCount = useMemo(() => {
+      if (!userInterests.length) return 0;
+      return Array.from(counts.entries()).reduce((acc, [name, c]) => {
+        const normalized = removeAccents((name || '').toLowerCase());
+        return acc + (interestsSet.has(normalized) ? c : 0);
+      }, 0);
+    }, [userInterests.length, counts, interestsSet]);
+
+    // Compose final category list: Todos + Mis intereses (if any) + categories from API
+    const categories = useMemo(() => ([
+      { name: 'Todos', icon: Apps, count: totalCount },
+      ...(
+        userInterests.length
+          ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
+          : []
+      ),
+      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre, icon: Palette, count: counts.get(c.nombre) || 0 })))
+    ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
+    const scrollCategories = (direction: "left" | "right") => {
+      if (!categoryScrollRef.current) return;
+      const scrollAmount = 220;
+      categoryScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
     };
-  }, []);
+    const checkScroll = () => {
+      if (!categoryScrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth);
+    };
 
-  return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
-      <div className="relative overflow-hidden">
-        {showLeftArrow && (
-          <button
-            onClick={() => scrollCategories("left")}
-            aria-label="Anterior categorías"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
+    useEffect(() => {
+      checkScroll();
+      const ref = categoryScrollRef.current;
+      ref?.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        ref?.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
+    }, []);
+
+    return (
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
+        <div className="relative overflow-hidden">
+          {showLeftArrow && (
+            <button
+              onClick={() => scrollCategories("left")}
+              aria-label="Anterior categorías"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
+            >
+              <ChevronLeft sx={{ fontSize: 20 }} />
+            </button>
+          )}
+
+          <div
+            ref={categoryScrollRef}
+            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll"
           >
-            <ChevronLeft sx={{ fontSize: 20 }} />
-          </button>
-        )}
+            {loadingCategories ? (
+              <div className="text-secondary px-8 py-2">Cargando categorías...</div>
+            ) : categories.map((category) => {
+              const isSelected = selectedCategory === category.name;
+              return (
+                <button
+                  key={category.name}
+                  onClick={() => setSelectedCategory(category.name)}
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                    isSelected
+                      ? "bg-brand text-white border-brand"
+                      : "bg-white text-secondary border-border hover:border-brand/50"
+                  }`}
+                >
+                  <img
+                    src={categoryIconUrl(category.name, isSelected ? '#FFFFFF' : '#5b98b8')}
+                    alt={category.name}
+                    className="w-4 h-4"
+                  />
+                  <span className="font-medium">{category.name}</span>
+                  <span className="text-xs opacity-75">({category.count})</span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div
-          ref={categoryScrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-8 category-scroll"
-        >
-          {categories.map((category) => {
-            const IconComponent = category.icon;
-            return (
-              <button
-                key={category.name}
-                onClick={() => setSelectedCategory(category.name)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-                  selectedCategory === category.name
-                    ? "bg-brand text-white border-brand"
-                    : "bg-white text-secondary border-border hover:border-brand/50"
-                }`}
-              >
-                <IconComponent sx={{ fontSize: 16 }} />
-                <span className="font-medium">{category.name}</span>
-                <span className="text-xs opacity-75">({category.count})</span>
-              </button>
-            );
-          })}
+
+          {showRightArrow && (
+            <button
+              onClick={() => scrollCategories("right")}
+              aria-label="Siguiente categorías"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
+            >
+              <ChevronRight sx={{ fontSize: 20 }} />
+            </button>
+          )}
         </div>
-
-        {showRightArrow && (
-          <button
-            onClick={() => scrollCategories("right")}
-            aria-label="Siguiente categorías"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
-          >
-            <ChevronRight sx={{ fontSize: 20 }} />
-          </button>
-        )}
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 
   // Derive zones from backend data if available (owner.canton or address)
@@ -245,7 +348,9 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
   // Filter businesses by category, search query, and selected zone (backend data)
  const filteredBusinesses = entrepreneurships.filter((business: any) => {
   const categoryName = business?.category_relation?.nombre || '';
-  const matchesCategory = selectedCategory === 'Todos' || categoryName === selectedCategory;
+  const normalizedCat = removeAccents(categoryName.toLowerCase());
+  const isInterestCat = selectedCategory === 'Mis intereses' && interestsSet.size > 0 && interestsSet.has(normalizedCat);
+  const matchesCategory = selectedCategory === 'Todos' || categoryName === selectedCategory || isInterestCat;
   const matchesSearch = searchQuery === '' ||
     removeAccents((business.name || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
     removeAccents((business.description || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
@@ -257,7 +362,38 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
 
 
   // Products view placeholder (global products listing not connected yet)
-  const filteredProducts: any[] = [];
+  const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
+    queryKey: ['products', 'all', viewMode],
+    queryFn: async () => {
+      const res = await productApi.getAll({ per_page: 60 });
+      return (res?.data ?? []) as Product[];
+    },
+    enabled: viewMode === 'productos',
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const allProducts: Product[] = products ?? [];
+
+  // Filtrado de productos por categoría efectiva del producto
+  const filteredProducts: Product[] = allProducts.filter((p) => {
+    const effectiveCategoryName = p?.category_id != null
+      ? (categoryNameById.get(Number(p.category_id)) || 'General')
+      : (bizCategoryByEntreId.get(p.entrepreneurship_id) || 'General');
+
+    // Match por categoría seleccionada
+    const matchesCategory = selectedCategory === 'Todos'
+      ? true
+      : selectedCategory === 'Mis intereses'
+        ? interestsSet.has(removeAccents((effectiveCategoryName || '').toLowerCase()))
+        : effectiveCategoryName === selectedCategory;
+
+    const matchesSearch =
+      searchQuery === '' ||
+      removeAccents((p.name || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase())) ||
+      removeAccents((p.description || '').toLowerCase()).includes(removeAccents(searchQuery.toLowerCase()));
+
+    return matchesCategory && matchesSearch;
+  });
 
   // Sugerencias de búsqueda solo para emprendimientos
   const searchSuggestions = searchQuery.length > 0 ? [
@@ -341,41 +477,50 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 </FloatingElement>
                 Emprendimiento del Día
               </h2>
-              <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-6 border border-border">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="md:w-32 md:h-32 w-full h-48 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
-                    <img 
-                      src={(filteredBusinesses[0] ?? entrepreneurships[0])?.image_url || "https://placehold.co/400x300?text=Sin+imagen"} 
-                      alt={(filteredBusinesses[0] ?? entrepreneurships[0])?.name || "Emprendimiento"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-primary">{(filteredBusinesses[0] ?? entrepreneurships[0])?.name || "Emprendimiento"}</h3>
-                      <div className="flex items-center gap-1">
-                        <Star sx={{ fontSize: 16 }} className="text-amber-500" />
-                        <span className="text-sm text-secondary">-</span>
+              {(() => {
+                const featured = entrepreneurships.find((b: any) => b?.id === 1) || filteredBusinesses[0] || entrepreneurships[0];
+                const featuredId = featured?.id ?? '';
+                return (
+                  <Link
+                    to={`/feed/emprendimiento/${featuredId}`}
+                    className="block"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                  >
+                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-6 border border-border">
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="md:w-32 md:h-32 w-full h-48 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
+                          <img 
+                            src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"} 
+                            alt={featured?.name || "Emprendimiento"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-semibold text-primary">{featured?.name || "Emprendimiento"}</h3>
+                            <div className="flex items-center gap-1">
+                              <Star sx={{ fontSize: 16 }} className="text-amber-500" />
+                              <span className="text-sm text-secondary">-</span>
+                            </div>
+                          </div>
+                          <p className="text-secondary text-sm mb-3">
+                            {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
+                              <Palette sx={{ fontSize: 12 }} />
+                              {featured?.category_relation?.nombre || "General"}
+                            </span>
+                            <span className="text-brand hover:text-brandDark text-sm font-medium">
+                              Ver emprendimiento →
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-secondary text-sm mb-3">
-                      {(filteredBusinesses[0] ?? entrepreneurships[0])?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
-                        <Palette sx={{ fontSize: 12 }} />
-                        {(filteredBusinesses[0] ?? entrepreneurships[0])?.category_relation?.nombre || "General"}
-                      </span>
-                      <Link 
-                        to={`/feed/emprendimiento/${(filteredBusinesses[0] ?? entrepreneurships[0])?.id ?? ''}`}
-                        className="text-brand hover:text-brandDark text-sm font-medium"
-                      >
-                        Ver emprendimiento →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </GlowingCard>
+                    </GlowingCard>
+                  </Link>
+                );
+              })()}
             </AnimatedContainer>
 
             {/* Search Bar + Zone Selector */}
@@ -448,32 +593,55 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
               ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBusinesses.map((business: any) => (
-                  <Link 
-                    key={business.id} 
-                    to={`/feed/emprendimiento/${business.id}`} 
+                  <Link
+                    key={business.id}
+                    to={`/feed/emprendimiento/${business.id}`}
                     className="block"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                   >
-                    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-48 bg-brand/10 overflow-hidden">
-                        <img 
-                          src={business.image_url || "https://placehold.co/600x300?text=Sin+imagen"} 
+                    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                      <div className="aspect-square bg-gray-50 relative overflow-hidden">
+                        <img
+                          src={business.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
                           alt={business.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         />
                       </div>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-medium text-primary">{business.name}</h3>
-                          <button className="text-secondary hover:text-red-500 transition-colors">
-                            <FavoriteBorder sx={{ fontSize: 18 }} />
+                      <div className="p-4 flex-1 flex flex-col">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{business.name}</h3>
+                          <button
+                            className="text-secondary hover:text-brand transition-colors"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const bizId = Number(business.id);
+                              const existing = favByEntreId.get(bizId);
+                              if (existing?.id) {
+                                setPendingRemove({ favoriteId: existing.id, bizId });
+                                setConfirmOpen(true);
+                              } else {
+                                setPendingById((p) => ({ ...p, [bizId]: true }));
+                                addFav.mutate(bizId, {
+                                  onSettled: () => setPendingById((p) => ({ ...p, [bizId]: false })),
+                                });
+                              }
+                            }}
+                            disabled={pendingById[Number(business.id)]}
+                            aria-label={favByEntreId.has(Number(business.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                          >
+                            {favByEntreId.has(Number(business.id)) ? (
+                              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
+                            ) : (
+                              <FavoriteBorder sx={{ fontSize: 18 }} />
+                            )}
                           </button>
                         </div>
-                        <p className="text-secondary text-sm mb-3">{business.description}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
+                        <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center gap-1 text-secondary">
                             <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                            <span className="text-sm text-secondary">-</span>
+                            <span className="text-xs">-</span>
                           </div>
                           <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
                             {business.category_relation?.nombre || 'General'}
@@ -490,11 +658,10 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
         ) : (
           <>
             {/* Categories */}
-           <Categories
-            selectedCategory={selectedCategory} 
-            setSelectedCategory={setSelectedCategory}
-           />
-           
+            <Categories
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
 
             {/* Popular Products */}
             <AnimatedContainer>
@@ -504,23 +671,69 @@ const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCa
                 </FloatingElement>
                 Productos Populares
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product, index) => (
-                  <AnimatedCard key={`${product.businessName}-${index}`}>
+              {loadingProducts ? (
+                <div className="text-secondary">Cargando productos...</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredProducts.map((product) => (
+                    <Link
+                      key={product.id}
+                      to={`/product/${product.id}`}
+                      className="block"
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                    >
+                      <AnimatedCard>
                     <ProductCard
-                      title={product.title}
-                      description={product.description}
+                      title={product.name}
+                      description={product.description || ''}
                       price={product.price}
-                      imgUrl={product.imgUrl}
-                      onBuy={() => alert(`Compraste: ${product.title}`)}
+                      imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
+                      categoryName={product?.category_id != null ? (categoryNameById.get(Number(product.category_id)) || 'General') : undefined}
+                      onBuy={() => alert(`Compraste: ${product.name}`)}
                     />
                   </AnimatedCard>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </AnimatedContainer>
           </>
         )}
       </div>
+      {/* Confirm remove favorite (Home) */}
+      <Modal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Eliminar de favoritos"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setConfirmOpen(false)}
+              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (pendingRemove) {
+                  const { favoriteId, bizId } = pendingRemove;
+                  setPendingById((p) => ({ ...p, [bizId]: true }));
+                  removeFav.mutate(favoriteId, {
+                    onSettled: () => setPendingById((p) => ({ ...p, [bizId]: false })),
+                  });
+                }
+                setConfirmOpen(false);
+                setPendingRemove(null);
+              }}
+              className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, LogOut } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   // Close dropdown when clicking outside
@@ -41,13 +41,21 @@ export function UserProfile() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full p-1"
+        className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 rounded-full p-1"
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-          <User size={18} />
-        </div>
+        {user?.avatar_url ? (
+          <img
+            src={user.avatar_url}
+            alt={user.name || 'Avatar'}
+            className="w-8 h-8 rounded-full object-cover border border-border"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brandDark font-semibold text-sm select-none">
+            {(user?.name || user?.email || 'U').trim().charAt(0).toUpperCase()}
+          </div>
+        )}
       </button>
 
       {isOpen && (
@@ -55,14 +63,15 @@ export function UserProfile() {
           <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
             <p className="font-medium">Mi Cuenta</p>
           </div>
-          <Link
-            to="/profile"
+          <button
             className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-            onClick={() => setIsOpen(false)}
+            onClick={() => { setIsOpen(false); navigate('/profile'); }}
+            aria-label="Ir al perfil"
+            role="menuitem"
           >
             <User size={16} className="mr-2" />
             Perfil
-          </Link>
+          </button>
           <button
             onClick={() => {
               setIsOpen(false);

@@ -3,6 +3,7 @@ import { X, UtensilsCrossed, Gem, Shirt, Paintbrush, Laptop, Dumbbell, Music, Bo
 interface InterestCardProps {
   title: string;
   onRemove?: () => void;
+  iconUrl?: string;
 }
 
 const iconMap = {
@@ -16,12 +17,16 @@ const iconMap = {
   'Libros': BookOpen,
 };
 
-export function InterestCard({ title, onRemove }: InterestCardProps) {
+export function InterestCard({ title, onRemove, iconUrl }: InterestCardProps) {
   const IconComponent = iconMap[title as keyof typeof iconMap] || UtensilsCrossed;
 
   return (
     <div className="relative group w-[136px] h-[96px] bg-white rounded-card border border-border shadow-soft flex flex-col items-center justify-center hover:shadow-lg transition-shadow">
-      <IconComponent className="w-8 h-8 text-secondary mb-2" />
+      {iconUrl ? (
+        <img src={iconUrl} alt={title} className="w-8 h-8 text-secondary mb-2" />
+      ) : (
+        <IconComponent className="w-8 h-8 text-secondary mb-2" />
+      )}
       <span className="text-sm font-medium text-primary text-center px-2">
         {title}
       </span>

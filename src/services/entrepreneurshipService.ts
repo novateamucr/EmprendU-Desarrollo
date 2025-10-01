@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://emprendu-backend.test';
+import { api } from '../lib/api';
 
 // Types
 export interface User {
@@ -85,41 +83,56 @@ export interface Product {
   id: number;
   name: string;
   description: string | null;
+  long_description?: string | null;
   sku: string;
   price: number;
   cost: number | null;
   stock: number;
   status: 'active' | 'draft' | 'out_of_stock';
   category: string;
+  // Nuevo: categoría opcional por id proveniente del backend
+  category_id?: number;
   image_url: string | null;
   entrepreneurship_id: number;
-  created_at: string;
-  updated_at: string;
   entrepreneurship?: {
     id: number;
     name: string;
+    image_url?: string | null;
     // Add other necessary fields from Entrepreneurship
   };
 }
+
+// Category API
+export const categoryApi = {
+  getAll: async (): Promise<Category[]> => {
+    try {
+      const response = await api.get('/categories');
+      const data = (response.data && Array.isArray(response.data.data)) ? response.data.data : response.data;
+      return data as Category[];
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+  },
+};
+
 
 // Entrepreneurship API
 export const entrepreneurshipApi = {
   // Get all entrepreneurships with pagination
   getAll: async (params?: PaginationParams): Promise<PaginatedResponse<Entrepreneurship>> => {
     try {
-      const response = await axios.get<PaginatedResponse<Entrepreneurship>>(
-        `${API_BASE_URL}/api/entrepreneurships`,
+      const response = await api.get<PaginatedResponse<Entrepreneurship>>(
+        '/entrepreneurships',
         {
           params: {
             ...(params || {}),
             page: params?.page ?? 1,
             per_page: params?.per_page ?? 15,
           },
-          withCredentials: true,
         }
       );
-      
-      return response.data;
+      return response.data as any;
     } catch (error) {
       console.error('Error fetching entrepreneurships:', error);
       throw error;
@@ -129,11 +142,10 @@ export const entrepreneurshipApi = {
   // Get a single entrepreneurship by ID with relationships
   getById: async (id: string): Promise<Entrepreneurship> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/entrepreneurships/${id}`, {
-        withCredentials: true,
+      const response = await api.get(`/entrepreneurships/${id}`, {
         params: {
-          include: 'owner,category_relation,products,favorites'
-        }
+          include: 'owner,category_relation,products,favorites',
+        },
       });
       return response.data;
     } catch (error) {
@@ -157,11 +169,8 @@ export const entrepreneurshipApi = {
         }
       });
       
-      const response = await axios.post(`${API_BASE_URL}/api/entrepreneurships`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true,
+      const response = await api.post('/entrepreneurships', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       
       return response.data;
@@ -189,16 +198,10 @@ export const entrepreneurshipApi = {
       formData.append('id', id);
 
       // Use PATCH to the resource URL to satisfy Laravel route-model binding
-      console.debug('Updating entrepreneurship (PATCH resource URL)', { id, url: `${API_BASE_URL}/api/entrepreneurships/${id}` });
-      const response = await axios.patch(
-        `${API_BASE_URL}/api/entrepreneurships/${id}`,
+      const response = await api.patch(
+        `/entrepreneurships/${id}`,
         formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          withCredentials: true,
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       
       return response.data;
@@ -211,9 +214,7 @@ export const entrepreneurshipApi = {
   // Delete an entrepreneurship
   delete: async (id: string): Promise<void> => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/entrepreneurships/${id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/entrepreneurships/${id}`);
     } catch (error) {
       console.error(`Error deleting entrepreneurship ${id}:`, error);
       throw error;
@@ -223,28 +224,48 @@ export const entrepreneurshipApi = {
 
 // Product API
 export const productApi = {
-  // Get all products for an entrepreneurship with pagination
-  getByEntrepreneurship: async (
-    entrepreneurshipId: string,
+  // Get all products with pagination (global listing)
+  getAll: async (
     params?: PaginationParams & { category?: string; status?: string; search?: string }
   ): Promise<PaginatedResponse<Product>> => {
     try {
-      const response = await axios.get<PaginatedResponse<Product>>(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products`,
+      const response = await api.get<PaginatedResponse<Product>>(
+        '/products',
         {
           params: {
             page: params?.page || 1,
-            per_page: params?.per_page || 15,
+            per_page: params?.per_page || 24,
             sort_by: params?.sort_by,
             sort_order: params?.sort_order,
             category: params?.category,
             status: params?.status,
-            search: params?.search
+            search: params?.search,
           },
-          withCredentials: true,
         }
       );
-      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
+  },
+  // Get all products for an entrepreneurship with pagination (backend expects query param)
+  getByEntrepreneurship: async (
+    entrepreneurshipId: string,
+    params?: PaginationParams & { search?: string }
+  ): Promise<PaginatedResponse<Product>> => {
+    try {
+      const response = await api.get<PaginatedResponse<Product>>(
+        '/products',
+        {
+          params: {
+            page: params?.page || 1,
+            per_page: params?.per_page || 15,
+            search: params?.search,
+            entrepreneurship_id: entrepreneurshipId,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error(`Error fetching products for entrepreneurship ${entrepreneurshipId}:`, error);
@@ -253,59 +274,45 @@ export const productApi = {
   },
 
   // Get a single product by ID
-  getById: async (entrepreneurshipId: string, productId: string): Promise<Product> => {
+  getSingle: async (productId: string): Promise<Product> => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products/${productId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await api.get(`/products/${productId}`);
       return response.data;
     } catch (error) {
-      console.error(
-        `Error fetching product ${productId} from entrepreneurship ${entrepreneurshipId}:`,
-        error
-      );
+      console.error(`Error fetching product ${productId}:`, error);
       throw error;
     }
   },
 
-  // Create a new product
+  // Keep signature but call top-level endpoint to match backend
+  getById: async (_entrepreneurshipId: string, productId: string): Promise<Product> => {
+    try {
+      const response = await api.get(`/products/${productId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching product ${productId}:`, error);
+      throw error;
+    }
+  },
+
+
+  // Create a new product (backend expects JSON, not multipart)
   create: async (
     entrepreneurshipId: string,
-    productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'entrepreneurship_id'> & { image?: File }
+    productData: Partial<Omit<Product, 'id' | 'entrepreneurship_id' | 'entrepreneurship'>> & { image_url?: string }
   ): Promise<Product> => {
     try {
-      const formData = new FormData();
-      
-      // Add all product data as JSON
-      const { image } = productData;
-      formData.append('name', productData.name);
-      formData.append('description', productData.description || '');
-      formData.append('sku', productData.sku);
-      formData.append('price', productData.price.toString());
-      formData.append('cost', productData.cost?.toString() || '');
-      formData.append('stock', productData.stock.toString());
-      formData.append('status', productData.status);
-      formData.append('category', productData.category);
-      
-      // Add image if provided
-      if (image) {
-        formData.append('image', image);
-      }
-      
-      const response = await axios.post<Product>(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          withCredentials: true,
-        }
-      );
-      
+      const payload: Record<string, any> = {
+        entrepreneurship_id: entrepreneurshipId,
+      };
+
+      const allowed: (keyof Product)[] = ['name','description','long_description','price','image_url','category_id'];
+      allowed.forEach((key) => {
+        const v = (productData as any)[key];
+        if (v !== undefined) payload[key] = v;
+      });
+
+      const response = await api.post<Product>('/products', payload);
       return response.data;
     } catch (error) {
       console.error('Error creating product:', error);
@@ -313,44 +320,21 @@ export const productApi = {
     }
   },
 
-  // Update a product
+  // Update an existing product (JSON to /products/{id})
   update: async (
-    entrepreneurshipId: string, 
-    productId: string, 
-    productData: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at' | 'entrepreneurship_id'>> & { image?: File }
+    _entrepreneurshipId: string,
+    productId: string,
+    productData: Partial<Omit<Product, 'id' | 'entrepreneurship_id' | 'entrepreneurship'>> & { image_url?: string }
   ): Promise<Product> => {
     try {
-      const formData = new FormData();
-      
-      // Add all product data as JSON
-      const { image } = productData;
-      
-      // Only append fields that are defined
-      if (productData.name !== undefined) formData.append('name', productData.name);
-      if (productData.description !== undefined) formData.append('description', productData.description || '');
-      if (productData.sku !== undefined) formData.append('sku', productData.sku);
-      if (productData.price !== undefined) formData.append('price', productData.price.toString());
-      if (productData.cost !== undefined) formData.append('cost', productData.cost?.toString() || '');
-      if (productData.stock !== undefined) formData.append('stock', productData.stock.toString());
-      if (productData.status !== undefined) formData.append('status', productData.status);
-      if (productData.category !== undefined) formData.append('category', productData.category);
-      
-      // Add image if provided
-      if (image) {
-        formData.append('image', image);
-      }
-      
-      const response = await axios.post<Product>(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products/${productId}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          withCredentials: true,
-        }
-      );
-      
+      const payload: Record<string, any> = {};
+      const allowed: (keyof Product)[] = ['entrepreneurship_id','name','description','long_description','price','image_url','category_id'];
+      allowed.forEach((key) => {
+        const v = (productData as any)[key];
+        if (v !== undefined) payload[key] = v;
+      });
+
+      const response = await api.patch<Product>(`/products/${productId}`, payload);
       return response.data;
     } catch (error) {
       console.error(`Error updating product ${productId}:`, error);
@@ -358,75 +342,35 @@ export const productApi = {
     }
   },
 
-  // Delete a product
-  delete: async (entrepreneurshipId: string, productId: string): Promise<void> => {
+  // Delete a product (top-level route)
+  delete: async (_entrepreneurshipId: string, productId: string): Promise<void> => {
     try {
-      await axios.delete(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products/${productId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await api.delete(`/products/${productId}`);
     } catch (error) {
-      console.error(
-        `Error deleting product ${productId} from entrepreneurship ${entrepreneurshipId}:`,
-        error
-      );
+      console.error(`Error deleting product ${productId}:`, error);
       throw error;
     }
   },
 
-  // Update product stock
+
+  // Update product stock (no backend support currently) — placeholder disabled
   updateStock: async (
-    entrepreneurshipId: string,
+    _entrepreneurshipId: string,
     productId: string,
-    stock: number
+    _stock: number
   ): Promise<Product> => {
-    try {
-      const response = await axios.patch(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products/${productId}/stock`,
-        { stock },
-        {
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Error updating stock for product ${productId} in entrepreneurship ${entrepreneurshipId}:`,
-        error
-      );
-      throw error;
-    }
+    throw new Error(`Stock update not supported by backend for product ${productId}`);
   },
 
-  // Update product status
+
+  // Update product status (no backend support currently) — placeholder disabled
   updateStatus: async (
-    entrepreneurshipId: string, 
-    productId: string, 
-    status: 'active' | 'draft' | 'out_of_stock'
+    _entrepreneurshipId: string,
+    productId: string,
+    _status: 'active' | 'draft' | 'out_of_stock'
   ): Promise<Product> => {
-    try {
-      const response = await axios.patch(
-        `${API_BASE_URL}/api/entrepreneurships/${entrepreneurshipId}/products/${productId}/status`,
-        { status },
-        {
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Error updating status for product ${productId} in entrepreneurship ${entrepreneurshipId}:`,
-        error
-      );
-      throw error;
-    }
+    throw new Error(`Status update not supported by backend for product ${productId}`);
   },
-};
 
-// Export all APIs
-export default {
-  entrepreneurship: entrepreneurshipApi,
-  product: productApi,
+  category: categoryApi,
 };

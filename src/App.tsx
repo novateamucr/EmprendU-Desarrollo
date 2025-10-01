@@ -18,6 +18,7 @@ import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
+import NewPw from './routes/NewPw';
 import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import { RootRedirect } from './components/RootRedirect';
 
@@ -29,13 +30,13 @@ import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
 import ProductInventory from './routes/entrepreneur/components/ProductInventory';
 
-import NewPw from './routes/NewPw';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
 import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
 import { CartProvider } from './context/CartContext';
 import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
+import ProductDetail from './routes/ProductDetail';
 
 const queryClient = new QueryClient();
 
@@ -84,13 +85,28 @@ function App() {
                   <Route path="/card" element={<Navigate to="/cart" replace />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/home" element={<Home />} />
-                  <Route path="/profile" element={<Perfil />} />
-                  <Route path="/perfil/editar" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
                 </Route>
+
+                {/* Profile routes accessible to all authenticated roles (1,2,3) */}
+                <Route path="/profile" element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <Layout>
+                      <Perfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/perfil/editar" element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <Layout>
+                      <EditarPerfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
 
                 {/* 
                     ADMIN ROUTES (Role 3 only)
@@ -121,6 +137,14 @@ function App() {
                   <ProtectedRoute allowedRoles={[3]}>
                     <Layout>
                       <AñadirEmprendimiento />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                {/* Admin edit user profile by ID */}
+                <Route path="/profile/edit/:id" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <EditarPerfil />
                     </Layout>
                   </ProtectedRoute>
                 } />

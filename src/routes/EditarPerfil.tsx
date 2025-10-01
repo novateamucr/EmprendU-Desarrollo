@@ -352,7 +352,8 @@ export function EditarPerfil() {
                 {/* Avatar */}
                 <div className="flex justify-center mb-8">
                   <ImageUpload
-                    currentImage={user.avatarUrl || 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg'}
+                    currentImage={user.avatarUrl}
+                    placeholderInitial={(user.name || user.email || 'U').trim().charAt(0).toUpperCase()}
                     onImageChange={(imageData) => {
                       uploadAvatarMutation.mutate(imageData);
                     }}
