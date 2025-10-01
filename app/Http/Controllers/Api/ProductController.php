@@ -27,8 +27,10 @@ class ProductController extends Controller
             'entrepreneurship_id' => 'required|exists:entrepreneurships,id',
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
+            'long_description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'image_url' => 'nullable|url|max:255',
+            'category_id' => 'nullable|integer|exists:entrepreneurship_categories,id',
         ]);
 
         $product = Product::create($data);
@@ -46,8 +48,10 @@ class ProductController extends Controller
             'entrepreneurship_id' => 'sometimes|required|exists:entrepreneurships,id',
             'name' => 'sometimes|required|string|max:150',
             'description' => 'nullable|string',
+            'long_description' => 'nullable|string',
             'price' => 'sometimes|required|numeric|min:0',
             'image_url' => 'nullable|url|max:255',
+            'category_id' => 'nullable|integer|exists:entrepreneurship_categories,id',
         ]);
 
         $product->update($data);
