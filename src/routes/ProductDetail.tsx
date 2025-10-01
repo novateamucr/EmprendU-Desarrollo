@@ -1,0 +1,172 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
+import { Facebook, WhatsApp, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
+
+export default function ProductDetail() {
+  const { id } = useParams();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [catMap, setCatMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    productApi
+      .getSingle(id)
+      .then((data) => {
+        setProduct(data);
+        setError(null);
+      })
+      .catch(() => {
+        setError('No se pudo cargar el producto.');
+        setProduct(null);
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  // Fetch categories for mapping category_id -> name
+  useEffect(() => {
+    categoryApi.getAll()
+      .then((list: Category[]) => {
+        const map: Record<number, string> = {};
+        (list || []).forEach((c) => { if (c?.id != null) map[c.id] = c.nombre; });
+        setCatMap(map);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleOrder = () => {
+    if (!product) return;
+    // TODO: Integrar con flujo real de pedidos o carrito
+    alert(`Hacer pedido: ${product.name}`);
+  };
+
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToWhatsApp = () => {
+    const text = `Mira este producto: ${product?.name} - ${currentUrl}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert('Link copiado al portapapeles');
+    } catch {
+      // fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = currentUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copiado al portapapeles');
+    }
+  };
+
+  if (loading) return <div className="text-center py-8 text-gray-500">Cargando producto...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
+  if (!product) return <div className="text-center py-8 text-gray-500">Producto no encontrado.</div>;
+
+  return (
+    <div className="pt-24 pb-8">
+      {/* Entrepreneurship link (avatar + name) above the card */}
+      {product.entrepreneurship?.id && (
+        <div className="max-w-4xl mx-auto px-4 md:px-8 mb-2">
+          <Link
+            to={`/feed/emprendimiento/${product.entrepreneurship.id}`}
+            className="inline-flex items-center gap-2 text-sm text-secondary hover:text-primary"
+            title={product.entrepreneurship.name}
+          >
+            <ArrowBack sx={{ fontSize: 16 }} />
+            <img
+              src={product.entrepreneurship.image_url || 'https://placehold.co/64x64?text=E'}
+              alt={product.entrepreneurship.name}
+              className="w-8 h-8 rounded-full object-cover border border-border"
+            />
+            <span className="hover:underline">{product.entrepreneurship.name}</span>
+          </Link>
+        </div>
+      )}
+      <div className="p-4 md:p-8 max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="w-full">
+            <img
+              src={product.image_url || 'https://placehold.co/800x800?text=Sin+imagen'}
+              alt={product.name}
+              className="w-full h-auto rounded-lg object-cover"
+            />
+          </div>
+          <div className="relative flex flex-col pt-6 md:pt-1">
+            {product?.category_id != null && (
+              <span className="inline-block w-fit self-end mb-5 text-xs px-2 py-0.5 rounded-full bg-[#E6F4FA] text-[#0A5B7A]">
+                {catMap[Number(product.category_id)] || 'General'}
+              </span>
+            )}
+            <h1 className="text-2xl md:text-3xl font-bold text-primary">{product.name}</h1>
+            {product.description && (
+              <p className="text-secondary mt-2">{product.description}</p>
+            )}
+            {product.long_description && (
+              <div className="mt-4">
+                <h2 className="text-lg font-semibold text-primary">Descripción detallada</h2>
+                <p className="text-secondary whitespace-pre-line mt-2">{product.long_description}</p>
+              </div>
+            )}
+
+            <div className="mt-auto">
+              <p className="text-2xl font-semibold text-primary mt-6">₡{product.price.toLocaleString()}</p>
+              <div className="flex flex-col gap-3 mt-4">
+                <button
+                  onClick={handleOrder}
+                  className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors"
+                >
+                  Hacer pedido
+                </button>
+                {/* Share caption and icon buttons (tighter spacing) */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-secondary">¡Comparte!</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={shareToFacebook}
+                      aria-label="Compartir en Facebook"
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                      title="Compartir en Facebook"
+                    >
+                      <Facebook sx={{ fontSize: 18 }} />
+                    </button>
+                    <button
+                      onClick={shareToWhatsApp}
+                      aria-label="Compartir en WhatsApp"
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                      title="Compartir en WhatsApp"
+                    >
+                      <WhatsApp sx={{ fontSize: 18 }} />
+                    </button>
+                    <button
+                      onClick={copyLink}
+                      aria-label="Copiar link"
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                      title="Copiar link"
+                    >
+                      <LinkIcon sx={{ fontSize: 18 }} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

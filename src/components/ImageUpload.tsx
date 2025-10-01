@@ -8,9 +8,10 @@ interface ImageUploadProps {
   onImageChange: (imageData: string) => void;
   className?: string;
   onImageConfirm?: (imageData: string) => void;
+  placeholderInitial?: string; // Optional initial to show when no image
 }
 
-export function ImageUpload({ currentImage, onImageChange, className = '' }: ImageUploadProps) {
+export function ImageUpload({ currentImage, onImageChange, className = '', placeholderInitial }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, uploading, error, clearError } = useImageUpload();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -49,11 +50,19 @@ export function ImageUpload({ currentImage, onImageChange, className = '' }: Ima
   return (
     <div className={`relative ${className}`}>
       <div className="relative group">
-        <img
-          src={currentImage || '/vite.svg'}
-          alt="Avatar"
-          className="w-40 h-40 rounded-full border-4 border-white shadow-soft object-cover"
-        />
+        {currentImage ? (
+          <img
+            src={currentImage}
+            alt="Avatar"
+            className="w-40 h-40 rounded-full border-4 border-white shadow-soft object-cover"
+          />
+        ) : (
+          <div className="w-40 h-40 rounded-full border-4 border-white shadow-soft bg-brand/20 flex items-center justify-center">
+            <span className="text-brandDark text-5xl font-semibold select-none">
+              {(placeholderInitial || 'U').trim().charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
         
         {/* Upload hint overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full flex items-center justify-center transition-all duration-200">

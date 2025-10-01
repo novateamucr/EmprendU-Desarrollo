@@ -11,7 +11,8 @@ interface PanelPerfilProps {
 
 export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hideEdit = false }: PanelPerfilProps) {
   const navigate = useNavigate();
-  const defaultAvatarUrl = 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg';
+  // Helper to derive initial for placeholder avatar
+  const initial = (user.name || (user as any)?.email || 'U').trim().charAt(0).toUpperCase();
   // Derivar rol de manera robusta, priorizando id numérico si existe
   const rr: any = (user as any)?.role_relation;
   let displayedRole = '';
@@ -28,22 +29,24 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
       displayedRole = normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1);
     }
   }
+  const isAdminRole = rr?.id === 3 || String(displayedRole).toLowerCase() === 'administrador';
 
   return (
     <div className="bg-white rounded-card shadow-soft border border-border p-6 sticky top-20 ">
       {/* Avatar y información básica */}
       <div className="text-center mb-6">
         <div className="relative inline-block">
-          <img
-            src={user.avatarUrl || defaultAvatarUrl}
-            alt={`Avatar de ${user.name}`}
-            className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto"
-            onError={(e) => {
-              // Reemplazar por el avatar por defecto si falla la carga
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = defaultAvatarUrl;
-            }}
-          />
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={`Avatar de ${user.name}`}
+              className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto object-cover"
+            />
+          ) : (
+            <div className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto bg-brand/20 flex items-center justify-center">
+              <span className="text-brandDark text-4xl font-semibold select-none">{initial}</span>
+            </div>
+          )}
           {!hideEdit && (
             <button
               onClick={() => navigate('/profile/edit')}
@@ -56,7 +59,7 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
         </div>
         
         <div className="mt-4">
-          <p className="inline-block bg-brand/5 text-secondary px-2 py-0.5 rounded-full text-xs mb-2">
+          <p className={`inline-block px-2 py-0.5 rounded-full text-xs mb-2 ${isAdminRole ? 'bg-brand text-white' : 'bg-brand/5 text-secondary'}`}>
             {displayedRole}
           </p>
           <h1 className="text-xl font-semibold text-primary">{user.name}</h1>
