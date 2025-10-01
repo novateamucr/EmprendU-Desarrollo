@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 
 import emprendu from "../assets/emprendu.svg";
-import hero from "../assets/hero.png";
+import hero from "../assets/hero-blue.png";
+import footerHero from "../assets/hero-w.png";
 import vision from "../assets/vision_8440711.png";
 
 
@@ -55,6 +56,7 @@ export default function Landing() {
   const items = [
     { label: "Nosotros", href: "#porque" },
     { label: "Contacto", href: "#contacto" },
+    { label: "Login", Link: "/login", href: "/login" },
   ];
 
   // Cierra el menú con tecla Escape
@@ -104,7 +106,7 @@ export default function Landing() {
                 <a
                   key={index}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary font-medium"
+                  className="text-gray-700  hover:text-brandDark px-3   font-medium"
                 >
                   {item.label}
                 </a>
@@ -138,11 +140,7 @@ export default function Landing() {
           aria-modal="true"
           aria-label="Menú de navegación"
         >
-          {/* Fondo oscuro */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
+          
 
           {/* Panel menú */}
           <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl">
@@ -189,7 +187,7 @@ export default function Landing() {
           </p>
           <div className="flex gap-4">
             <Link to="/register">
-              <button className="px-6 py-3 border border-black rounded-full hover:bg-gray-100">
+              <button className="px-6 py-3 border bg-brand text-white rounded-full hover:bg-brandDark transition-colors">
                 Registrarse gratis
               </button>
             </Link>
@@ -235,10 +233,10 @@ export default function Landing() {
         <h2 className="text-2xl font-bold text-center mb-10">¿Cómo funciona?</h2>
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 relative">
-            <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-emerald-200"></div>
+            <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-brand/30"></div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-emerald-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
                 1
               </div>
               <h3 className="mt-4 font-semibold">Registra tu emprendimiento</h3>
@@ -248,7 +246,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-emerald-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
                 2
               </div>
               <h3 className="mt-4 font-semibold">Gestiona tu información</h3>
@@ -258,7 +256,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-emerald-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
                 3
               </div>
               <h3 className="mt-4 font-semibold">Conecta con la comunidad</h3>
@@ -268,7 +266,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-emerald-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
                 4
               </div>
               <h3 className="mt-4 font-semibold">Haz crecer tu emprendimiento</h3>
@@ -279,21 +277,25 @@ export default function Landing() {
           </div>
 
           <div className="flex justify-center mt-10">
-            <Link
-              to="/"
-              className="bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-emerald-600 transition"
-            >
-              Conocer más
+            <div className="flex gap-4">
+            <Link to="/">
+              <button className="px-6 py-3 border bg-brand text-white rounded-full hover:bg-brandDark transition-colors">
+                Conocer mas
+              </button>
             </Link>
+          </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contacto" className="bg-black text-white py-6">
+      <footer
+        id="contacto"
+        className="bg-brand text-white py-6 rounded-t-2xl"
+      >
         <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
           <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-          <img src={hero} alt="Logo" className="w-8 bg-white p-1 rounded-full" />
+          <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
         </div>
       </footer>
     </div>

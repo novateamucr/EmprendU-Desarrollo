@@ -5,6 +5,7 @@ import useEntrepreneurships from '../hooks/useEntrepreneurships';
 import { Layout } from '../components/layout/Layout';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
+import footerHero from "../assets/hero-w.png";
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 import { productApi, categoryApi, type Product, type Category } from '../services/entrepreneurshipService';
@@ -699,6 +700,16 @@ export default function Home() {
             </AnimatedContainer>
           </>
         )}
+        {/* Footer */}
+      <footer
+        id="contacto"
+        className="bg-brand text-white py-6 rounded-t-2xl"
+      >
+        <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
+          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
+          <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+        </div>
+      </footer>
       </div>
       {/* Confirm remove favorite (Home) */}
       <Modal
