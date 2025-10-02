@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\ReviewController;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
@@ -23,6 +24,7 @@ Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
 Route::apiResource('users', UserController::class);
+Route::apiResource('reviews', ReviewController::class);
 
 // Secure password update route (expects current_password, password, password_confirmation)
 Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
