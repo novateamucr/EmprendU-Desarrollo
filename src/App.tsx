@@ -35,10 +35,7 @@ import ProductInventory from './routes/entrepreneur/components/ProductInventory'
 
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
-import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
-import { CartProvider } from './context/CartContext';
-import Cart from './routes/Cart';
-import CartDetail from './routes/CartDetail';
+import  AñadirEmprendimiento  from './routes/AñadirEmprendimiento';
 import ProductDetail from './routes/ProductDetail';
 
 const queryClient = new QueryClient();
@@ -137,6 +134,13 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/añadir-emprendimientos" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <AñadirEmprendimiento />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/añadir-emprendimientos/:id" element={
                   <ProtectedRoute allowedRoles={[3]}>
                     <Layout>
                       <AñadirEmprendimiento />
