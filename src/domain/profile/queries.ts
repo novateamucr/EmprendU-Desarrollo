@@ -118,23 +118,30 @@ export function useAddFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (entrepreneurshipId: number) => addFavorite(entrepreneurshipId),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Actualizar inmediatamente el cache con la respuesta confirmada del backend
       queryClient.setQueryData<UserProfile>(PROFILE_KEY, (old) => {
-        if (!old) return old;
-        
-        // Map the DTO response to match our Favorito type
+        if (!old) return old as any;
+        const raw: any = (data as any)?.favorite ?? data;
         const newFavorite: Favorito = {
-          id: data.favorite.id,
-          entrepreneurship_id: data.favorite.entrepreneurship_id,
-          name: data.favorite.name,
-          imageUrl: data.favorite.image_url,
-          link: data.favorite.link,
-          category: data.favorite.category as any,
-          created_at: data.favorite.created_at
+          id: raw.id,
+          entrepreneurship_id: raw.entrepreneurship_id,
+          name: raw.name ?? '',
+          imageUrl: raw.image_url ?? '',
+          link: raw.link ?? '',
+          category: (raw.category ?? '') as any,
+          created_at: raw.created_at ?? new Date().toISOString()
         };
-        
-        return { ...old, favorites: [...old.favorites, newFavorite] };
+        // Evitar duplicados por si el backend ya lo tenía
+        const current = Array.isArray((old as any).favorites) ? (old as any).favorites as Favorito[] : [];
+        const exists = current.some(f => Number(f.entrepreneurship_id) === Number(newFavorite.entrepreneurship_id));
+        return exists ? { ...old, favorites: current } : { ...old, favorites: [...current, newFavorite] };
       });
+      // Refetch inmediato para reconciliar con el backend (fuerza GET)
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: PROFILE_KEY }),
+        queryClient.invalidateQueries({ queryKey: FAVORITES_KEY })
+      ]);
     }
   });
 }
@@ -212,10 +219,18 @@ export function useRemoveFavorite() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (favoriteId: number) => removeFavorite(favoriteId),
-    onSuccess: (_, favoriteId) => {
-      queryClient.setQueryData<UserProfile>(PROFILE_KEY, (old) => 
-        old ? { ...old, favorites: old.favorites.filter(f => f.id !== favoriteId) } : old
-      );
+    onSuccess: async (_res, favoriteId) => {
+      // Quitar inmediatamente del cache tras confirmación
+      queryClient.setQueryData<UserProfile>(PROFILE_KEY, (old) => {
+        if (!old) return old as any;
+        const current = Array.isArray((old as any).favorites) ? (old as any).favorites as Favorito[] : [];
+        return { ...old, favorites: current.filter(f => f.id !== favoriteId) } as UserProfile;
+      });
+      // Refetch inmediato para reconciliar con el backend (fuerza GET)
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: PROFILE_KEY }),
+        queryClient.invalidateQueries({ queryKey: FAVORITES_KEY })
+      ]);
     }
   });
 }

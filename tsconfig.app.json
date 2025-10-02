@@ -16,7 +16,6 @@
     "jsxImportSource": "@emotion/react",
     "types": ["vite/client", "@emotion/react"],
 
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

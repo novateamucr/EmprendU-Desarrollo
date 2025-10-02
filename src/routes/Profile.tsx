@@ -1,16 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/layout/Layout';
 import { PanelPerfil } from '../components/PanelPerfil';
 import { InterestCard } from '../components/InterestCard';
-import { FavoriteCard } from '../components/FavoriteCard';
+// import { FavoriteCard } from '../components/FavoriteCard';
 import { Modal } from '../components/Modal';
 import { api } from '../lib/api';
-import { useUpdateInterests } from '../domain/profile/queries';
+import { useRemoveFavorite } from '../domain/profile/queries';
+// import { useUpdateInterests } from '../domain/profile/queries';
 import { UserProfile } from '../domain/profile/types';
 import { ConfettiOverlay } from '../components/Confetti';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { categoryApi, entrepreneurshipApi, type Category, type Entrepreneurship } from '../services/entrepreneurshipService';
+import { categoryIconUrl } from '../utils/categoryIcons';
+import { Favorite } from '@mui/icons-material';
 
 interface ProfileData extends Omit<UserProfile, 'interests'> {
   role_relation?: {
@@ -25,6 +30,7 @@ interface ProfileData extends Omit<UserProfile, 'interests'> {
 export function Perfil() {
   const navigate = useNavigate();
   const { user: authUser, token } = useAuth(); // Get user and token from context
+  const queryClient = useQueryClient();
 
   const [user, setUser] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,9 +38,26 @@ export function Perfil() {
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [availableInterests] = useState(['Comida', 'Joyería', 'Ropa', 'Arte', 'Tecnología', 'Deportes', 'Música', 'Libros']);
+  // Eliminación directa desde el botón del corazón (sin modal)
+  const [favPendingById, setFavPendingById] = useState<Record<number, boolean>>({});
+  // Confirmación para eliminar favorito desde el perfil
+  const [showFavRemoveModal, setShowFavRemoveModal] = useState(false);
+  const [favToRemove, setFavToRemove] = useState<number | null>(null);
+  // Hook de eliminación de favoritos
+  const removeFav = useRemoveFavorite();
+  // Cache local de detalles de emprendimientos para favoritos
+  const [favDetailMap, setFavDetailMap] = useState<Record<number, { name: string; image_url: string }>>({});
+  // Categories from backend for interests picker
+  const { data: categories, isLoading: loadingCategories } = useQuery<Category[]>({
+    queryKey: ['categories', 'profile'],
+    queryFn: () => categoryApi.getAll(),
+  });
   const [showConfetti, setShowConfetti] = useState(false);
-  const updateInterests = useUpdateInterests();
+  // Carga y reintentos por sección
+  const [interestsLoaded, setInterestsLoaded] = useState(false);
+  const [interestsRetry, setInterestsRetry] = useState(0);
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+  const [favoritesRetry, setFavoritesRetry] = useState(0);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -63,7 +86,6 @@ export function Perfil() {
           response: error.response?.data,
           status: error.response?.status
         });
-        
         if (error.code === 'ECONNABORTED') {
           throw new Error('La solicitud está tardando demasiado. Por favor verifica tu conexión a internet.');
         }
@@ -105,6 +127,91 @@ export function Perfil() {
     }
   }, []);
 
+  // Sync interests con reintentos (hasta 3), sin recargar página
+  useEffect(() => {
+    let timer: any;
+    const loadInterests = async () => {
+      if (!authUser || !user || !categories) return;
+      if (interestsLoaded) return; // si ya cargó alguna vez, no reintentes
+      try {
+        const res = await api.get('/interests', { params: { user_id: authUser.id } });
+        const rows = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+        const byId = new Map<number, string>(categories.map(c => [c.id, c.nombre]));
+        const names = rows
+          .map((r: any) => byId.get(typeof r.category_id === 'string' ? parseInt(r.category_id, 10) : r.category_id))
+          .filter(Boolean) as string[];
+        setUser(prev => prev ? { ...prev, interests: names } : prev);
+        setInterestsLoaded(true);
+      } catch (err) {
+        console.warn('No se pudieron sincronizar intereses', err);
+        if (!interestsLoaded && interestsRetry < 6) {
+          // backoff progresivo (hasta 6 intentos): 1.2s, 2.4s, 3.6s, 4.8s, 6.0s, 7.2s
+          const delay = 1200 * (interestsRetry + 1);
+          timer = setTimeout(() => setInterestsRetry(r => r + 1), delay);
+        }
+      }
+    };
+    loadInterests();
+    return () => timer && clearTimeout(timer);
+  }, [authUser, user?.id, categories, interestsRetry, interestsLoaded]);
+
+  // Sync favorites con reintentos (hasta 3), sin recargar página
+  useEffect(() => {
+    let timer: any;
+    const loadFavorites = async () => {
+      if (!authUser || !user) return;
+      if (favoritesLoaded) return; // si ya cargó alguna vez, no reintentes
+      try {
+        const res = await api.get('/favorites', { params: { user_id: authUser.id } });
+        const rows = Array.isArray(res.data?.favorites)
+          ? res.data.favorites
+          : (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []));
+        setUser(prev => prev ? { ...prev, favorites: rows } : prev);
+        setFavoritesLoaded(true);
+      } catch (err) {
+        console.warn('No se pudieron sincronizar favoritos', err);
+        if (!favoritesLoaded && favoritesRetry < 6) {
+          // backoff progresivo (hasta 6 intentos): 1.2s, 2.4s, 3.6s, 4.8s, 6.0s, 7.2s
+          const delay = 1200 * (favoritesRetry + 1);
+          timer = setTimeout(() => setFavoritesRetry(r => r + 1), delay);
+        }
+      }
+    };
+    loadFavorites();
+    return () => timer && clearTimeout(timer);
+  }, [authUser, user?.id, favoritesRetry, favoritesLoaded]);
+
+  // Cargar detalles (nombre, imagen) de cada favorito por entrepreneurship_id
+  useEffect(() => {
+    const loadFavoriteDetails = async () => {
+      const favs = user?.favorites || [];
+      if (!favs.length) return;
+      const missingIds = favs
+        .map((f: any) => Number(f?.entrepreneurship_id))
+        .filter((id: number) => Number.isFinite(id) && !favDetailMap[id]);
+      if (!missingIds.length) return;
+      try {
+        const results = await Promise.allSettled(
+          missingIds.map((id) => entrepreneurshipApi.getById(String(id)))
+        );
+        const additions: Record<number, { name: string; image_url: string }> = {};
+        results.forEach((r, idx) => {
+          const id = missingIds[idx];
+          if (r.status === 'fulfilled' && r.value) {
+            const e = r.value as Entrepreneurship;
+            additions[id] = { name: e.name, image_url: e.image_url || '' };
+          } else {
+            additions[id] = { name: 'Emprendimiento', image_url: '' };
+          }
+        });
+        setFavDetailMap((prev) => ({ ...prev, ...additions }));
+      } catch (_) {
+        // silencioso
+      }
+    };
+    loadFavoriteDetails();
+  }, [user?.favorites, favDetailMap]);
+
   // Map API response to profile data
   const mapApiResponseToProfile = (data: any): ProfileData => {
     const interestsRaw = data.interests || [];
@@ -123,7 +230,7 @@ export function Perfil() {
         district: data.district || '---',
         address: data.address || '---'
       },
-      avatarUrl: data.avatar_url || 'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg',
+      avatarUrl: data.avatar_url || '',
       role: mapRoleFromBackend(data.role, data.role_relation),
       interests: Array.isArray(interests) ? interests : [],
       favorites: data.favorites || [],
@@ -145,33 +252,47 @@ export function Perfil() {
     return 'comprador';
   };
 
-  // Handle interest toggle
-  const toggleInteres = async (interes: string) => {
-    if (!user) return;
-    
-    const newInterests = user.interests.includes(interes)
-      ? user.interests.filter(i => i !== interes)
-      : [...user.interests, interes];
-    
+  // Use centralized icon utility to ensure consistent icons with fallback
+  const iconUrlForCategory = (name: string) => categoryIconUrl(name);
+
+  // Add interest by category (user_interests)
+  const addInterestByCategory = async (category: Category) => {
+    if (!authUser || !user) return;
     try {
-      // Update local state optimistically
-      setUser(prev => prev ? { ...prev, interests: newInterests } : null);
-      // Persist using domain hook (will also update cached profile)
-      updateInterests.mutate(newInterests);
-    } catch (err) {
-      console.error('Error updating interests:', err);
-      // Revert on error
-      setUser(prev => prev ? { ...prev, interests: user.interests } : null);
-      
-      // Show error to user
-      const error = err as Error;
-      setError(new Error(`Error al actualizar intereses: ${error.message}`));
+      await api.post('/interests', { user_id: authUser.id, category_id: category.id });
+      // Update UI with category name
+      setUser(prev => prev ? { ...prev, interests: Array.from(new Set([...(prev.interests || []), category.nombre])) } : prev);
+      // Invalidate caches so Home reflejos intereses actualizados
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
+    } catch (err: any) {
+      setError(new Error(err?.response?.data?.message || 'No se pudo agregar el interés'));
     }
   };
 
-  const handleSaveInterests = () => {
-    setShowInterestModal(false);
+  // Remove interest by category name: find record by category_id then delete
+  const removeInterestByName = async (categoryName: string) => {
+    if (!authUser || !user) return;
+    try {
+      // Find category_id by name
+      const cat = (categories || []).find(c => (c.nombre || '').toLowerCase() === categoryName.toLowerCase());
+      if (!cat) throw new Error('Categoría no encontrada');
+      // Find the interest record by querying with user_id and category_id
+      const res = await api.get('/interests', { params: { user_id: authUser.id, category_id: cat.id } });
+      const records = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+      const target = records[0];
+      if (target?.id) {
+        await api.delete(`/interests/${target.id}`);
+      }
+      setUser(prev => prev ? { ...prev, interests: (prev.interests || []).filter(i => i !== categoryName) } : prev);
+      // Invalidate caches so Home reflejos intereses actualizados
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
+    } catch (err: any) {
+      setError(new Error(err?.response?.data?.message || 'No se pudo eliminar el interés'));
+    }
   };
+
 
   if (isLoading) {
     return (
@@ -245,7 +366,7 @@ export function Perfil() {
     user.role_relation?.id === 3 ||
     user.role_relation?.nombre?.toLowerCase?.() === 'administrador';
 
-  // Admin-only view: center profile and hide interests/favorites
+  // If viewing own profile and user is admin: center the profile panel and hide interests/favorites
   if (isAdmin) {
     return (
       <Layout>
@@ -286,6 +407,8 @@ export function Perfil() {
             </div>
           </div>
         </Modal>
+
+      
 
         {/* Modal de Información de Ubicación */}
         <Modal
@@ -347,7 +470,7 @@ export function Perfil() {
                     <Plus className="w-5 h-5" />
                   </button>
                   </div>
-                  <div className="mt-2 h-0.5 w-16 bg-brand/40 rounded"></div>
+                  <h2 className="text-xs text-brand/100 mb-2">¿Cuáles son tus gustos? Dale click al botón de "+" para agregar.</h2>
                 </div>
                 
                 <div className="flex flex-wrap gap-4">
@@ -355,7 +478,8 @@ export function Perfil() {
                     <InterestCard
                       key={interest}
                       title={interest}
-                      onRemove={() => toggleInteres(interest)}
+                      iconUrl={iconUrlForCategory(interest)}
+                      onRemove={() => removeInterestByName(interest)}
                     />
                   )) || []}
                 </div>
@@ -363,16 +487,52 @@ export function Perfil() {
 
               {/* Sección de Favoritos */}
               <div className="bg-white rounded-card shadow-soft border border-border p-6">
-                <h2 className="text-xl font-semibold text-primary mb-6">Favoritos</h2>
-                
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                  {user.favorites?.map((favorito: any) => (
-                    <FavoriteCard
-                      key={favorito.id}
-                      title={favorito.name}
-                      imgUrl={favorito.imageUrl}
-                    />
-                  )) || []}
+                <h2 className="text-xl font-semibold text-primary mb-1">Favoritos</h2>
+                <h2 className="text-xs text-brand/100 mb-6">Mis emprendimientos favoritos</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(user.favorites || []).map((favorito: any) => {
+                    const entreId = Number(favorito?.entrepreneurship_id);
+                    const detail = Number.isFinite(entreId) ? favDetailMap[entreId] : undefined;
+                    const title = favorito?.name || detail?.name || favorito?.entrepreneurship?.name || 'Emprendimiento';
+                    const imgUrl = favorito?.imageUrl || favorito?.image_url || detail?.image_url || favorito?.entrepreneurship?.image_url || 'https://placehold.co/600x600?text=Sin+imagen';
+                    return (
+                      <Link
+                        key={favorito.id ?? `${title}-${imgUrl}`}
+                        to={`/feed/emprendimiento/${entreId || ''}`}
+                        className="block"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                      >
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                          <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                            <img
+                              src={imgUrl}
+                              alt={title}
+                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!favorito?.id) return;
+                                setFavToRemove(favorito.id);
+                                setShowFavRemoveModal(true);
+                              }}
+                              disabled={!!favPendingById[favorito.id]}
+                              className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white text-[#0A5B7A] border border-border shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] hover:border-[#0A5B7A]"
+                              aria-label="Quitar de favoritos"
+                              title="Quitar de favoritos"
+                            >
+                              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] group-hover:text-white" />
+                            </button>
+                          </div>
+                          <div className="p-4 flex-1 flex flex-col">
+                            <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{title}</h3>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
           </>
@@ -380,6 +540,46 @@ export function Perfil() {
       </div>
 
       {/* Modal de Editar Intereses (no admin) */}
+      {/* Modal de confirmar eliminación de favorito (Perfil) */}
+      <Modal
+        isOpen={showFavRemoveModal}
+        onClose={() => setShowFavRemoveModal(false)}
+        title="Eliminar de favoritos"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setShowFavRemoveModal(false)}
+              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                if (!favToRemove) { setShowFavRemoveModal(false); return; }
+                const id = favToRemove;
+                setFavPendingById((p) => ({ ...p, [id]: true }));
+                removeFav.mutate(id, {
+                  onSettled: () => {
+                    setFavPendingById((p) => ({ ...p, [id]: false }));
+                    setShowFavRemoveModal(false);
+                    setFavToRemove(null);
+                  },
+                  onSuccess: () => {
+                    setUser((prev) => prev ? { ...prev, favorites: (prev.favorites || []).filter((f: any) => f.id !== id) } : prev);
+                    queryClient.invalidateQueries({ queryKey: ['profile'] });
+                  }
+                });
+              }}
+              className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark"
+              disabled={!!(favToRemove && favPendingById[favToRemove])}
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </Modal>
       <Modal
         isOpen={showInterestModal}
         onClose={() => setShowInterestModal(false)}
@@ -389,29 +589,32 @@ export function Perfil() {
           <p className="text-sm text-secondary mb-4">
             Selecciona los temas que más te interesan para personalizar tu experiencia.
           </p>
-          
-          <div className="space-y-3">
-            {availableInterests.map((interes) => (
-              <label key={interes} className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={user.interests?.includes(interes) || false}
-                  onChange={() => toggleInteres(interes)}
-                  className="w-4 h-4 accent-brand border-border rounded focus:ring-brand focus:ring-2"
-                />
-                <span className="text-sm text-primary">{interes}</span>
-              </label>
-            ))}
-          </div>
-          
-          <div className="flex justify-end pt-4">
-            <button
-              onClick={handleSaveInterests}
-              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
-            >
-              Guardar
-            </button>
-          </div>
+          {loadingCategories ? (
+            <div className="text-secondary">Cargando categorías...</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(categories || []).map((cat) => {
+                const isSelected = (user?.interests || []).some((i) => (i || '').toLowerCase() === (cat.nombre || '').toLowerCase());
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => (isSelected ? removeInterestByName(cat.nombre) : addInterestByCategory(cat))}
+                    className={`flex items-center justify-between px-4 py-3 rounded-lg border text-left transition-colors ${
+                      isSelected
+                        ? 'border-brand bg-brand/10'
+                        : 'border-border hover:border-brand/50 hover:bg-brand/5'
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    <span className="flex items-center gap-3">
+                      <img src={iconUrlForCategory(cat.nombre)} alt={cat.nombre} className="w-6 h-6" />
+                      <span className="text-sm text-primary">{cat.nombre}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </Modal>
 
