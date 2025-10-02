@@ -3,9 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
-import { CartProvider } from './context/CartContext';
-import Cart from './routes/Cart';
-import CartDetail from './routes/CartDetail';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { Layout } from './components/layout/Layout';
@@ -24,6 +21,7 @@ import PwReset from './routes/pwReset';
 import NewPw from './routes/NewPw';
 import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import { RootRedirect } from './components/RootRedirect';
+import FeriasPage from './routes/Ferias'; // Nueva ruta para Ferias
 
 
 // Entrepreneur
@@ -176,6 +174,7 @@ function App() {
                   <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
                   <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
                   <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
+                  <Route path="/ferias" element={<FeriasPage />} />
                 </Route>
 
               </Routes>
