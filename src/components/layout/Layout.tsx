@@ -33,6 +33,13 @@ export function Layout({ children }: LayoutProps) {
     },
     { 
       type: 'link' as const, 
+      label: 'Ferias y Actividades', 
+      to: '/ferias',
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2
+    },
+    { 
+      type: 'link' as const, 
       label: 'Gestor de Usuarios', 
       to: '/gestor-usuarios',
       // Only show to admins (role 3)
