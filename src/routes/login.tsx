@@ -24,9 +24,12 @@ export default function Login() {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
   };
 
+  // Check if all required fields are filled
+  const isFormValid = formValues.email.trim() !== '' && formValues.password.trim() !== '';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading || isSubmitting) return;
+    if (isLoading || isSubmitting || !isFormValid) return;
     
     setIsSubmitting(true);
     
@@ -134,18 +137,6 @@ export default function Login() {
     </Link>
   ];
 
-  // Botón de login
-  const loginBtn = [
-    <button
-      key="iniciar"
-      type="submit"
-      className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
-      disabled={isLoading || isSubmitting}
-    >
-      {(isLoading || isSubmitting) ? 'Iniciando sesión...' : 'Iniciar sesión'}
-    </button>,
-  ];
-
   // Panel lateral
   const optPanelInicia = (
     <OptionPanel
@@ -169,7 +160,16 @@ export default function Login() {
               title="Inicia sesión"
               input={loginInputs}
               newPw={pwLink}
-              button={loginBtn}
+              button={[
+                <button
+                  key="login-button"
+                  type="submit"
+                  className={`w-full bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg ${(!isFormValid || isLoading) ? 'opacity-50 cursor-not-allowed' : ''} focus-brand`}
+                  disabled={!isFormValid || isLoading}
+                >
+                  {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                </button>
+              ]}
             />
           </form>
           {error && (

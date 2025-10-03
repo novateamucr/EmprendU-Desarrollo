@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/Button';
 import { Plus } from 'lucide-react';
+import { Skeleton } from '@mui/material';
+import { SkeletonProductList } from '../../../components/ui/SkeletonProductList';
 import { getProducts, Product } from '../../../services/productService';
 import { ProductList } from './components/ProductList';
 import ProductForm from './components/ProductForm';
@@ -129,7 +131,25 @@ export default function InventoryPage() {
   };
 
   if (isLoading) {
-    return <div className="p-6">Cargando productos...</div>;
+    return (
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton 
+            variant="text" 
+            width={200} 
+            height={40}
+            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+          />
+          <Skeleton 
+            variant="rectangular" 
+            width={180} 
+            height={40}
+            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+          />
+        </div>
+        <SkeletonProductList count={5} />
+      </div>
+    );
   }
 
   return (

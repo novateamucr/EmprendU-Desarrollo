@@ -34,6 +34,7 @@ type Province = typeof PROVINCES[number];
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { BusinessSelect } from '../../components/ui/BusinessSelect';
+import { Skeleton, SkeletonDashboardStats, SkeletonBusinessCard } from '../../components/ui/Skeleton';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
@@ -135,6 +136,15 @@ export default function Dashboard() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState<Province>('Todas');
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  
+  // Mock customer data
+  const [customers, setCustomers] = useState([
+    { id: 1, name: 'María Rodríguez', email: 'maria.rodriguez@email.com', province: 'San José', totalPurchases: 3, lastPurchase: '2025-09-28' },
+    { id: 2, name: 'Carlos Vargas', email: 'carlos.v@email.com', province: 'Alajuela', totalPurchases: 5, lastPurchase: '2025-10-01' },
+    { id: 3, name: 'Ana Martínez', email: 'ana.mtz@email.com', province: 'Heredia', totalPurchases: 2, lastPurchase: '2025-09-25' },
+    { id: 4, name: 'Luis González', email: 'luis.g@email.com', province: 'Cartago', totalPurchases: 7, lastPurchase: '2025-10-02' },
+    { id: 5, name: 'Sofía Chacón', email: 'sofia.ch@email.com', province: 'San José', totalPurchases: 4, lastPurchase: '2025-09-30' },
+  ]);
 
   // Prepare chart data when selected business changes
   useEffect(() => {
@@ -361,8 +371,51 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="space-y-6 pt-12 px-4 sm:px-6">
+        <div className="mb-6">
+          <Skeleton variant="text" width="200px" height={32} className="mb-4" />
+          <Skeleton variant="rectangular" width="100%" height={56} className="rounded-lg mb-6" />
+        </div>
+        
+        <SkeletonDashboardStats />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Skeleton variant="text" width="180px" height={24} className="mb-4" />
+            <div className="h-64 flex items-center justify-center">
+              <Skeleton variant="rectangular" width="100%" height={240} className="rounded-lg" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Skeleton variant="text" width="180px" height={24} className="mb-4" />
+            <div className="h-64 flex items-center justify-center">
+              <Skeleton variant="circular" width={200} height={200} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <Skeleton variant="text" width="200px" height={28} />
+            <Skeleton variant="rectangular" width={120} height={40} className="rounded-md" />
+          </div>
+          
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <div>
+                    <Skeleton variant="text" width={120} height={20} className="mb-1" />
+                    <Skeleton variant="text" width={80} height={16} />
+                  </div>
+                </div>
+                <Skeleton variant="text" width={60} height={20} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -400,6 +453,58 @@ export default function Dashboard() {
     created_at: selectedBusiness.created_at || new Date().toISOString(),
     updated_at: selectedBusiness.updated_at || new Date().toISOString()
   } as BusinessOption : null;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pt-12 px-4 sm:px-6">
+        <div className="mb-6">
+          <Skeleton variant="text" width="200px" height={32} className="mb-4" />
+          <Skeleton variant="rectangular" width="100%" height={56} className="rounded-lg mb-6" />
+        </div>
+        
+        <SkeletonDashboardStats />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Skeleton variant="text" width="180px" height={24} className="mb-4" />
+            <div className="h-64 flex items-center justify-center">
+              <Skeleton variant="rectangular" width="100%" height={240} className="rounded-lg" />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Skeleton variant="text" width="180px" height={24} className="mb-4" />
+            <div className="h-64 flex items-center justify-center">
+              <Skeleton variant="circular" width={200} height={200} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <Skeleton variant="text" width="200px" height={28} />
+            <Skeleton variant="rectangular" width={120} height={40} className="rounded-md" />
+          </div>
+          
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <div>
+                    <Skeleton variant="text" width={120} height={20} className="mb-1" />
+                    <Skeleton variant="text" width={80} height={16} />
+                  </div>
+                </div>
+                <Skeleton variant="text" width={60} height={20} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Early return if no business is selected or no businesses exist
   if (!currentBusiness || businesses.length === 0) {
@@ -521,15 +626,23 @@ export default function Dashboard() {
               isPositive: true
             }}
           />
-          <StatsCard
-            title="Clientes"
-            value={Math.floor(totalProducts * (Math.random() * 5 + 1))}
-            icon={<Users className="h-6 w-6" />}
-            trend={{
-              value: `${Math.floor(Math.random() * 10) + 2}% más que el mes pasado`,
-              isPositive: true
+          <div 
+            className="cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              // Show customer list in a modal or navigate to customer management
+              alert('Mostrar lista de clientes');
             }}
-          />
+          >
+            <StatsCard
+              title="Clientes"
+              value={customers.length}
+              icon={<Users className="h-6 w-6" />}
+              trend={{
+                value: `${Math.floor(Math.random() * 10) + 2}% más que el mes pasado`,
+                isPositive: true
+              }}
+            />
+          </div>
         </div>
       </div>
       
@@ -766,6 +879,75 @@ export default function Dashboard() {
             </div>
           </Card>
         </div>
+      </div>
+
+      {/* Customers Section */}
+      <div className="mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Clientes Recientes</h3>
+          <Button variant="outline" size="sm" onClick={() => alert('Ver todos los clientes')}>
+            Ver todos
+          </Button>
+        </div>
+        
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nombre
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Provincia
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Compras
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Última compra
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {customers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => alert(`Mostrar detalles del cliente: ${customer.name}`)}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-primary font-medium">
+                            {customer.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{customer.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        {customer.province}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {customer.totalPurchases} compras
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(customer.lastPurchase).toLocaleDateString('es-CR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </div>
     </div>
   );

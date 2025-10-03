@@ -21,12 +21,13 @@ import { Modal } from '../components/Modal';
     Apps,
     Palette,
     Diamond,
-    FavoriteBorder,
-    Favorite,
     ChevronLeft,
-    ChevronRight
-  } from '@mui/icons-material';
-
+    ChevronRight,
+    Favorite,
+    FavoriteBorder
+} from '@mui/icons-material';
+import { Skeleton } from '@mui/material';
+import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
 
 // Soft animations with Emotion
 const fadeInUp = keyframes`
@@ -204,6 +205,7 @@ export default function Home() {
     const categoryScrollRef = useRef<HTMLDivElement | null>(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
+    
     // Fetch categories from backend
     const { data: categoriesData, isLoading: loadingCategories } = useQuery<Category[]>({
       queryKey: ['categories', 'home'],
@@ -211,6 +213,9 @@ export default function Home() {
       select: (d) => d ?? [],
       staleTime: 5 * 60 * 1000,
     });
+
+    // Combine loading states for all data dependencies
+    const isLoading = loadingCategories || loadingProducts;
 
     // Build counts depending on view: products per category or entrepreneurships per category
     const counts = useMemo(() => {
@@ -295,7 +300,14 @@ export default function Home() {
             className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll"
           >
             {loadingCategories ? (
-              <div className="text-secondary px-8 py-2">Cargando categorías...</div>
+              <div className="flex gap-3 w-full">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={`skeleton-category-${i}`} className="flex-shrink-0 w-32 flex flex-col items-center px-4 py-2">
+                    <Skeleton variant="circular" width={24} height={24} className="mb-2" />
+                    <Skeleton variant="text" width={80} height={20} className="rounded-md" />
+                  </div>
+                ))}
+              </div>
             ) : categories.map((category) => {
               const isSelected = selectedCategory === category.name;
               return (
@@ -478,7 +490,9 @@ export default function Home() {
                 </FloatingElement>
                 Emprendimiento del Día
               </h2>
-              {(() => {
+              {loading ? (
+                <SkeletonFeaturedEntrepreneur />
+              ) : (() => {
                 const featured = entrepreneurships.find((b: any) => b?.id === 1) || filteredBusinesses[0] || entrepreneurships[0];
                 const featuredId = featured?.id ?? '';
                 return (
@@ -590,7 +604,11 @@ export default function Home() {
               </div>
 
               {loading ? (
-                <div className="text-secondary">Cargando emprendimientos...</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, index) => (
+                    <SkeletonEntrepreneurCard key={`skeleton-entrepreneur-${index}`} />
+                  ))}
+                </div>
               ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBusinesses.map((business: any) => (
@@ -678,7 +696,11 @@ export default function Home() {
                 Productos Populares
               </h2>
               {loadingProducts ? (
-                <div className="text-secondary">Cargando productos...</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, index) => (
+                    <SkeletonProductCard key={`skeleton-product-${index}`} />
+                  ))}
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProducts.map((product) => (

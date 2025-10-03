@@ -59,42 +59,4 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle 401 Unauthorized
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
 
-    // If error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Try to refresh the token
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api'}/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
-        
-        const { token } = response.data;
-        localStorage.setItem('token', token);
-        
-        // Update the Authorization header
-        originalRequest.headers.Authorization = `Bearer ${token}`;
-        
-        // Retry the original request
-        return api(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, clear auth and redirect to login
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-    
-    // For other errors, use the existing error mapping
-    return Promise.reject(mapAxiosError(error));
-  }
-);

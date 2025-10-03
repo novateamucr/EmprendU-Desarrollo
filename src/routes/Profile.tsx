@@ -69,9 +69,20 @@ export function Perfil() {
   // Use shared API client (configured with token via interceptors/localStorage)
   const createApiClient = useCallback(() => api, []);
 
+  // Skip initial data fetch if we already have the user data from auth context
+  const [initialLoad, setInitialLoad] = useState(true);
+
   // Fetch user data
-  const fetchUserData = useCallback(async () => {
+  const fetchUserData = useCallback(async (force = false) => {
     if (!authUser) return; // Don't fetch if no authenticated user
+    
+    // Skip initial fetch if we already have the data from auth context
+    if (initialLoad && authUser && !force) {
+      setInitialLoad(false);
+      setUser(mapApiResponseToProfile(authUser));
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -79,7 +90,12 @@ export function Perfil() {
     try {
       const apiClient = createApiClient();
       console.log(`Fetching user data for ID: ${authUser.id}`);
-      const response = await apiClient.get(`/users/${authUser.id}`).catch(error => {
+      const response = await apiClient.get(`/users/${authUser.id}`, {
+        // Add a custom header to prevent token refresh on this request
+        headers: {
+          'X-Skip-Refresh': 'true'
+        }
+      }).catch(error => {
         console.error('Profile fetch error:', {
           message: error.message,
           code: error.code,
@@ -105,13 +121,17 @@ export function Perfil() {
     } finally {
       setIsLoading(false);
     }
-  }, [authUser, createApiClient]);
+  }, [authUser, createApiClient, initialLoad]);
 
+  // Initial data load
   useEffect(() => {
-    if (authUser) { // Only fetch data if the user is authenticated
-      fetchUserData();
+    if (authUser) {
+      // Only fetch data if we don't have it already from auth context
+      if (initialLoad) {
+        fetchUserData();
+      }
     }
-  }, [authUser, fetchUserData]);
+  }, [authUser, fetchUserData, initialLoad]);
 
   // Scroll to top on page load
   useEffect(() => {

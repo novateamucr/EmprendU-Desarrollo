@@ -1,35 +1,23 @@
-import { Routes, Route, Outlet, Link, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { AuthLayout } from './components/layout/AuthLayout';
 import { Layout } from './components/layout/Layout';
-
-// Pages
-import Home from './routes/Home';
-import { Perfil } from './routes/Profile';
-import { EditarPerfil } from './routes/EditarPerfil';
 import LandingPage from './routes/Landing';
 import { FeedEmpredimientoDetalle } from './routes/FeedEmpredimientoDetalle';
 import BusinessFeedback from './routes/BusinessFeedback';
+import Home from './routes/Home';
+import { Perfil } from './routes/Profile';
+import { EditarPerfil } from './routes/EditarPerfil';
 import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import NewPw from './routes/NewPw';
-import { RootRedirect } from './components/RootRedirect';
-import FeriasPage from './routes/Ferias'; // Nueva ruta para Ferias
+import FeriasPage from './routes/Ferias';
 import FeriasActividades from './routes/FeriasAvtividades';
-
-
-// Entrepreneur
-import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
-import Dashboard from './routes/entrepreneur/Dashboard';
-import BusinessList from './routes/entrepreneur/components/BusinessList';
-import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
-import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
 import AñadirEmprendimiento from './routes/AñadirEmprendimiento';
@@ -38,10 +26,26 @@ import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
 import ProductDetail from './routes/ProductDetail';
 
-// ... other imports and code ...
+// Entrepreneur
+import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
+import Dashboard from './routes/entrepreneur/Dashboard';
+import BusinessList from './routes/entrepreneur/components/BusinessList';
+import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
+import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
+
 const queryClient = new QueryClient();
 
 import './App.css';
+
+function RootRoute() {
+  const { isAuthenticated } = useAuth();
+  
+  if (isAuthenticated === undefined) {
+    return <div>Loading...</div>;
+  }
+  
+  return isAuthenticated ? <Navigate to="/home" replace /> : <LandingPage />;
+}
 
 function App() {
   return (
@@ -51,140 +55,58 @@ function App() {
           <BusinessProvider>
             <CartProvider>
               <Routes>
-                {/* Root route - Always show landing page */}
-                <Route path="/" element={<LandingPage />} />
+                {/* Public Routes */}
+                <Route path="/" element={<RootRoute />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/password-reset" element={<PwReset />} />
+                <Route path="/new-password" element={<NewPw />} />
 
-                {/* Handle redirects for authenticated users */}
-                <Route path="/landing" element={<RootRedirect />} />
-
-                {/* Auth routes with AuthLayout */}
-                <Route element={<AuthLayout><Outlet /></AuthLayout>}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/pwReset" element={<PwReset />} />
-                  <Route path="/newPw" element={<NewPw />} />
-                </Route>
-
-                {/* ===========================================
-                    ROUTE ACCESS GUIDE:
-                    - allowedRoles: Array of role IDs that can access these routes
-                      * 1 = Client
-                      * 3 = Admin
-                =========================================== */}
-
-                {/* Client & Entrepreneur Routes (Roles 1 & 2) */}
+                {/* Protected Routes */}
                 <Route element={
-                  <ProtectedRoute allowedRoles={[1, 2]}>
+                  <ProtectedRoute>
                     <Layout>
                       <Outlet />
                     </Layout>
                   </ProtectedRoute>
                 }>
-                  {/* These routes are accessible to both clients and entrepreneurs */}
-                  <Route index element={<Home />} />
-                  <Route path="/profile/edit" element={<EditarPerfil />} />
-                  <Route path="/card" element={<Navigate to="/cart" replace />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/home" element={<Home />} />
-                  <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
-                  <Route path="/businessFeedback" element={<BusinessFeedback />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="/feriasActividades" element={<FeriasActividades />} />
+                  <Route path="/profile" element={<Perfil />} />
+                  <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/business/:id" element={<FeedEmpredimientoDetalle />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/feedback" element={<BusinessFeedback />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/cart/detail" element={<CartDetail />} />
+                  <Route path="/ferias" element={<FeriasPage />} />
+                  <Route path="/ferias/actividades" element={<FeriasActividades />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin/usuarios" element={<GestorUsuarios />} />
+                  <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
+                  <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
+
+                  {/* Entrepreneur Routes */}
+                  <Route path="/entrepreneur" element={<EntrepreneurManager />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="businesses" element={<BusinessList />} />
+                    <Route path="business/setup" element={<BusinessSetup />} />
+                    <Route path="inventory" element={<InventoryPage />} />
+                  </Route>
                 </Route>
 
-                {/* Profile routes accessible to all authenticated roles (1,2,3) */}
-                <Route path="/profile" element={
-                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
-                    <Layout>
-                      <Perfil />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/perfil/editar" element={
-                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
-                    <Layout>
-                      <EditarPerfil />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
+                {/* Logout */}
+                <Route path="/logout" element={<Logout />} />
 
-                {/* 
-                    ADMIN ROUTES (Role 3 only)
-                    These routes are only accessible to admins
-                =========================================== */}
-                <Route path="/gestor-usuarios" element={
-                  <ProtectedRoute allowedRoles={[3]}>
+                {/* 404 - Not Found */}
+                <Route path="*" element={
+                  <ProtectedRoute>
                     <Layout>
-                      <GestorUsuarios />
+                      <div className="flex flex-col items-center justify-center h-screen">
+                        <h1 className="text-4xl font-bold mb-4">404</h1>
+                        <p className="text-xl">Página no encontrada</p>
+                      </div>
                     </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/añadir-usuario" element={
-                  <ProtectedRoute allowedRoles={[3]}>
-                    <Layout>
-                      <AñadirUsuario />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                {/* Temporarily removed GestorEmprendimientos as it's not being used */}
-                <Route path="/añadir-emprendimientos" element={
-                  <ProtectedRoute allowedRoles={[3]}>
-                    <Layout>
-                      <AñadirEmprendimiento />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/añadir-emprendimientos/:id" element={
-                  <ProtectedRoute allowedRoles={[3]}>
-                    <Layout>
-                      <AñadirEmprendimiento />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                {/* Admin edit user profile by ID */}
-                <Route path="/profile/edit/:id" element={
-                  <ProtectedRoute allowedRoles={[3]}>
-                    <Layout>
-                      <EditarPerfil />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                {/* Unauthorized route */}
-                <Route path="/unauthorized" element={
-                  <div className="flex flex-col items-center justify-center min-h-screen">
-                    <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso no autorizado</h1>
-                    <p className="mb-4">No tienes permiso para acceder a esta página.</p>
-                    <Link to="/" className="text-blue-600 hover:underline">Volver al inicio</Link>
-                  </div>
-                } />
-
-                {/* ===========================================
-                    ENTREPRENEUR ROUTES (Role 2 only)
-                    These routes are only accessible to entrepreneurs
-                =========================================== */}
-                <Route
-                  path="/entrepreneur/*"
-                  element={
-                    <ProtectedRoute allowedRoles={[2]} redirectTo="/unauthorized">
-                      <Layout>
-                        <EntrepreneurManager />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="businesses" element={<BusinessList />} />
-                  <Route path="businesses/new" element={<BusinessSetup />} />
-                  <Route path="businesses/:id" element={<BusinessSetup />} />
-                  <Route path="inventory" element={<InventoryPage />} />
-                </Route>
-
-                {/* Ferias route without the sidebar */}
-                <Route path="/ferias" element={
-                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
-                    <FeriasPage />
                   </ProtectedRoute>
                 } />
               </Routes>

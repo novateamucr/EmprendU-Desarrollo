@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
+import { Skeleton, SkeletonBusinessList } from '../../../components/ui/Skeleton';
 import { entrepreneurshipApi, Entrepreneurship } from '../../../services/entrepreneurshipService';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
@@ -117,33 +118,37 @@ export default function BusinessList() {
     });
   };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="text-gray-500">Cargando tus emprendimientos...</p>
+      <div className="rounded-md bg-red-50 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Error al cargar los emprendimientos</h3>
+            <p className="mt-2 text-sm text-red-700">{error}</p>
+            <div className="mt-4">
+              <Button variant="outline" onClick={loadBusinesses}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Reintentar
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  // Show skeleton loaders while loading
+  if (isLoading) {
     return (
-      <div className="bg-red-50 rounded-lg p-6 text-center max-w-2xl mx-auto my-8">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-          <AlertCircle className="h-6 w-6 text-red-600" />
+      <div className="space-y-6 p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Skeleton variant="text" width="200px" height={32} />
+          <Skeleton variant="rectangular" width={150} height={40} className="rounded-md" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar los emprendimientos</h3>
-        <p className="text-gray-600 mb-6">{error}</p>
-        <div className="flex justify-center gap-3">
-          <Button variant="primary" onClick={() => window.location.reload()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Reintentar
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/entrepreneur/businesses/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Crear emprendimiento
-          </Button>
-        </div>
+        <SkeletonBusinessList count={3} />
       </div>
     );
   }

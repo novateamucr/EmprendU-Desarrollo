@@ -58,6 +58,10 @@ export function useUserLogin() {
         }
         
         // Handle specific API error responses
+        if (error.response?.status === 401) {
+          throw new Error('Credenciales inválidas. Por favor verifica tu correo y contraseña.');
+        }
+        
         if (error.response?.data?.message) {
           throw new Error(error.response.data.message);
         }
