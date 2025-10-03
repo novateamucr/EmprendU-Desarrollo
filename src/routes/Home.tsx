@@ -594,63 +594,68 @@ export default function Home() {
               ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBusinesses.map((business: any) => (
-                  <Link
-                    key={business.id}
-                    to={`/feed/emprendimiento/${business.id}`}
-                    className="block"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                  >
-                    <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
-                      <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                        <img
-                          src={business.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
-                          alt={business.name}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        />
-                      </div>
-                      <div className="p-4 flex-1 flex flex-col">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{business.name}</h3>
-                          <button
-                            className="text-secondary hover:text-brand transition-colors"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const bizId = Number(business.id);
-                              const existing = favByEntreId.get(bizId);
-                              if (existing?.id) {
-                                setPendingRemove({ favoriteId: existing.id, bizId });
-                                setConfirmOpen(true);
-                              } else {
-                                setPendingById((p) => ({ ...p, [bizId]: true }));
-                                addFav.mutate(bizId, {
-                                  onSettled: () => setPendingById((p) => ({ ...p, [bizId]: false })),
-                                });
-                              }
-                            }}
-                            disabled={pendingById[Number(business.id)]}
-                            aria-label={favByEntreId.has(Number(business.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                          >
-                            {favByEntreId.has(Number(business.id)) ? (
-                              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
-                            ) : (
-                              <FavoriteBorder sx={{ fontSize: 18 }} />
-                            )}
-                          </button>
-                        </div>
-                        <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
-                        <div className="flex items-center justify-between mt-auto">
-                          <div className="flex items-center gap-1 text-secondary">
-                            <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                            <span className="text-xs">-</span>
+                  (() => {
+                    
+                    return (
+                      <Link
+                        key={business.id}
+                        to={`/feed/emprendimiento/${business.id}`}
+                        className="block"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                      >
+                        <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                          <div className="aspect-square bg-gray-50 relative overflow-hidden">
+                            <img
+                              src={business.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
+                              alt={business.name}
+                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            />
                           </div>
-                          <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
-                            {business.category_relation?.nombre || 'General'}
-                          </span>
-                        </div>
-                      </div>
-                    </AnimatedCard>
-                  </Link>
+                          <div className="p-4 flex-1 flex flex-col">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{business.name}</h3>
+                              <button
+                                className="text-secondary hover:text-brand transition-colors"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const bizId = Number(business.id);
+                                  const existing = favByEntreId.get(bizId);
+                                  if (existing?.id) {
+                                    setPendingRemove({ favoriteId: existing.id, bizId });
+                                    setConfirmOpen(true);
+                                  } else {
+                                    setPendingById((p) => ({ ...p, [bizId]: true }));
+                                    addFav.mutate(bizId, {
+                                      onSettled: () => setPendingById((p) => ({ ...p, [bizId]: false })),
+                                    });
+                                  }
+                                }}
+                                disabled={pendingById[Number(business.id)]}
+                                aria-label={favByEntreId.has(Number(business.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                              >
+                                {favByEntreId.has(Number(business.id)) ? (
+                                  <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
+                                ) : (
+                                  <FavoriteBorder sx={{ fontSize: 18 }} />
+                                )}
+                              </button>
+                            </div>
+                            <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
+                            <div className="flex items-center justify-between mt-auto">
+                              <div className="flex items-center gap-1 text-secondary">
+                                <Star sx={{ fontSize: 14 }} className="text-amber-500" />
+                                <span className="text-xs">-</span>
+                              </div>
+                              <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
+                                {business.category_relation?.nombre || 'General'}
+                              </span>
+                            </div>
+                          </div>
+                        </AnimatedCard>
+                      </Link>
+                    );
+                  })()
                 ))}
               </div>
               )}
