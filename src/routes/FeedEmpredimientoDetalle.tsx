@@ -7,6 +7,11 @@ import { useProfile, useAddFavorite, useRemoveFavorite } from '../domain/profile
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { Modal } from '../components/Modal';
 import type { UserProfile } from '../domain/profile/types';
+import Btn from "../components/ui/Btn";
+import BusinessFeedbackPopup from "../components/ui/BusinessFeedback";
+import { toast } from "react-toastify";
+import { useAuth } from '../context/AuthContext';
+
 
 export function FeedEmpredimientoDetalle() {
   const { id } = useParams();
@@ -26,6 +31,70 @@ export function FeedEmpredimientoDetalle() {
   const [localPending, setLocalPending] = useState(false);
   const [localFavId, setLocalFavId] = useState<number | null>(null);
   const displayFav = isFav; // fuente visual basada en cache de perfil
+  const { token, user } = useAuth();
+  const [showPopup, setShowPopup] = useState(false);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  const submitReview = async (rating: number, comments: string) => {
+    setLoading(true);
+    try {
+      
+      const response = await fetch("http://emprendu-backend.test/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: rating,
+          review: comments,
+          user_id: user?.id,         
+          entrepreneurship_id: businessIdNum,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al enviar el review");
+      }
+
+      const data = await response.json();
+      toast.success("¡Review enviado con éxito!");
+      console.log("Review creado:", data);
+      setShowPopup(false);
+      fetchReviews();
+    } catch (err: any) {
+      console.error("Error enviando review:", err);
+      toast.error(err.message || "Error al enviar review");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+  if (!id) return; // usar id del params
+  try {
+    const res = await fetch(`http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`, {
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("Error al obtener reviews");
+      const data = await res.json();
+      setReviews(data); // <--- guarda todos los reviews
+
+      if (data.length > 0) {
+        const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
+        setAverageRating(avg);
+      } else {
+        setAverageRating(null);
+      }
+  }
+ catch (err) {
+    console.error("Error cargando reviews:", err);
+    setAverageRating(null);
+  }
+};
+
 
   useEffect(() => {
     if (!id) return;
@@ -34,6 +103,7 @@ export function FeedEmpredimientoDetalle() {
       .then(data => {
         setBusiness(data);
         setError(null);
+        fetchReviews();
       })
       .catch(() => {
         setError('No se pudo cargar el emprendimiento.');
@@ -81,6 +151,41 @@ export function FeedEmpredimientoDetalle() {
               {business.category_relation?.nombre || 'General'}
             </span>
           </div>
+           <div className="flex flex-wrap justify-center gap-8">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  
+                  className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+            {averageRating && (
+              <p className="text-sm text-gray-500 mt-1">
+                {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
+              </p>
+            )}
+            <Btn
+                    style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
+                    key="abrirPopup"
+                    text="¡Califica este emprendimiento!"
+                    onClick={() => setShowPopup(true)}
+                  />
+
+                  {showPopup && (
+                          <BusinessFeedbackPopup
+                            show={showPopup}
+                            title="¡Califica tu experiencia!"
+                            imageUrl={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
+                            onSubmit={(rating: number, comments: string) => {
+                              submitReview(rating, comments);
+                            }}
+                            onCancel={() => setShowPopup(false)}
+                          />
+                        )}
+            <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
           <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
           <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
           <button
