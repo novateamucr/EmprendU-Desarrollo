@@ -10,11 +10,19 @@ class ReviewController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $reviews = Review::with(['user', 'product'])->get();
-        return response()->json($reviews);
+    public function index(Request $request)
+{
+    $entrepreneurshipId = $request->query('entrepreneurship_id');
+
+    if (!$entrepreneurshipId) {
+        return response()->json(['message' => 'Falta el parámetro entrepreneurship_id'], 400);
     }
+
+    $reviews = Review::where('entrepreneurship_id', $entrepreneurshipId)->get();
+
+    return response()->json($reviews);
+}
+
 
     /**
      * Show the form for creating a new resource.
@@ -33,14 +41,14 @@ class ReviewController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
-            'product_id' => 'nullable|exists:products,id',
+            'entrepreneurship_id' => 'nullable|exists:entrepreneurships,id',
         ]);
 
         $review = Review::create($data);
 
         return response()->json([
             'message' => 'Reseña creada exitosmente',
-            'review' => $review->load(['user', 'product']),
+            'review' => $review->load(['user', 'entrepreneurship']),
         ], 201);
     }
 
@@ -49,7 +57,7 @@ class ReviewController extends Controller
      */
     public function show(string $id)
     {
-        $review = Review::with(['user', 'product'])->findOrFail($id);
+        $review = Review::with(['user', 'entrepreneurship'])->findOrFail($id);
         return response()->json($review);
     }
 
@@ -72,14 +80,14 @@ class ReviewController extends Controller
             'rating' => 'sometimes|integer|min:1|max:5',
             'review' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
-            'product_id' => 'nullable|exists:products,id',
+            'entrepreneurship_id' => 'nullable|exists:entrepreneurships,id',
         ]);
 
         $review->update($data);
 
         return response()->json([
             'message' => 'Review actualizado correctamente',
-            'review' => $review->load(['user', 'product']),
+            'review' => $review->load(['user', 'entrepreneurship']),
         ]);
     }
 
