@@ -21,22 +21,21 @@ import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
-import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import { RootRedirect } from './components/RootRedirect';
-
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
 import Dashboard from './routes/entrepreneur/Dashboard';
 import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
-import ProductInventory from './routes/entrepreneur/components/ProductInventory';
+import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
 
 import NewPw from './routes/NewPw';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
-import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
+import { AñadirEmprendimiento } from './routes/AñadirEmprendimiento';
 
+// ... other imports and code ...
 const queryClient = new QueryClient();
 
 import './App.css';
@@ -110,13 +109,7 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
-                <Route path="/gestor-emprendimientos" element={
-                  <ProtectedRoute allowedRoles={[3]}>
-                    <Layout>
-                      <GestorEmprendimientos />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
+                {/* Temporarily removed GestorEmprendimientos as it's not being used */}
                 <Route path="/añadir-emprendimientos" element={
                   <ProtectedRoute allowedRoles={[3]}>
                     <Layout>
@@ -148,7 +141,7 @@ function App() {
                   <Route path="/entrepreneur/businesses" element={<BusinessList />} />
                   <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
                   <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
-                  <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
+                  <Route path="/entrepreneur/inventory" element={<InventoryPage />} />
                 </Route>
 
               </Routes>

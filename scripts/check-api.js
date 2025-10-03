@@ -63,7 +63,7 @@ async function checkAPI() {
   console.log('🔍 Checking API connection...\n');
   
   const envVars = loadEnvVars();
-  const apiBaseUrl = envVars.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+  const apiBaseUrl = envVars.VITE_API_BASE_URL || 'http://emprendu-backend.test';
   
   console.log(`📡 API Base URL: ${apiBaseUrl}`);
   console.log(`🔧 MSW Enabled: ${envVars.VITE_USE_MSW || 'not set'}\n`);
@@ -88,7 +88,7 @@ async function checkAPI() {
     console.log(`💥 Error: ${error.message}`);
     console.log('\n🔧 Troubleshooting:');
     console.log('   1. Make sure Laravel backend is running: php artisan serve');
-    console.log('   2. Check if backend is accessible at http://127.0.0.1:8000');
+    console.log('   2. Check if backend is accessible at http://emprendu-backend.test');
     console.log('   3. Verify database credentials in backend/.env');
     console.log('   4. Check Laravel logs for any errors');
   }

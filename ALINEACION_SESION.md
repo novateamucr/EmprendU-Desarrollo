@@ -111,7 +111,7 @@ php artisan serve
 ### 2. Configurar Variables de Entorno
 ```bash
 # En .env del frontend
-VITE_API_BASE_URL=http://127.0.0.1:8000/api
+VITE_API_BASE_URL=http://emprendu-backend.test
 ```
 
 ### 3. Iniciar Frontend

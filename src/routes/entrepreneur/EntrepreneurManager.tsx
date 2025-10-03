@@ -6,13 +6,15 @@ import {
   Package, 
   Settings, 
   Plus,
-  ArrowLeft
+  ArrowLeft,
+  PackageOpen
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import BusinessList from './components/BusinessList';
 import BusinessSetup from './components/BusinessSetup';
 import BusinessForm from './components/BusinessForm';
 import Dashboard from './Dashboard';
+import InventoryPage from './inventory/InventoryPage';
 
 type MenuItem = {
   id: string;
@@ -29,7 +31,7 @@ export default function EntrepreneurManager() {
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/entrepreneur' },
     { id: 'businesses', label: 'Mis emprendimientos', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
     { id: 'new-business', label: 'Nuevo emprendimiento', icon: <Plus size={20} />, path: '/entrepreneur/businesses/new' },
-   
+    { id: 'inventory', label: 'Inventario', icon: <PackageOpen size={20} />, path: '/entrepreneur/inventory' },
   ];
 
   const toggleSidebar = () => {
@@ -85,7 +87,7 @@ export default function EntrepreneurManager() {
             <Route path="businesses" element={<BusinessList />} />
             <Route path="businesses/new" element={<BusinessForm />} />
             <Route path="businesses/:id" element={<BusinessSetup />} />
-          
+            <Route path="inventory" element={<InventoryPage />} />
           </Routes>
           <Outlet />
         </div>
