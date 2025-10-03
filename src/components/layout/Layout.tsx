@@ -26,6 +26,13 @@ export function Layout({ children }: LayoutProps) {
     },
     { 
       type: 'link' as const, 
+      label: 'Ferias y Actividades', 
+      to: '/FeriasActividades',
+      
+      visible: user?.role === 1
+    },
+    { 
+      type: 'link' as const, 
       label: 'Mis Emprendimientos', 
       to: '/entrepreneur',
       // Only show to entrepreneurs (role 2)
