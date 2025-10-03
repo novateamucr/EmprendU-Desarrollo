@@ -4,13 +4,23 @@ import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { Modal } from '../components/Modal';
 import { useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Cart() {
   const { groups, placeOrder, isPlaced, updateQty, removeItem } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [orderFor, setOrderFor] = useState<string | null>(null);
 
+  const isProfileComplete = () => {
+    return !! (user?.phone && user?.province && user?.canton && user?.district && user?.address);
+  };
   const handlePlaceOrder = async (entrepreneurshipId: string) => {
+    if (!isProfileComplete()) {
+      setShowProfileReminder(true);
+      return;
+    }
     await placeOrder(entrepreneurshipId);
     setOrderFor(entrepreneurshipId);
   };
@@ -31,6 +41,7 @@ export default function Cart() {
   }
 
   return (
+    
     <Layout>
       <div className="max-w-4xl mx-auto mt-10 space-y-6">
         <h1 className="text-2xl font-semibold text-primary">Tu carrito</h1>
@@ -162,6 +173,34 @@ export default function Cart() {
           </div>
         </div>
       </Modal>
+
+      <Modal
+      isOpen={showProfileReminder}
+      onClose={() => setShowProfileReminder(false)}
+      title="Perfil incompleto"
+    >
+      <div className="space-y-3 text-secondary text-sm">
+        <p>Tu perfil no está completo. Por favor, completa tu información antes de realizar un pedido.</p>
+        <div className="flex justify-end pt-2 gap-2">
+          <button
+            onClick={() => {
+              setShowProfileReminder(false);
+              navigate('/profile'); // redirige a la página de perfil
+            }}
+            className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
+          >
+            Completar perfil
+          </button>
+          <button
+            onClick={() => setShowProfileReminder(false)}
+            className="px-6 py-2 bg-gray-200 text-primary rounded-lg font-medium hover:bg-red-600 hover:text-white transition-colors"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </Modal>
+
     </Layout>
   );
 }

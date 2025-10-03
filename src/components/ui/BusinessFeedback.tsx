@@ -5,7 +5,6 @@ interface BusinessFeedbackProps {
   show: boolean;
   title: string;
   imageUrl: string;
-  productName: string;
   onSubmit: (rating: number, comments: string) => void;
   onCancel: () => void;
 }
@@ -14,7 +13,6 @@ export default function BusinessFeedback({
   show,
   title,
   imageUrl,
-  productName,
   onSubmit,
   onCancel,
 }: BusinessFeedbackProps) {
@@ -28,7 +26,7 @@ export default function BusinessFeedback({
     setSubmitted(true);
     setTimeout(() => {
       onSubmit(rating, comments);
-    }, 300);
+    }, 2000);
   };
 
   return (
@@ -52,11 +50,11 @@ export default function BusinessFeedback({
           />
 
           {!submitted ? (
-            <p className="text-slate-600 text-center">{productName}</p>
+            <p className="text-slate-600 text-center"></p>
           ) : (
             // Mensajes dentro de la parte gris
             <div className="flex flex-col items-center gap-2 text-center mt-4">
-              <p className="text-lg font-bold text-slate-700">¡Gracias por calificar nuestro producto!</p>
+              <p className="text-lg font-bold text-slate-700">¡Gracias por calificarnos!</p>
               <p className="text-sm text-gray-500">Reseña enviada exitosamente</p>
             </div>
           )}
