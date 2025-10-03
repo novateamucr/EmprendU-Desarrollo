@@ -38,7 +38,16 @@ export default function Cart() {
           <div key={group.entrepreneurshipId} className="bg-white rounded-card shadow-soft border border-border p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-primary">{group.entrepreneurshipName}</h2>
+                <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                  {group.entrepreneurshipName}
+                  <span
+                    aria-label="Cantidad de productos de este emprendimiento"
+                    className="w-6 h-6 rounded-full bg-brand/20 text-brandDark text-xs font-semibold flex items-center justify-center"
+                    title={`${group.items.reduce((acc, it) => acc + it.quantity, 0)} productos`}
+                  >
+                    {group.items.reduce((acc, it) => acc + it.quantity, 0)}
+                  </span>
+                </h2>
                 {isPlaced(group.entrepreneurshipId) && (
                   <span className="text-xs text-brand italic">pedido realizado</span>
                 )}

@@ -3,9 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
-import { CartProvider } from './context/CartContext';
-import Cart from './routes/Cart';
-import CartDetail from './routes/CartDetail';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { Layout } from './components/layout/Layout';
@@ -21,7 +18,11 @@ import Login from './routes/login';
 import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
+import NewPw from './routes/NewPw';
+import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import { RootRedirect } from './components/RootRedirect';
+import FeriasPage from './routes/Ferias'; // Nueva ruta para Ferias
+
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -29,11 +30,14 @@ import Dashboard from './routes/entrepreneur/Dashboard';
 import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
 import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
-
-import NewPw from './routes/NewPw';
+import ProductInventory from './routes/entrepreneur/inventory/ProductInventory';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
-import { AñadirEmprendimiento } from './routes/AñadirEmprendimiento';
+import { AñadirEmprendimiento }  from './routes/AñadirEmprendimiento';
+import { CartProvider } from './context/CartContext';
+import Cart from './routes/Cart';
+import CartDetail from './routes/CartDetail';
+import ProductDetail from './routes/ProductDetail';
 
 // ... other imports and code ...
 const queryClient = new QueryClient();
@@ -83,13 +87,28 @@ function App() {
                   <Route path="/card" element={<Navigate to="/cart" replace />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/cart/:entrepreneurshipId" element={<CartDetail />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/home" element={<Home />} />
-                  <Route path="/profile" element={<Perfil />} />
-                  <Route path="/perfil/editar" element={<EditarPerfil />} />
                   <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
                 </Route>
+
+                {/* Profile routes accessible to all authenticated roles (1,2,3) */}
+                <Route path="/profile" element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <Layout>
+                      <Perfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/perfil/editar" element={
+                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                    <Layout>
+                      <EditarPerfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
 
                 {/* 
                     ADMIN ROUTES (Role 3 only)
@@ -117,6 +136,14 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
+                {/* Admin edit user profile by ID */}
+                <Route path="/profile/edit/:id" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <EditarPerfil />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
                                 {/* Unauthorized route */}
                 <Route path="/unauthorized" element={
                   <div className="flex flex-col items-center justify-center min-h-screen">
@@ -141,7 +168,8 @@ function App() {
                   <Route path="/entrepreneur/businesses" element={<BusinessList />} />
                   <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
                   <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
-                  <Route path="/entrepreneur/inventory" element={<InventoryPage />} />
+                  <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
+                  <Route path="/ferias" element={<FeriasPage />} />
                 </Route>
 
               </Routes>

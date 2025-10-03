@@ -1,7 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 type LayoutProps = {
   children: ReactNode;
@@ -9,6 +12,8 @@ type LayoutProps = {
 
 export function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
+  const { groups } = useCart();
+  const totalItems = useMemo(() => groups.reduce((sum, g) => sum + g.items.reduce((acc, it) => acc + it.quantity, 0), 0), [groups]);
   
   const navItems = [
    
@@ -28,6 +33,13 @@ export function Layout({ children }: LayoutProps) {
     },
     { 
       type: 'link' as const, 
+      label: 'Ferias y Actividades', 
+      to: '/ferias',
+      // Only show to entrepreneurs (role 2)
+      visible: user?.role === 2
+    },
+    { 
+      type: 'link' as const, 
       label: 'Gestor de Usuarios', 
       to: '/gestor-usuarios',
       // Only show to admins (role 3)
@@ -42,7 +54,26 @@ export function Layout({ children }: LayoutProps) {
     },
   ];
 
-  const rightContent = <UserProfile />;
+  const rightContent = (
+    <div className="flex items-center gap-2">
+      <Link
+        to="/cart"
+        className="relative p-2 rounded-full hover:bg-brand/10 transition-colors focus-brand"
+        aria-label="Ir al carrito"
+      >
+        <ShoppingCart className="w-5 h-5 text-secondary" />
+        {totalItems > 0 && (
+          <span
+            aria-label="Total de productos en el carrito"
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-white text-[10px] font-semibold flex items-center justify-center"
+          >
+            {totalItems}
+          </span>
+        )}
+      </Link>
+      <UserProfile />
+    </div>
+  );
 
   const logo = (
       <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
