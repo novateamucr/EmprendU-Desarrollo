@@ -32,40 +32,41 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
   const isAdminRole = rr?.id === 3 || String(displayedRole).toLowerCase() === 'administrador';
 
   return (
-    <div className="bg-white rounded-card shadow-soft border border-border p-6 sticky top-20 ">
-      {/* Avatar y información básica */}
-      <div className="text-center mb-6">
-        <div className="relative inline-block">
-          {user.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={`Avatar de ${user.name}`}
-              className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto object-cover"
-            />
-          ) : (
-            <div className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto bg-brand/20 flex items-center justify-center">
-              <span className="text-brandDark text-4xl font-semibold select-none">{initial}</span>
-            </div>
-          )}
-          {!hideEdit && (
-            <button
-              onClick={() => navigate('/profile/edit')}
-              className="absolute -bottom-1 -right-1 w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brandDark transition-colors focus-brand"
-              aria-label="Editar perfil"
-            >
-              <Pencil className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-        
-        <div className="mt-4">
-          <p className={`inline-block px-2 py-0.5 rounded-full text-xs mb-2 ${isAdminRole ? 'bg-brand text-white' : 'bg-brand/5 text-secondary'}`}>
-            {displayedRole}
-          </p>
-          <h1 className="text-xl font-semibold text-primary">{user.name}</h1>
-          <p className="text-secondary">{user.username}</p>
-        </div>
+    <div className="bg-white rounded-card shadow-soft border border-border p-6 sticky top-20 relative">
+    {!hideEdit && (
+      <button
+        onClick={() => navigate('/profile/edit')}
+        className="absolute right-5 w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brandDark transition-colors focus-brand"
+        aria-label="Editar perfil"
+      >
+        <Pencil className="w-5 h-5" />
+      </button>
+    )}
+
+    {/* Avatar y información básica */}
+    <div className="text-center mb-6">
+      <div className="relative inline-block">
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={`Avatar de ${user.name}`}
+            className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto object-cover"
+          />
+        ) : (
+          <div className="w-32 h-32 rounded-full border-4 border-white shadow-soft mx-auto bg-brand/20 flex items-center justify-center">
+            <span className="text-brandDark text-4xl font-semibold select-none">{initial}</span>
+          </div>
+        )}
       </div>
+      
+      <div className="mt-4">
+        <p className={`inline-block px-2 py-0.5 rounded-full text-xs mb-2 ${isAdminRole ? 'bg-brand text-white' : 'bg-brand/5 text-secondary'}`}>
+          {displayedRole}
+        </p>
+        <h1 className="text-xl font-semibold text-primary">{user.name}</h1>
+        <p className="text-secondary">{user.username}</p>
+      </div>
+    </div>
 
       {/* Información de contacto */}
       <div className="mb-6">

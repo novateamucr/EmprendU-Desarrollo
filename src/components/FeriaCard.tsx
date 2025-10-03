@@ -3,8 +3,9 @@ interface FeriaCardProps {
   imgUrl: string;
   location: string;
   time: string;
-  buttonText: string;
+  buttonText?: string; 
   onButtonClick?: () => void;
+  link?: string;
 }
 
 export function FeriaCard(props: FeriaCardProps) {
