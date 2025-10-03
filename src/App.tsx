@@ -21,6 +21,7 @@ import PwReset from './routes/pwReset';
 import NewPw from './routes/NewPw';
 import { RootRedirect } from './components/RootRedirect';
 import FeriasPage from './routes/Ferias'; // Nueva ruta para Ferias
+import FeriasActividades from './routes/FeriasAvtividades';
 
 
 // Entrepreneur
@@ -90,6 +91,7 @@ function App() {
                   <Route path="/feed/emprendimiento/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/businessFeedback" element={<BusinessFeedback />} />
                   <Route path="/logout" element={<Logout />} />
+                  <Route path="/feriasActividades" element={<FeriasActividades />} />
                 </Route>
 
                 {/* Profile routes accessible to all authenticated roles (1,2,3) */}
