@@ -136,6 +136,13 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
+                <Route path="/añadir-emprendimientos/:id" element={
+                  <ProtectedRoute allowedRoles={[3]}>
+                    <Layout>
+                      <AñadirEmprendimiento />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
                 {/* Admin edit user profile by ID */}
                 <Route path="/profile/edit/:id" element={
                   <ProtectedRoute allowedRoles={[3]}>
