@@ -24,7 +24,7 @@ export function ProductCard(props: ProductCardProps) {
           </span>
         )}
         <h3 className="font-medium text-gray-900 text-sm mb-1">{props.title}</h3>
-        <p className="text-gray-600 text-xs mb-3 line-clamp-2">{props.description}</p>
+        <p className="text-gray-600 text-xs mb-3 line-clamp-2 overflow-hidden text-ellipsis">{props.description}</p>
         <div className="flex flex-col gap-2 mt-auto">
           <div>
             <p className="text-lg font-semibold text-gray-900 text-center">₡{props.price.toLocaleString()}</p>

@@ -33,7 +33,10 @@ import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
 import ProductInventory from './routes/entrepreneur/inventory/ProductInventory';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
-import  AñadirEmprendimiento  from './routes/AñadirEmprendimiento';
+import { AñadirEmprendimiento } from './routes/AñadirEmprendimiento';
+import { CartProvider } from './context/CartContext';
+import Cart from './routes/Cart';
+import CartDetail from './routes/CartDetail';
 import ProductDetail from './routes/ProductDetail';
 
 // ... other imports and code ...
@@ -48,13 +51,13 @@ function App() {
         <UserProvider>
           <BusinessProvider>
             <CartProvider>
-            <Routes>
+              <Routes>
                 {/* Root route - Always show landing page */}
                 <Route path="/" element={<LandingPage />} />
-                
+
                 {/* Handle redirects for authenticated users */}
                 <Route path="/landing" element={<RootRedirect />} />
-                
+
                 {/* Auth routes with AuthLayout */}
                 <Route element={<AuthLayout><Outlet /></AuthLayout>}>
                   <Route path="/login" element={<Login />} />
@@ -93,14 +96,14 @@ function App() {
 
                 {/* Profile routes accessible to all authenticated roles (1,2,3) */}
                 <Route path="/profile" element={
-                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
                     <Layout>
                       <Perfil />
                     </Layout>
                   </ProtectedRoute>
                 } />
                 <Route path="/perfil/editar" element={
-                  <ProtectedRoute allowedRoles={[1,2,3]}>
+                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
                     <Layout>
                       <EditarPerfil />
                     </Layout>
@@ -148,7 +151,7 @@ function App() {
                     </Layout>
                   </ProtectedRoute>
                 } />
-                                {/* Unauthorized route */}
+                {/* Unauthorized route */}
                 <Route path="/unauthorized" element={
                   <div className="flex flex-col items-center justify-center min-h-screen">
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Acceso no autorizado</h1>
@@ -161,28 +164,36 @@ function App() {
                     ENTREPRENEUR ROUTES (Role 2 only)
                     These routes are only accessible to entrepreneurs
                 =========================================== */}
-                <Route element={
-                  <ProtectedRoute allowedRoles={[2]} redirectTo="/unauthorized">
-                    <Layout>
-                      <EntrepreneurManager />
-                    </Layout>
-                  </ProtectedRoute>
-                }>
-                  <Route path="/entrepreneur" element={<Dashboard />} />
-                  <Route path="/entrepreneur/businesses" element={<BusinessList />} />
-                  <Route path="/entrepreneur/businesses/new" element={<BusinessSetup />} />
-                  <Route path="/entrepreneur/businesses/:id" element={<BusinessSetup />} />
-                  <Route path="/entrepreneur/inventory" element={<ProductInventory />} />
-                  <Route path="/ferias" element={<FeriasPage />} />
+                <Route 
+                  path="/entrepreneur/*"
+                  element={
+                    <ProtectedRoute allowedRoles={[2]} redirectTo="/unauthorized">
+                      <Layout>
+                        <EntrepreneurManager />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Dashboard />} />
+                  <Route path="businesses" element={<BusinessList />} />
+                  <Route path="businesses/new" element={<BusinessSetup />} />
+                  <Route path="businesses/:id" element={<BusinessSetup />} />
+                  <Route path="inventory" element={<InventoryPage />} />
                 </Route>
 
+                {/* Ferias route without the sidebar */}
+                <Route path="/ferias" element={
+                  <ProtectedRoute allowedRoles={[1, 2, 3]}>
+                    <FeriasPage />
+                  </ProtectedRoute>
+                } />
               </Routes>
             </CartProvider>
-            </BusinessProvider>
-          </UserProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    );
-  }
+          </BusinessProvider>
+        </UserProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

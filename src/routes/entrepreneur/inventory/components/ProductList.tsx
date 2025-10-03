@@ -47,27 +47,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   isLoading = false,
 }) => {
   const { toast } = useToast();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [filterBy, setFilterBy] = useState<keyof Product>('name');
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleFilterClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleFilterSelect = (filter: keyof Product) => {
-    // Reset search term when changing filter
-    onSearch('');
-    setFilterBy(filter);
-    handleFilterClose();
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
@@ -96,22 +76,17 @@ export const ProductList: React.FC<ProductListProps> = ({
       : <ArrowDownwardIcon fontSize="small" />;
   };
 
-  const filterOptions: { key: keyof Product; label: string }[] = [
-    { key: 'name', label: 'Nombre' },
-    { key: 'description', label: 'Descripción' },
-    { key: 'price', label: 'Precio' },
-  ];
 
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-auto md:flex-1 max-w-2xl">
+        <div className="relative w-full max-w-2xl">
           <TextField
             fullWidth
             variant="outlined"
             size="small"
-            placeholder={`Buscar por ${filterBy === 'name' ? 'nombre' : filterBy}...`}
+            placeholder="Buscar por nombre o descripción..."
             value={searchTerm}
             onChange={(e) => onSearch(e.target.value)}
             inputRef={searchInputRef}
@@ -121,46 +96,9 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <SearchIcon className="text-gray-400" />
                 </InputAdornment>
               ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={handleFilterClick}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <FilterListIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
               className: 'bg-white',
             }}
           />
-          
-          {/* Filter Dropdown */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleFilterClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            {filterOptions.map((option) => (
-              <MenuItem 
-                key={option.key.toString()}
-                onClick={() => handleFilterSelect(option.key)}
-                className="flex items-center justify-between min-w-[160px]"
-              >
-                {option.label}
-                {filterBy === option.key && <CheckIcon fontSize="small" />}
-              </MenuItem>
-            ))}
-          </Menu>
         </div>
       </div>
 

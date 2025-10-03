@@ -30,8 +30,6 @@ export default function EntrepreneurManager() {
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/entrepreneur' },
     { id: 'businesses', label: 'Mis emprendimientos', icon: <Store size={20} />, path: '/entrepreneur/businesses' },
-    { id: 'new-business', label: 'Nuevo emprendimiento', icon: <Plus size={20} />, path: '/entrepreneur/businesses/new' },
-    { id: 'inventory', label: 'Inventario', icon: <PackageOpen size={20} />, path: '/entrepreneur/inventory' },
   ];
 
   const toggleSidebar = () => {
@@ -39,10 +37,10 @@ export default function EntrepreneurManager() {
   };
 
   return (
-    <div className="flex min-h-screen w-full ">
+    <div className="flex min-h-screen w-full">
       {/* Sidebar */}
       <div 
-        className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex-shrink-0 fixed h-full`}
+        className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex-shrink-0 fixed h-full z-10`}
       >
         <div className="p-4 flex items-center justify-between border-b border-gray-200">
           {isSidebarOpen && <h1 className="text-xl font-bold text-primary">Emprendedor</h1>}
@@ -63,7 +61,13 @@ export default function EntrepreneurManager() {
               key={item.id}
               onClick={() => navigate(item.path)}
               className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary/10 text-left ${
-                window.location.pathname === item.path ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700'
+                // For dashboard, only match exactly /entrepreneur
+                // For other items, match the path exactly or if it's a subpath
+                (item.id === 'dashboard' 
+                  ? window.location.pathname === item.path
+                  : window.location.pathname.startsWith(item.path))
+                  ? 'bg-primary/10 text-primary font-medium' 
+                  : 'text-gray-700'
               }`}
             >
               <span className="flex-shrink-0">{item.icon}</span>
@@ -71,24 +75,17 @@ export default function EntrepreneurManager() {
             </button>
           ))}
         </nav>
-
-        {isSidebarOpen && (
-          <div className="p-4 border-t border-gray-200 mt-auto">
-        
-          </div>
-        )}
       </div>
 
       {/* Main Content - Full Width */}
-      <div className="flex-1 ml-0 transition-all duration-300 mt-6" style={{ marginLeft: isSidebarOpen ? '16rem' : '5rem' }}>
+      <div 
+        className="flex-1 transition-all duration-300 pt-6" 
+        style={{ 
+          marginLeft: isSidebarOpen ? '16rem' : '5rem',
+          minHeight: 'calc(100vh - 1.5rem)'
+        }}
+      >
         <div className="w-full h-full overflow-auto p-6">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="businesses" element={<BusinessList />} />
-            <Route path="businesses/new" element={<BusinessForm />} />
-            <Route path="businesses/:id" element={<BusinessSetup />} />
-            <Route path="inventory" element={<InventoryPage />} />
-          </Routes>
           <Outlet />
         </div>
       </div>
