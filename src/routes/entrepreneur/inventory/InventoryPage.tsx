@@ -143,10 +143,14 @@ export default function InventoryPage() {
       </div>
 
       <ProductList 
-        products={products} 
+        products={filteredProducts} 
         onEdit={handleEditProduct} 
         onDelete={loadProducts}
-        businessId={businessId!}
+        onSort={requestSort}
+        sortConfig={sortConfig}
+        onSearch={setSearchTerm}
+        searchTerm={searchTerm}
+        isLoading={isLoading}
       />
 
       {showProductForm && (

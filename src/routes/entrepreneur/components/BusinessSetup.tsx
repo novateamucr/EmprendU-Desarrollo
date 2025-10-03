@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -25,6 +25,13 @@ interface BusinessFormData {
   description: string;
   category: number | string;
   user_id?: number;
+  image_url?: string | null;
+}
+
+interface BusinessSetupProps {
+  initialData?: Partial<BusinessFormData> | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 // API base URL
@@ -32,18 +39,20 @@ const API_URL = 'http://emprendu-backend.test/api';
 
 // Categories will be loaded from the API
 
-export default function BusinessSetup() {
+export default function BusinessSetup({ initialData, onSuccess, onCancel }: BusinessSetupProps) {
   const { id } = useParams<{ id?: string }>();
-  const isEditMode = Boolean(id);
+  const isEditMode = Boolean(id) || Boolean(initialData?.id);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   
   const [formData, setFormData] = useState<BusinessFormData>({
-    name: '',
-    description: '',
-    category: ''
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    category: initialData?.category || '',
+    image_url: initialData?.image_url || null
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -66,9 +75,9 @@ export default function BusinessSetup() {
     fetchCategories();
   }, []);
 
-  // Load business data if in edit mode
+  // Load business data if in edit mode and no initial data provided
   useEffect(() => {
-    if (isEditMode && id) {
+    if (isEditMode && id && !initialData) {
       const fetchBusiness = async () => {
         try {
           setIsLoading(true);
@@ -76,9 +85,10 @@ export default function BusinessSetup() {
           setFormData({
             id: business.id,
             name: business.name,
-            description: business.description,
+            description: business.description || '',
             category: business.category,
-            user_id: business.user_id
+            user_id: business.user_id,
+            image_url: business.image_url || null
           });
         } catch (error) {
           console.error('Error fetching business:', error);
@@ -90,8 +100,15 @@ export default function BusinessSetup() {
       };
       
       fetchBusiness();
+    } else if (initialData) {
+      // If initialData is provided, use it to populate the form
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        description: initialData.description || ''
+      }));
     }
-  }, [id, isEditMode]);
+  }, [id, isEditMode, initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -106,6 +123,9 @@ export default function BusinessSetup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent multiple submissions
+    if (isLoading) return;
+    
     if (!formData.category) {
       setError('Por favor selecciona una categoría');
       return;
@@ -113,207 +133,220 @@ export default function BusinessSetup() {
     
     try {
       setIsLoading(true);
+      setError(null);
       
-      // Prepare the business data object according to API requirements
       if (!user?.id) {
         throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
       }
 
-      const businessData = {
+      // Prepare the data to be sent
+      const requestData = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description || null,
         category: Number(formData.category),
-        user_id: user.id,
-        // Required fields with default values
-        image_url: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        owner: user,
-        category_relation: categories.find(cat => cat.id === Number(formData.category)),
-        products: []
+        // For new records only
+        ...(!isEditMode && { user_id: user.id }),
+        image_url: null
       };
+
+      console.log('Sending data to API:', requestData);
       
       let result;
       if (isEditMode && id) {
-        result = await entrepreneurshipApi.update(id, businessData);
+        // For update, use a direct fetch call to ensure data is sent correctly
+        const response = await fetch(`http://emprendu-backend.test/api/entrepreneurships/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al actualizar el emprendimiento');
+        }
+        
+        result = await response.json();
         if (!result || !result.id) {
           throw new Error('La API no devolvió una respuesta válida al actualizar.');
         }
-        toast.success('Emprendimiento actualizado exitosamente');
+        toast.success('✅ Emprendimiento actualizado exitosamente', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+        });
       } else {
-        result = await entrepreneurshipApi.create(businessData);
+        // For create, use a direct fetch call
+        const response = await fetch('http://emprendu-backend.test/api/entrepreneurships', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al crear el emprendimiento');
+        }
+        
+        result = await response.json();
         if (!result || !result.id) {
           throw new Error('La API no devolvió una respuesta válida al crear.');
         }
-        toast.success('Emprendimiento creado exitosamente');
+        toast.success('🎉 ¡Emprendimiento creado exitosamente!', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+        });
       }
 
-      // Only redirect after success; use SPA navigation (no full reload)
-      navigate('/entrepreneur/businesses', { replace: true });
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Default navigation if no callback provided
+        navigate('/entrepreneur/businesses');
+      }
     } catch (err: any) {
       console.error('Error saving business:', err);
-      const errorMessage = err.response?.data?.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
+      const errorMessage = err.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(`❌ ${errorMessage}`, {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoadingCategories) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <span className="ml-4">Cargando categorías...</span>
-      </div>
-    );
-  }
-
-  if (isLoading && isEditMode) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <span className="ml-4">Cargando emprendimiento...</span>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          {isEditMode ? 'Editar Emprendimiento' : 'Crear Nuevo Emprendimiento'}
+    <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">
+          {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
         </h1>
         <p className="text-muted-foreground">
-          {isEditMode 
+          {isEditMode
             ? 'Actualiza la información de tu emprendimiento.'
             : 'Completa la información básica para crear un nuevo emprendimiento.'}
         </p>
       </div>
-      
-      <div className="flex items-center space-x-4">
-        <Button
-          variant="ghost" 
-          size="icon" 
-          onClick={() => navigate(-1)}
-          className="rounded-full"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-2xl font-bold text-gray-800">
-          {isEditMode ? 'Editar emprendimiento' : 'Agregar Nuevo emprendimiento'}
 
-        </h2>
-      </div>
-      
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <X className="h-5 w-5 text-red-400" aria-hidden="true" />
+      <Card className="p-6">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Nombre del emprendimiento *
+              </label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Ej: Mi Tienda Online"
+                required
+              />
             </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
+
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium mb-1">
+                Categoría *
+              </label>
+              <Select
+                id="category"
+                name="category"
+                value={formData.category}
+                onValueChange={(value) => setFormData({...formData, category: value})}
+                required
+              >
+                <option value="">Selecciona una categoría</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.nombre}
+                  </option>
+                ))}
+              </Select>
             </div>
-          </div>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card className="p-6 space-y-6">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Información Básica</h3>
-            
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Nombre del emprendimiento <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder={isEditMode && formData.name ? formData.name : 'Ej: Mi Tienda Online'}
-                    required
-                    className="w-full"
-                  />
-                </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                    Categoría <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    required
-                    disabled={isLoadingCategories}
-                    className="w-full"
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.nombre}
-                      </option>
-                    ))}
-                  </Select>
-                  {isLoadingCategories && (
-                    <p className="mt-1 text-sm text-gray-500">Cargando categorías...</p>
-                  )}
-                </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">
+                Descripción
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Describe tu emprendimiento..."
+                rows={4}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Descripción
-                  </label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder={isEditMode && formData.description ? formData.description : 'Describe tu emprendimiento...'}
-                    rows={4}
-                    className="w-full"
-                  />
-                </div>
+            {error && (
+              <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                {error}
               </div>
+            )}
+
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel || (() => navigate(-1))}
+                disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isEditMode ? 'Actualizando...' : 'Creando...'}
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isEditMode ? 'Actualizar' : 'Crear'} emprendimiento
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-        </Card>
-        
-        <div className="mt-8 flex justify-end space-x-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/entrepreneur/businesses')}
-            disabled={isLoading}
-            className="px-6"
-          >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="px-6 bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {isEditMode ? 'Actualizar' : 'Crear'} Emprendimiento
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </Card>
     </div>
   );
 }

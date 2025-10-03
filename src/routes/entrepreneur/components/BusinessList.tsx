@@ -211,8 +211,8 @@ export default function BusinessList() {
           {businesses.map((business) => (
             <Card key={business.id} className="overflow-hidden">
               <div className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
                     <div className="flex-shrink-0 h-14 w-14 rounded-md bg-gray-100 overflow-hidden">
                       {business.image_url ? (
                         <img
@@ -229,14 +229,18 @@ export default function BusinessList() {
                         </div>
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 leading-snug">{business.name}</h3>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2">{business.description || 'Sin descripción'}</p>
+                    <div className="min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-xl font-semibold text-gray-900 truncate">{business.name}</h3>
+                        <Badge variant={business.banned ? 'destructive' : 'success'} className="flex-shrink-0">
+                          {business.banned ? 'Inactivo' : 'Activo'}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600 line-clamp-2 overflow-hidden text-ellipsis">
+                        {business.description || 'Sin descripción'}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant={business.banned ? 'destructive' : 'success'}>
-                    {business.banned ? 'Inactivo' : 'Activo'}
-                  </Badge>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-gray-100">
@@ -322,3 +326,4 @@ export default function BusinessList() {
     </div>
   );
 }
+
