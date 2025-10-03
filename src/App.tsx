@@ -19,7 +19,6 @@ import Register from './routes/register';
 import Logout from './routes/logout';
 import PwReset from './routes/pwReset';
 import NewPw from './routes/NewPw';
-import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import { RootRedirect } from './components/RootRedirect';
 import FeriasPage from './routes/Ferias'; // Nueva ruta para Ferias
 
@@ -30,10 +29,9 @@ import Dashboard from './routes/entrepreneur/Dashboard';
 import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
 import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
-import ProductInventory from './routes/entrepreneur/inventory/ProductInventory';
 import GestorUsuarios from './routes/GestorUsuarios';
 import { AñadirUsuario } from './routes/AñadirUsuario';
-import { AñadirEmprendimiento } from './routes/AñadirEmprendimiento';
+import AñadirEmprendimiento from './routes/AñadirEmprendimiento';
 import { CartProvider } from './context/CartContext';
 import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
@@ -164,7 +162,7 @@ function App() {
                     ENTREPRENEUR ROUTES (Role 2 only)
                     These routes are only accessible to entrepreneurs
                 =========================================== */}
-                <Route 
+                <Route
                   path="/entrepreneur/*"
                   element={
                     <ProtectedRoute allowedRoles={[2]} redirectTo="/unauthorized">
