@@ -45,12 +45,19 @@ class EntrepreneurshipController extends Controller
 
     public function update(Request $request, Entrepreneurship $entrepreneurship)
     {
+        \Log::info('Update entrepreneurship request received', [
+            'entrepreneurship_id' => $entrepreneurship->id,
+            'request_data' => $request->all(),
+            'user_id' => $request->user() ? $request->user()->id : null,
+            'ip' => $request->ip()
+        ]);
+
         $data = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'category' => 'sometimes|required|integer|exists:entrepreneurship_categories,id',
-            'image_url' => 'nullable|url|max:500',
-            'user_id' => 'sometimes|required|exists:users,id',
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'category' => 'sometimes|integer|exists:entrepreneurship_categories,id',
+            'image_url' => 'sometimes|nullable|url|max:500',
+            'user_id' => 'sometimes|exists:users,id',
         ]);
 
         $entrepreneurship->update($data);
