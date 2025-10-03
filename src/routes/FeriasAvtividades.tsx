@@ -72,7 +72,7 @@ export default function FeriasPage() {
 
         {/* Participando */}
         <section className="mb-12">
-          <h2 className="text-lg font-semibold text-primary mb-2">Participando</h2>
+          <h2 className="text-lg font-semibold text-primary mb-2"></h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFerias.map((feria, i) => (
