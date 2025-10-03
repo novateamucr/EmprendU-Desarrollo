@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { FeriaCard } from '../components/FeriaCard';
 import { ConfirmationPopup } from '../components/PopupConfirmacion';
 import { PopupEmprendimientos } from '../components/PopupEmprendimientos';
+import { PopupDetalles } from '../components/PopupDetalles';
 import img from "../assets/parque.jpg";
 
 export default function FeriasPage() {
@@ -14,6 +15,7 @@ export default function FeriasPage() {
   // Estados para los popups
   const [showPopupEmprendimientos, setShowPopupEmprendimientos] = useState(false);
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [showPopupDetalles, setShowPopupDetalles] = useState(false);
 
   const zones = ['San Ramón', 'Cartago', 'Heredia'];
 
@@ -55,6 +57,10 @@ export default function FeriasPage() {
   const handleInscribirse = () => {
     setShowPopupEmprendimientos(true);
   };
+const handleVerDetalles = () => {
+    setShowPopupDetalles(true);
+  };
+  
 
   // Función para continuar al popup de confirmación
   const handleSiguiente = () => {
@@ -94,6 +100,7 @@ const handleConfirmar = () => {
                 imgUrl={feria.imgUrl}
                 location={feria.location}
                 time={feria.time}
+                onButtonClick={handleVerDetalles}
                 buttonText={feria.actionLabel}
               />
             ))}
@@ -168,6 +175,12 @@ const handleConfirmar = () => {
   <ConfirmationPopup 
     onClose={() => setShowConfirmationPopup(false)}
     onConfirmar={handleConfirmar} // <- Agregado
+  />
+)}
+{/* Popup de detalles */}
+{showPopupDetalles && (
+  <PopupDetalles
+    onClose={() => setShowPopupDetalles(false)}
   />
 )}
       </div>
