@@ -36,6 +36,7 @@ import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
 const queryClient = new QueryClient();
 
 import './App.css';
+import GestorEmprendimientos from './routes/GestorEmprendimientos';
 
 function RootRoute() {
   const { isAuthenticated } = useAuth();
@@ -84,8 +85,10 @@ function App() {
                   {/* Admin Routes */}
                   <Route path="/admin/usuarios" element={<GestorUsuarios />} />
                   <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
-                  <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
 
+                  <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />
+                  <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
+                  <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
                   {/* Entrepreneur Routes */}
                   <Route path="/entrepreneur" element={<EntrepreneurManager />}>
                     <Route index element={<Dashboard />} />

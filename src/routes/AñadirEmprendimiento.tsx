@@ -146,7 +146,7 @@ export default function BusinessForm() {
         await entrepreneurshipApi.create(businessData);
         toast.success('Emprendimiento creado exitosamente');
       }
-      navigate('/gestor-emprendimientos');
+      navigate('/admin/emprendimientos');
     } catch (error) {
       console.error('Error guardando el emprendimiento:', error);
       toast.error('Error al guardar el emprendimiento');

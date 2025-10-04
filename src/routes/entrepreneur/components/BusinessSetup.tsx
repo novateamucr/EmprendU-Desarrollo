@@ -285,11 +285,12 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
               <label htmlFor="category" className="block text-sm font-medium mb-1">
                 Categoría *
               </label>
-              <Select
+              <select
                 id="category"
                 name="category"
                 value={formData.category}
-                onValueChange={(value) => setFormData({...formData, category: value})}
+                onChange={handleInputChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
               >
                 <option value="">Selecciona una categoría</option>
@@ -298,7 +299,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
                     {category.nombre}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
 
             <div>

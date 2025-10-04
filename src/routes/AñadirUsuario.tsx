@@ -153,7 +153,7 @@ export function AñadirUsuario() {
   };
 
   const handleCancel = () => {
-    navigate('/gestor-usuarios');
+    navigate('/admin/usuarios');
   };
 
   return (

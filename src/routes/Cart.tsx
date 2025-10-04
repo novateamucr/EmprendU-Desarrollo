@@ -1,28 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Minus, Plus } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { Modal } from '../components/Modal';
-import { useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 export default function Cart() {
-  const { groups, placeOrder, isPlaced, updateQty, removeItem } = useCart();
+  const { groups, placeOrder, isPlaced, removeItem, clearCart, updateQty } = useCart();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
-  const [orderFor, setOrderFor] = useState<string | null>(null);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const isProfileComplete = () => {
-    return !! (user?.phone && user?.province && user?.canton && user?.district && user?.address);
-  };
-  const handlePlaceOrder = async (entrepreneurshipId: string) => {
-    if (!isProfileComplete()) {
-      setShowProfileReminder(true);
-      return;
-    }
-    await placeOrder(entrepreneurshipId);
-    setOrderFor(entrepreneurshipId);
+    return !!(user?.phone && user?.province && user?.canton && user?.district && user?.address);
   };
 
   const grandTotal = useMemo(() => {
@@ -32,175 +25,211 @@ export default function Cart() {
   if (!groups.length) {
     return (
       <Layout>
-        <div className="max-w-3xl mx-auto mt-10 bg-white rounded-card shadow-soft border border-border p-6">
-          <h1 className="text-2xl font-semibold text-primary mb-4">Tu carrito</h1>
-          <p className="text-secondary">No tienes productos en tus carritos.</p>
+        <div className="max-w-4xl mx-auto p-6">
+          <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <ShoppingBag className="w-6 h-6" />
+            Carrito de compras
+          </h1>
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-600 mb-4">Tu carrito está vacío</p>
+            <button
+              onClick={() => navigate('/home')}
+              className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark transition-colors"
+            >
+              Seguir comprando
+            </button>
+          </div>
         </div>
       </Layout>
     );
   }
 
+  const handlePlaceOrder = async (entrepreneurshipId: string) => {
+    if (!user?.phone || !user?.address) {
+      setShowProfileReminder(true);
+      return;
+    }
+
+    try {
+      setIsPlacingOrder(true);
+      await placeOrder(entrepreneurshipId);
+      toast.success('Pedido realizado con éxito');
+
+      // If this was the last group, clear the cart
+      if (groups.length === 1) {
+        clearCart();
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Error al realizar el pedido:', error);
+      toast.error('Error al realizar el pedido. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
   return (
-    
     <Layout>
-      <div className="max-w-4xl mx-auto mt-10 space-y-6">
-        <h1 className="text-2xl font-semibold text-primary">Tu carrito</h1>
-        {groups.map(group => (
-          <div key={group.entrepreneurshipId} className="bg-white rounded-card shadow-soft border border-border p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-                  {group.entrepreneurshipName}
-                  <span
-                    aria-label="Cantidad de productos de este emprendimiento"
-                    className="w-6 h-6 rounded-full bg-brand/20 text-brandDark text-xs font-semibold flex items-center justify-center"
-                    title={`${group.items.reduce((acc, it) => acc + it.quantity, 0)} productos`}
-                  >
-                    {group.items.reduce((acc, it) => acc + it.quantity, 0)}
-                  </span>
-                </h2>
-                {isPlaced(group.entrepreneurshipId) && (
-                  <span className="text-xs text-brand italic">pedido realizado</span>
-                )}
-              </div>
-              {/* Botón de editar/ver eliminado: edición ahora es inline */}
-            </div>
-
-            <div className="divide-y">
-              {group.items.map(item => (
-                <div key={item.productId} className="py-3 flex items-center justify-between gap-4">
-                  {/* Nombre del producto */}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-primary font-medium truncate">{item.name}</p>
-                  </div>
-
-                  {/* Precio en el centro (reemplaza 'x cantidad') */}
-                  <div className="text-primary whitespace-nowrap">
-                    ₡{(item.price * item.quantity).toLocaleString('es-CR')}
-                  </div>
-
-                  {/* Controles a la derecha (reemplazan el precio) */}
-                  <div className="shrink-0">
-                    {isPlaced(group.entrepreneurshipId) ? (
-                      <div className="px-4 py-2 rounded-full bg-gray-100 text-secondary text-sm select-none">
-                        x{item.quantity}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100">
-                        {item.quantity <= 1 ? (
-                          <button
-                            aria-label="Eliminar"
-                            onClick={() => removeItem(group.entrepreneurshipId, item.productId)}
-                            className="group w-8 h-8 rounded flex items-center justify-center hover:bg-brand/10"
-                          >
-                            <Trash2 className="w-4 h-4 text-secondary group-hover:text-brand" />
-                          </button>
-                        ) : (
-                          <button
-                            aria-label="Disminuir"
-                            onClick={() => updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1)}
-                            className="group w-8 h-8 rounded flex items-center justify-center hover:bg-brand/10"
-                          >
-                            <Minus className="w-4 h-4 text-secondary group-hover:text-brand" />
-                          </button>
-                        )}
-                        <span className="w-6 text-center text-primary">{item.quantity}</span>
-                        <button
-                          aria-label="Aumentar"
-                          onClick={() => updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1)}
-                          className="group w-8 h-8 rounded flex items-center justify-center hover:bg-brand/10"
-                        >
-                          <Plus className="w-4 h-4 text-secondary group-hover:text-brand" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Subtotal por emprendimiento */}
-            <div className="flex items-center justify-between mt-4 border-t border-border pt-3">
-              <span className="text-primary font-semibold">Subtotal</span>
-              <span className="text-primary font-semibold">
-                ₡{group.items.reduce((acc, it) => acc + it.price * it.quantity, 0).toLocaleString('es-CR')}
-              </span>
-            </div>
-
-            <div className="flex justify-end mt-4">
+      <div className="max-w-4xl mx-auto p-8">
+        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <ShoppingBag className="w-6 h-6" />
+          <span>Carrito de compras</span>
+        </h1>
+        {groups.map((group) => (
+          <div key={group.entrepreneurshipId} className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => navigate(`/business/${group.entrepreneurshipId}`)}
+                className="text-lg font-semibold hover:underline text-left"
+              >
+                {group.entrepreneurshipName}
+              </button>
               {isPlaced(group.entrepreneurshipId) ? (
-                <button
-                  onClick={() => navigate(`/contactar/${group.entrepreneurshipId}`)}
-                  className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
-                >
-                  Contactar emprendedor
-                </button>
+                <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded">
+                  Pedido realizado
+                </span>
               ) : (
                 <button
-                  onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
-                  className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    group.items.forEach(item => {
+                      removeItem(group.entrepreneurshipId, item.productId);
+                    });
+                  }}
+                  className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
                 >
-                  Hacer pedido
+                  <Trash2 className="w-4 h-4" />
+                  <span>Eliminar todo</span>
                 </button>
               )}
             </div>
+
+            <div className="bg-white rounded-lg shadow-sm divide-y">
+              {group.items.map((item) => (
+                <div 
+                  key={item.productId} 
+                  className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
+                  onClick={() => navigate(`/product/${item.productId}`)}
+                >
+                  <div className="flex w-full justify-between items-center">
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={item.imageUrl || 'https://placehold.co/100x100?text=Producto'}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div>
+                        <h3 className="font-medium hover:underline">{item.name}</h3>
+                        <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {item.quantity > 1 ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(group.entrepreneurshipId, item.productId);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                      <div className="w-20 text-right font-medium">
+                        ₡{(item.price * item.quantity).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="p-4 flex justify-between items-center border-t">
+                <div className="text-sm text-gray-600">
+                  {group.items.length} {group.items.length === 1 ? 'producto' : 'productos'} • Total:
+                  <span className="font-semibold ml-1">
+                    ₡{group.items.reduce((total, item) => total + (item.price * item.quantity), 0).toLocaleString()}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
+                  disabled={isPlaced(group.entrepreneurshipId) || isPlacingOrder}
+                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${isPlaced(group.entrepreneurshipId)
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-brand text-white hover:bg-brandDark'
+                    }`}
+                >
+                  {isPlacingOrder ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Procesando...
+                    </>
+                  ) : isPlaced(group.entrepreneurshipId) ? (
+                    'Pedido realizado'
+                  ) : (
+                    'Confirmar pedido'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         ))}
-      </div>
 
-      {/* Total general de pedidos */}
-      <div className="max-w-4xl mx-auto mt-6">
-        <div className="bg-white rounded-card shadow-soft border border-border p-4 flex items-center justify-between">
-          <p className="text-brand font-semibold">Total de pedidos</p>
-          <p className="text-primary font-semibold">₡{grandTotal.toLocaleString('es-CR')}</p>
-        </div>
-      </div>
-
-      <Modal
-        isOpen={!!orderFor}
-        onClose={() => setOrderFor(null)}
-        title="Pedido realizado"
-      >
-        <div className="space-y-3 text-secondary text-sm">
-          <p>Pedido realizado, se le comunicará al emprendedor.</p>
-          <div className="flex justify-end pt-2">
-            <button
-              onClick={() => setOrderFor(null)}
-              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
-            >
-              Aceptar
-            </button>
+        <Modal
+          isOpen={showProfileReminder}
+          onClose={() => setShowProfileReminder(false)}
+          title="Información requerida"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Para realizar un pedido, necesitamos que completes tu información de perfil, incluyendo tu número de teléfono y dirección.
+            </p>
+            <p className="text-sm text-gray-600">
+              Esta información es necesaria para que el emprendedor pueda contactarte y coordinar la entrega de tu pedido.
+            </p>
+            <div className="flex justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setShowProfileReminder(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setShowProfileReminder(false);
+                  navigate('/profile');
+                }}
+                className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark"
+              >
+                Completar perfil
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
-
-      <Modal
-      isOpen={showProfileReminder}
-      onClose={() => setShowProfileReminder(false)}
-      title="Perfil incompleto"
-    >
-      <div className="space-y-3 text-secondary text-sm">
-        <p>Tu perfil no está completo. Por favor, completa tu información antes de realizar un pedido.</p>
-        <div className="flex justify-end pt-2 gap-2">
-          <button
-            onClick={() => {
-              setShowProfileReminder(false);
-              navigate('/profile'); // redirige a la página de perfil
-            }}
-            className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
-          >
-            Completar perfil
-          </button>
-          <button
-            onClick={() => setShowProfileReminder(false)}
-            className="px-6 py-2 bg-gray-200 text-primary rounded-lg font-medium hover:bg-red-600 hover:text-white transition-colors"
-          >
-            Cancelar
-          </button>
-        </div>
+        </Modal>
       </div>
-    </Modal>
-
-    </Layout>
+  </Layout >
+              
   );
 }

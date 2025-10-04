@@ -6,7 +6,7 @@ import useEntrepreneurships from "../hooks/useEntrepreneurships";
 
 const button = (
   <Link
-    to="/añadir-emprendimientos"
+    to="/admin/emprendimientos/nuevo"
     className="bg-black text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
   >
     + Añadir emprendimiento
@@ -163,7 +163,7 @@ export default function GestorEmprendimientos() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            to={`/añadir-emprendimientos/${ent.id}`}
+                            to={`/admin/emprendimientos/nuevo/${ent.id}`}
                             className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm"
                           >
                             Editar

@@ -497,7 +497,7 @@ export default function Home() {
                 const featuredId = featured?.id ?? '';
                 return (
                   <Link
-                    to={`/feed/emprendimiento/${featuredId}`}
+                    to={`/business/${featuredId}`}
                     className="block"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                   >
@@ -617,7 +617,7 @@ export default function Home() {
                     return (
                       <Link
                         key={business.id}
-                        to={`/feed/emprendimiento/${business.id}`}
+                        to={`/business/${business.id}`}
                         className="block"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                       >
@@ -625,7 +625,7 @@ export default function Home() {
                           <div className="aspect-square bg-gray-50 relative overflow-hidden">
                             <img
                               src={business.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
-                              alt={business.name}
+                              alt={business.name || 'Imagen del emprendimiento'}
                               className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             />
                           </div>
@@ -717,7 +717,6 @@ export default function Home() {
                       price={product.price}
                       imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
                       categoryName={product?.category_id != null ? (categoryNameById.get(Number(product.category_id)) || 'General') : undefined}
-                      onBuy={() => alert(`Compraste: ${product.name}`)}
                     />
                   </AnimatedCard>
                     </Link>

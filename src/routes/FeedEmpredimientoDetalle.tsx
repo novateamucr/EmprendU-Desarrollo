@@ -11,6 +11,7 @@ import Btn from "../components/ui/Btn";
 import BusinessFeedbackPopup from "../components/ui/BusinessFeedback";
 import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
+import { BusinessDetailSkeleton } from '../components/skeletons/BusinessDetailSkeleton';
 
 
 export function FeedEmpredimientoDetalle() {
@@ -132,7 +133,7 @@ export function FeedEmpredimientoDetalle() {
     setLocalFavId(existing?.id ?? null);
   }, [businessIdNum, favorites]);
 
-  if (loading) return <div className="text-center py-8 text-gray-500">Cargando emprendimiento...</div>;
+  if (loading) return <BusinessDetailSkeleton />;
   if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
   if (!business) return <div className="text-center py-8 text-gray-500">Emprendimiento no encontrado.</div>;
 

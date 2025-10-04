@@ -5,7 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import logoEmprendimiento from "../assets/logoEmprendimiento.jpg";
 import rosas from "../assets/rosas.jpg";
 
-export function FeedEmprendimiento() {
+ function FeedEmprendimiento() {
   return (
     <div className="pt-24 pb-8">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -70,3 +70,5 @@ export function FeedEmprendimiento() {
     </div>
   );
 }
+
+export default FeedEmprendimiento;

@@ -1,7 +1,45 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
 import { Facebook, WhatsApp, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
+import { useCart } from '../context/CartContext';
+
+// Skeleton component for loading state
+const ProductDetailSkeleton = () => (
+  <div className="pt-24 pb-8 px-4 md:px-8">
+    <div className="max-w-4xl mx-auto">
+      {/* Back button and image skeleton */}
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+        <div className="w-32 h-6 bg-gray-200 rounded"></div>
+      </div>
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Image skeleton */}
+        <div className="w-full aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+        
+        {/* Details skeleton */}
+        <div className="space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+          
+          <div className="pt-4 space-y-4">
+            <div className="h-12 bg-gray-200 rounded w-1/2"></div>
+            <div className="flex space-x-4">
+              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -37,10 +75,26 @@ export default function ProductDetail() {
       .catch(() => {});
   }, []);
 
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
   const handleOrder = () => {
-    if (!product) return;
-    // TODO: Integrar con flujo real de pedidos o carrito
-    alert(`Hacer pedido: ${product.name}`);
+    if (!product || !product.entrepreneurship) return;
+    
+    addItem(
+      product.entrepreneurship.id.toString(),
+      product.entrepreneurship.name,
+      {
+        productId: product.id.toString(),
+        name: product.name,
+        price: product.price,
+        ...(product.image_url && { imageUrl: product.image_url }), // Only include imageUrl if it exists
+        quantity: 1
+      }
+    );
+    
+    // Optionally navigate to cart or show a notification
+    navigate('/cart');
   };
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -72,7 +126,7 @@ export default function ProductDetail() {
     }
   };
 
-  if (loading) return <div className="text-center py-8 text-gray-500">Cargando producto...</div>;
+  if (loading) return <ProductDetailSkeleton />;
   if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
   if (!product) return <div className="text-center py-8 text-gray-500">Producto no encontrado.</div>;
 
@@ -82,7 +136,7 @@ export default function ProductDetail() {
       {product.entrepreneurship?.id && (
         <div className="max-w-4xl mx-auto px-4 md:px-8 mb-2">
           <Link
-            to={`/feed/emprendimiento/${product.entrepreneurship.id}`}
+            to={`/business/${product.entrepreneurship.id}`}
             className="inline-flex items-center gap-2 text-sm text-secondary hover:text-primary"
             title={product.entrepreneurship.name}
           >
@@ -129,7 +183,7 @@ export default function ProductDetail() {
                   onClick={handleOrder}
                   className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors"
                 >
-                  Hacer pedido
+                  Agregar al carrito
                 </button>
                 {/* Share caption and icon buttons (tighter spacing) */}
                 <div className="flex flex-col gap-1">

@@ -5,7 +5,7 @@ import useUsers from "../hooks/useUsers";
 
 const button = (
   <Link
-    to="/añadir-usuario"
+    to="/admin/usuarios/nuevo"
     className="bg-brand text-white rounded-full px-6 py-3 text-base font-medium hover:bg-brandDark hover:text-white transition-colors focus-brand"
   >
     + Añadir usuario
@@ -223,7 +223,7 @@ export default function GestorUsuarios() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            to={`/profile/edit/${user.id}`}
+                            to={`/profile/edit`}
                             className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm focus-brand"
                           >
                             Editar
