@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
+// Types
 export type CartItem = {
   productId: string;
   name: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 };
 
 export type CartGroup = {
@@ -19,100 +21,127 @@ type CartContextValue = {
   updateQty: (entrepreneurshipId: string, productId: string, quantity: number) => void;
   removeItem: (entrepreneurshipId: string, productId: string) => void;
   placeOrder: (entrepreneurshipId: string) => Promise<void>;
-  clearGroup: (entrepreneurshipId: string) => void;
   isPlaced: (entrepreneurshipId: string) => boolean;
+  clearCart: () => void;
+  getItemCount: () => number;
+  getGroupItemCount: (entrepreneurshipId: string) => number;
 };
+
+const CART_STORAGE_KEY = 'app_cart';
+const CART_PLACED_IDS_KEY = 'app_cart_placed_ids';
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [groups, setGroups] = useState<CartGroup[]>([]);
-  const [placedIds, setPlacedIds] = useState<string[]>([]);
-
-  // Hydrate placed state from localStorage
-  useEffect(() => {
-    const raw = localStorage.getItem('cart_placed_ids');
-    if (raw) {
+  const [groups, setGroups] = useState<CartGroup[]>(() => {
+    // Load cart from localStorage on initial render
+    if (typeof window !== 'undefined') {
       try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setPlacedIds(parsed);
-      } catch {}
+        const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+        return savedCart ? JSON.parse(savedCart) : [];
+      } catch (e) {
+        console.error('Failed to load cart from localStorage', e);
+        return [];
+      }
     }
-  }, []);
+    return [];
+  });
 
-  // Persist placed state on change
+  const [placedIds, setPlacedIds] = useState<string[]>(() => {
+    // Load placed IDs from localStorage on initial render
+    if (typeof window !== 'undefined') {
+      try {
+        const savedPlaced = localStorage.getItem(CART_PLACED_IDS_KEY);
+        return savedPlaced ? JSON.parse(savedPlaced) : [];
+      } catch (e) {
+        console.error('Failed to load placed items from localStorage', e);
+        return [];
+      }
+    }
+    return [];
+  });
+
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart_placed_ids', JSON.stringify(placedIds));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(groups));
+      } catch (e) {
+        console.error('Failed to save cart to localStorage', e);
+      }
+    }
+  }, [groups]);
+
+  // Save placed IDs to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(CART_PLACED_IDS_KEY, JSON.stringify(placedIds));
+      } catch (e) {
+        console.error('Failed to save placed items to localStorage', e);
+      }
+    }
   }, [placedIds]);
 
-  // Demo mode via env flag
-  useEffect(() => {
-    const demo = import.meta.env.VITE_CART_DEMO === 'true';
-    if (!demo) return;
-    setGroups([
-      {
-        entrepreneurshipId: 'e1',
-        entrepreneurshipName: 'Café La Montaña',
-        items: [
-          { productId: 'p1', name: 'Café tostado 500g', price: 4500, quantity: 1 },
-          { productId: 'p2', name: 'Taza artesanal', price: 3500, quantity: 2 },
-          { productId: 'p3', name: 'Filtros de papel (x50)', price: 1200, quantity: 1 },
-        ],
-      },
-      {
-        entrepreneurshipId: 'e2',
-        entrepreneurshipName: 'Dulces Doña Ana',
-        items: [
-          { productId: 'p4', name: 'Cajeta tradicional', price: 2500, quantity: 3 },
-          { productId: 'p5', name: 'Tapitas de dulce', price: 1800, quantity: 2 },
-        ],
-      },
-      {
-        entrepreneurshipId: 'e3',
-        entrepreneurshipName: 'Artesanías El Roble',
-        items: [
-          { productId: 'p6', name: 'Portavasos de madera (x4)', price: 5200, quantity: 1 },
-          { productId: 'p7', name: 'Tabla para picar', price: 7800, quantity: 1 },
-          { productId: 'p8', name: 'Llaveros tallados (x2)', price: 2600, quantity: 2 },
-        ],
-      },
-      {
-        entrepreneurshipId: 'e4',
-        entrepreneurshipName: 'Huerta Verde',
-        items: [
-          { productId: 'p9', name: 'Lechuga orgánica', price: 900, quantity: 2 },
-          { productId: 'p10', name: 'Tomate cherry (bandeja)', price: 1500, quantity: 1 },
-          { productId: 'p11', name: 'Hierbabuena fresca', price: 700, quantity: 3 },
-          { productId: 'p12', name: 'Zanahoria orgánica (kg)', price: 1100, quantity: 1 },
-        ],
-      },
-    ]);
-  }, []);
+  // Cart starts empty by default
 
   const addItem: CartContextValue['addItem'] = (entrepreneurshipId, entrepreneurshipName, item) => {
     setGroups(prev => {
-      const copy = [...prev];
-      const gIdx = copy.findIndex(g => g.entrepreneurshipId === entrepreneurshipId);
-      if (gIdx === -1) {
-        copy.push({
+      // Create a deep copy of the previous state to avoid direct mutations
+      const updatedGroups = [...prev];
+      
+      // Ensure we have valid entrepreneurship ID and name
+      if (!entrepreneurshipId || !entrepreneurshipName) {
+        console.error('Missing entrepreneurship ID or name');
+        return prev;
+      }
+      
+      // Find the group for this entrepreneurship
+      let groupIndex = updatedGroups.findIndex(g => g.entrepreneurshipId === entrepreneurshipId);
+      const quantity = item.quantity ?? 1;
+
+      // Create the new item with all necessary properties
+      const newItem = {
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: quantity,
+        imageUrl: item.imageUrl
+      };
+
+      if (groupIndex === -1) {
+        // If no group exists for this entrepreneurship, create a new one
+        updatedGroups.push({
           entrepreneurshipId,
           entrepreneurshipName,
-          items: [{ ...item, quantity: item.quantity ?? 1 }],
+          items: [newItem]
         });
-        return copy;
-      }
-      const group = { ...copy[gIdx] };
-      const iIdx = group.items.findIndex(i => i.productId === item.productId);
-      if (iIdx === -1) {
-        group.items = [...group.items, { ...item, quantity: item.quantity ?? 1 }];
       } else {
-        const found = { ...group.items[iIdx] };
-        found.quantity += item.quantity ?? 1;
-        group.items = group.items.slice();
-        group.items[iIdx] = found;
+        // If group exists, check if the product is already in the cart
+        const existingItemIndex = updatedGroups[groupIndex].items.findIndex(
+          i => i.productId === item.productId
+        );
+
+        if (existingItemIndex === -1) {
+          // Add new item to existing group
+          updatedGroups[groupIndex] = {
+            ...updatedGroups[groupIndex],
+            items: [...updatedGroups[groupIndex].items, newItem]
+          };
+        } else {
+          // Update quantity of existing item
+          updatedGroups[groupIndex] = {
+            ...updatedGroups[groupIndex],
+            items: updatedGroups[groupIndex].items.map((i, idx) => 
+              idx === existingItemIndex 
+                ? { ...i, quantity: i.quantity + quantity }
+                : i
+            )
+          };
+        }
       }
-      copy[gIdx] = group;
-      return copy;
+
+      return updatedGroups;
     });
   };
 
@@ -132,10 +161,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }).filter(g => g.items.length > 0));
   };
 
-  const clearGroup: CartContextValue['clearGroup'] = (entrepreneurshipId) => {
-    setGroups(prev => prev.filter(g => g.entrepreneurshipId !== entrepreneurshipId));
-  };
-
   const placeOrder: CartContextValue['placeOrder'] = async (entrepreneurshipId) => {
     // TODO: integrate API to create an order or send notification
     await new Promise(res => setTimeout(res, 400));
@@ -145,15 +170,47 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const isPlaced: CartContextValue['isPlaced'] = (id) => placedIds.includes(id);
 
-  const value = useMemo<CartContextValue>(() => ({ groups, addItem, updateQty, removeItem, placeOrder, clearGroup, isPlaced }), [groups, placedIds]);
+  const clearCart = () => {
+    setGroups([]);
+    setPlacedIds([]);
+  };
+
+  const getItemCount = () => {
+    return groups.reduce((total, group) => {
+      return total + group.items.reduce((sum, item) => sum + item.quantity, 0);
+    }, 0);
+  };
+
+  const getGroupItemCount = (entrepreneurshipId: string) => {
+    const group = groups.find(g => g.entrepreneurshipId === entrepreneurshipId);
+    return group ? group.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+  };
+
+  // Create the context value with useMemo to prevent unnecessary re-renders
+  const contextValue = React.useMemo(() => ({
+    groups,
+    addItem,
+    updateQty,
+    removeItem,
+    placeOrder,
+    isPlaced,
+    clearCart,
+    getItemCount,
+    getGroupItemCount,
+  }), [groups, placedIds]);
 
   return (
-    <CartContext.Provider value={value}>{children}</CartContext.Provider>
+    <CartContext.Provider value={contextValue}>
+      {children}
+    </CartContext.Provider>
   );
 }
 
+// Custom hook to use the cart context
 export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be used within CartProvider');
-  return ctx;
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 }

@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode } from 'react';
 import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
 import { useAuth } from '../../context/AuthContext';
@@ -12,8 +12,8 @@ type LayoutProps = {
 
 export function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
-  const { groups } = useCart();
-  const totalItems = useMemo(() => groups.reduce((sum, g) => sum + g.items.reduce((acc, it) => acc + it.quantity, 0), 0), [groups]);
+  const { getItemCount } = useCart();
+  const cartItemCount = getItemCount();
   
   const navItems = [
    
@@ -27,7 +27,7 @@ export function Layout({ children }: LayoutProps) {
     { 
       type: 'link' as const, 
       label: 'Ferias y Actividades', 
-      to: '/FeriasActividades',
+      to: '/ferias/actividades',
       
       visible: user?.role === 1
     },
@@ -48,14 +48,14 @@ export function Layout({ children }: LayoutProps) {
     { 
       type: 'link' as const, 
       label: 'Gestor de Usuarios', 
-      to: '/gestor-usuarios',
+      to: '/admin/usuarios',
       // Only show to admins (role 3)
       visible: user?.role === 3
     },
     { 
       type: 'link' as const, 
       label: 'Gestor de Emprendimientos', 
-      to: '/gestor-emprendimientos',
+      to: '/admin/emprendimientos',
       // Only show to admins (role 3)
       visible: user?.role === 3
     },
@@ -69,12 +69,12 @@ export function Layout({ children }: LayoutProps) {
         aria-label="Ir al carrito"
       >
         <ShoppingCart className="w-5 h-5 text-secondary" />
-        {totalItems > 0 && (
+        {cartItemCount > 0 && (
           <span
             aria-label="Total de productos en el carrito"
             className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-white text-[10px] font-semibold flex items-center justify-center"
           >
-            {totalItems}
+            {cartItemCount}
           </span>
         )}
       </Link>

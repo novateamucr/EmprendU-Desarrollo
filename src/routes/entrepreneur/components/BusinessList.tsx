@@ -180,13 +180,13 @@ export default function BusinessList() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link to="/entrepreneur/businesses/new" className="flex items-center gap-2">
+                <Link to="/entrepreneur/business/setup" className="flex items-center gap-2">
                   <Plus className="h-5 w-5" />
                   Crear mi primer emprendimiento
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/explore" className="flex items-center gap-2">
+                <Link to="/home" className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
                   Ver ejemplos
                 </Link>

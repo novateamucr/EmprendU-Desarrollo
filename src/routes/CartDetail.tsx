@@ -114,7 +114,7 @@ export default function CartDetail() {
               onClick={handlePlaceOrder}
               className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors"
             >
-              Hacer pedido
+              Agregar al carrito
             </button>
           )}
         </div>
