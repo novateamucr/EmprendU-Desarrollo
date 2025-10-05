@@ -1,4 +1,4 @@
-
+import { Search } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { entrepreneurshipApi, Entrepreneurship, categoryApi } from '../services/entrepreneurshipService';
@@ -13,13 +13,14 @@ import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
 import { BusinessDetailSkeleton } from '../components/skeletons/BusinessDetailSkeleton';
 
-
 export function FeedEmpredimientoDetalle() {
   const { id } = useParams();
   const [business, setBusiness] = useState<Entrepreneurship | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [catMap, setCatMap] = useState<Record<number, string>>({});
+  const [searchQuery, setSearchQuery] = useState(''); 
+
   const { data: profile } = useProfile() as unknown as { data?: UserProfile };
   const addFav = useAddFavorite();
   const removeFav = useRemoveFavorite();
@@ -31,11 +32,18 @@ export function FeedEmpredimientoDetalle() {
   const [pendingRemove, setPendingRemove] = useState<number | null>(null);
   const [localPending, setLocalPending] = useState(false);
   const [localFavId, setLocalFavId] = useState<number | null>(null);
-  const displayFav = isFav; // fuente visual basada en cache de perfil
+  const displayFav = isFav;
   const { token, user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+
+  // 🔍 Filtrar productos por nombre
+  const filteredProducts = business?.products?.filter((product: any) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  
 
   const submitReview = async (rating: number, comments: string) => {
     setLoading(true);
@@ -226,26 +234,44 @@ export function FeedEmpredimientoDetalle() {
         </div>
 
         {/* Productos del emprendimiento */}
-        <div className="mt-8">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4">Productos</h2>
-          {business.products && business.products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {business.products.map((product: any) => (
-                <Link key={product.id} to={`/product/${product.id}`} className="block">
-                  <ProductCard
-                    imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
-                    title={product.name}
-                    categoryName={product?.category_id != null ? (catMap[Number(product.category_id)] || 'General') : undefined}
-                    description={product.description || ''}
-                    price={product.price}
-                  />
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center">Este emprendimiento aún no tiene productos.</div>
-          )}
-        </div>
+        {/* 🔍 Buscador */}
+          <div className="relative mb-6 max-w-md">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+            <input
+              type="text"
+              placeholder="Buscar producto..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+            />
+          </div>
+          
+        {filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map((product: any) => (
+              <Link key={product.id} to={`/product/${product.id}`} className="block">
+                <ProductCard
+                  imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
+                  title={product.name}
+                  categoryName={
+                    product?.category_id != null
+                      ? catMap[Number(product.category_id)] || 'General'
+                      : undefined
+                  }
+                  description={product.description || ''}
+                  price={product.price}
+                />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-gray-500 text-center">
+            {searchQuery
+              ? 'No se encontraron productos con ese nombre.'
+              : 'Este emprendimiento aún no tiene productos.'}
+          </div>
+        )}
+
 
         {/* Confirm remove favorite */}
         <Modal
