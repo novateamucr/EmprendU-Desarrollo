@@ -10,7 +10,7 @@ export const getDashboardPath = (role: number): string => {
   
   switch (role) {
     case 3: // Admin (role 3)
-      return '/gestor-usuarios';
+      return '/admin/usuarios';
     case 2: // Entrepreneur (role 2)
       return '/home';
     case 1: // Client (role 1)

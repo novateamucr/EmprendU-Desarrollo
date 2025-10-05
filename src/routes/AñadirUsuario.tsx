@@ -138,7 +138,7 @@ export function AñadirUsuario() {
         setModalMessage('¡Usuario creado exitosamente!');
         setOnModalClose(() => () => {
           setModalOpen(false);
-          navigate('/gestor-usuarios');
+          navigate('/admin/usuarios');
         });
         setModalOpen(true);
       } else {

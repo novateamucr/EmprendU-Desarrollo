@@ -217,7 +217,7 @@ export function EditarPerfil() {
           localStorage.setItem('celebrate', 'profile_saved');
           navigate('/profile');
         } else {
-          navigate('/gestor-usuarios');
+          navigate('/admin/usuarios');
         }
       }
     });
@@ -271,7 +271,7 @@ export function EditarPerfil() {
 
   const handleCancel = () => {
     if (isEditingOther) {
-      navigate('/gestor-usuarios');
+      navigate('/admin/usuarios');
     } else {
       navigate('/profile');
     }
