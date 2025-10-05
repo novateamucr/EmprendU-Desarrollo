@@ -7,13 +7,13 @@ export function RootRedirect() {
 
   // If user is on the root path and authenticated, redirect to appropriate dashboard
   if (isAuthenticated && location.pathname === '/') {
-    // Only admins (role 3) go to /gestor-usuarios, all others go to /home
-    return <Navigate to={user?.role === 3 ? '/gestor-usuarios' : '/home'} replace />;
+    // Only admins (role 3) go to /admin/usuarios, all others go to /home
+    return <Navigate to={user?.role === 3 ? '/admin/usuarios' : '/home'} replace />;
   }
 
   // If user is on the landing page and authenticated, redirect to appropriate dashboard
   if (isAuthenticated && location.pathname === '/landing') {
-    return <Navigate to={user?.role === 3 ? '/gestor-usuarios' : '/home'} replace />;
+    return <Navigate to={user?.role === 3 ? '/admin/usuarios' : '/home'} replace />;
   }
 
   // For all other cases, render the landing page
