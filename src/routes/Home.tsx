@@ -1,14 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import useEntrepreneurships from '../hooks/useEntrepreneurships';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 
-import { Layout } from '../components/layout/Layout';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import footerHero from "../assets/hero-w.png";
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-import { productApi, categoryApi, type Product, type Category } from '../services/entrepreneurshipService';
+import { productApi, categoryApi, entrepreneurshipApi, type Product, type Category } from '../services/entrepreneurshipService';
 import { api } from '../lib/api';
 import { useProfile, useAddFavorite, useRemoveFavorite } from '../domain/profile/queries';
 import type { UserProfile } from '../domain/profile/types';
@@ -140,7 +138,40 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'emprendimientos' | 'productos'>('emprendimientos');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedZone, setSelectedZone] = useState('Todas');
-  const { entrepreneurships, loading } = useEntrepreneurships();
+  // Infinite entrepreneurships
+  const {
+    data: entrepPages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: entrepStatus,
+  } = useInfiniteQuery({
+    queryKey: ['entrepreneurships', 'infinite'],
+    queryFn: ({ pageParam = 1 }) => entrepreneurshipApi.getAll({ page: pageParam, per_page: 15 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage) return undefined;
+      return lastPage.current_page < lastPage.last_page ? lastPage.current_page + 1 : undefined;
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+  const entrepreneurships = useMemo(
+    () => (entrepPages?.pages ?? []).flatMap((p: any) => p?.data ?? []),
+    [entrepPages]
+  );
+  const loading = entrepStatus === 'pending';
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   // Categories map for product.category_id -> name
   const { data: allCategories } = useQuery<Category[]>({
     queryKey: ['categories', 'products-view'],
@@ -433,9 +464,10 @@ export default function Home() {
 );
 
   return (
-    <Layout>
+    <>
       {/* Main Content */}
-      <div className="pt-24 pb-8 px-4 max-w-6xl mx-auto">
+      <div className="pt-24 flex flex-col min-h-full">
+        <div className="px-4 max-w-6xl mx-auto w-full">
         {/* Header */}
         <AnimatedContainer className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
@@ -682,6 +714,11 @@ export default function Home() {
                 ))}
               </div>
               )}
+              {hasNextPage && (
+                <div ref={loadMoreRef} className="mt-6 h-10 flex items-center justify-center text-secondary text-sm">
+                  {isFetchingNextPage ? 'Cargando más…' : 'Desplázate para cargar más'}
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -693,7 +730,7 @@ export default function Home() {
             />
 
             {/* Popular Products */}
-            <AnimatedContainer>
+            <AnimatedContainer className="mb-6">
               <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2">
                 <FloatingElement>
                   <Star sx={{ fontSize: 20 }} />
@@ -734,22 +771,26 @@ export default function Home() {
             </AnimatedContainer>
           </>
         )}
-        {/* Footer */}
-      <footer
-        id="contacto"
-        className="bg-brand text-white py-6 rounded-t-2xl"
-      >
-        <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
-          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-          <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+        {/* Bottom spacer to separate last content from footer */}
+        <div className="h-4 md:h-6" />
         </div>
-      </footer>
+        {/* Footer */}
+        <footer
+          id="contacto"
+          className="bg-brand text-white py-6 mt-auto rounded-t-2xl"
+        >
+          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
+            <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
+            <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+          </div>
+        </footer>
       </div>
       {/* Confirm remove favorite (Home) */}
       <Modal
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         title="Eliminar de favoritos"
+        variant="danger"
       >
         <div className="space-y-4">
           <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
@@ -779,6 +820,6 @@ export default function Home() {
           </div>
         </div>
       </Modal>
-    </Layout>
+    </>
   );
 }

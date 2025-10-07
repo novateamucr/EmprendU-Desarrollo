@@ -1,3 +1,5 @@
+import { PopupHeader } from './ui/PopupHeader';
+
 interface ConfirmationPopupProps {
   onClose: () => void;
   onConfirmar: () => void;
@@ -7,13 +9,7 @@ export function ConfirmationPopup({ onClose, onConfirmar }: ConfirmationPopupPro
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg text-center">
-        {/* Título */}
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Confirmar inscripción
-        </h2>
-        <p className="text-sm text-gray-500 mb-6">
-          Revisa los detalles antes de continuar
-        </p>
+        <PopupHeader title="Confirmar inscripción" subtitle="Revisa los detalles antes de continuar" variant="confirm" />
 
         {/* Resumen */}
         <div className="rounded-xl p-4 text-left space-y-4 border border-gray-100">

@@ -1,4 +1,6 @@
 
+import { PopupHeader } from './ui/PopupHeader';
+
 interface PopupDetallesProps {
   onClose: () => void;
   
@@ -9,10 +11,8 @@ export function PopupDetalles({ onClose }: PopupDetallesProps) {
 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
   {/* Contenedor del Popup */}
   <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg text-center">
-    
-    {/* Título */}
-    <h2 className="text-xl font-bold text-gray-900 mb-2">Detalles de la Feria</h2>
-    <p className="text-sm text-gray-500 mb-6">Revisa toda la información del evento</p>
+
+    <PopupHeader title="Detalles de la Feria" subtitle="Revisa toda la información del evento" variant="info" />
 
     {/* Resumen / Detalles */}
     <div className="rounded-xl p-4 text-left space-y-4 border border-gray-100">

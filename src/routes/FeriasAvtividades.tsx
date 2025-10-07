@@ -1,4 +1,3 @@
-import { Layout } from '../components/layout/Layout';
 import footerHero from "../assets/hero-w.png";
 import { Search } from '@mui/icons-material';
 import { useState } from 'react';
@@ -35,8 +34,9 @@ export default function FeriasPage() {
   });
 
   return (
-    <Layout>
-      <div className="pt-24 pb-8 px-4 max-w-6xl mx-auto">
+    <>
+      <div className="pt-24 flex flex-col min-h-full">
+        <div className="px-4 max-w-6xl mx-auto w-full">
         <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
           Ferias y Actividades
         </h1>
@@ -121,9 +121,13 @@ export default function FeriasPage() {
             ))}
           </div>
         </section>
+        </div>
+
+        {/* Bottom spacer to separate last content from footer */}
+        <div className="h-8 md:h-12" />
 
         {/* Footer */}
-        <footer className="bg-brand text-white py-6 rounded-t-2xl mt-12">
+        <footer className="bg-brand text-white py-6 mt-auto rounded-t-2xl">
           <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
             <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
             <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
@@ -137,6 +141,6 @@ export default function FeriasPage() {
           />
         )}
       </div>
-    </Layout>
+    </>
   );
 }

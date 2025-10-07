@@ -407,6 +407,7 @@ export function Perfil() {
           isOpen={showContactModal}
           onClose={() => setShowContactModal(false)}
           title="Sobre tu información de contacto"
+          variant="info"
         >
           <div className="space-y-4 text-sm text-secondary">
             <p>
@@ -435,6 +436,7 @@ export function Perfil() {
           isOpen={showLocationModal}
           onClose={() => setShowLocationModal(false)}
           title="Sobre tu ubicación"
+          variant="info"
         >
           <div className="space-y-4 text-sm text-secondary">
             <p>
@@ -565,6 +567,7 @@ export function Perfil() {
         isOpen={showFavRemoveModal}
         onClose={() => setShowFavRemoveModal(false)}
         title="Eliminar de favoritos"
+        variant="danger"
       >
         <div className="space-y-4">
           <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
@@ -604,6 +607,7 @@ export function Perfil() {
         isOpen={showInterestModal}
         onClose={() => setShowInterestModal(false)}
         title="Editar intereses"
+        variant="edit"
       >
         <div className="space-y-4">
           <p className="text-sm text-secondary mb-4">
@@ -643,6 +647,7 @@ export function Perfil() {
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
         title="Sobre tu información de contacto"
+        variant="info"
       >
         <div className="space-y-4 text-sm text-secondary">
           <p>
@@ -669,6 +674,7 @@ export function Perfil() {
         isOpen={showLocationModal}
         onClose={() => setShowLocationModal(false)}
         title="Sobre tu ubicación"
+        variant="info"
       >
         <div className="space-y-4 text-sm text-secondary">
           <p>
