@@ -161,7 +161,7 @@ export default function BusinessList() {
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
         </div>
         <Button asChild className="bg-black hover:bg-black/90 text-white">
-          <Link to="/entrepreneur/businesses/new">
+          <Link to="/entrepreneur/business/setup">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
           </Link>
@@ -271,7 +271,7 @@ export default function BusinessList() {
                   </div>
                   <div className="flex items-center space-x-2.5">
                     <Button variant="secondary" size="icon" className="h-10 w-10" asChild>
-                      <Link to={`/entrepreneur/businesses/${business.id}`}>
+                      <Link to={`/entrepreneur/business/setup?businessId=${business.id}`}>
                         <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>

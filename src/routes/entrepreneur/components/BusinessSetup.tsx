@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2, X } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Card } from '../../../components/ui/Card';
 import { entrepreneurshipApi } from '../../../services/entrepreneurshipService';
@@ -41,12 +39,16 @@ const API_URL = 'http://emprendu-backend.test/api';
 
 export default function BusinessSetup({ initialData, onSuccess, onCancel }: BusinessSetupProps) {
   const { id } = useParams<{ id?: string }>();
-  const isEditMode = Boolean(id) || Boolean(initialData?.id);
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  
+  // Check if we're in edit mode by checking both route params and query params
+  const urlParams = new URLSearchParams(location.search);
+  const businessIdFromQuery = urlParams.get('businessId');
+  const isEditMode = Boolean(id) || Boolean(businessIdFromQuery) || Boolean(initialData?.id);
   
   const [formData, setFormData] = useState<BusinessFormData>({
     name: initialData?.name || '',
@@ -75,13 +77,16 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
     fetchCategories();
   }, []);
 
-  // Load business data if in edit mode and no initial data provided
+  // Load business data if in edit mode
   useEffect(() => {
-    if (isEditMode && id && !initialData) {
+    if (isEditMode) {
+      const businessId = businessIdFromQuery || id;
+      if (!businessId) return;
+      
       const fetchBusiness = async () => {
         try {
           setIsLoading(true);
-          const business = await entrepreneurshipApi.getById(id);
+          const business = await entrepreneurshipApi.getById(businessId);
           setFormData({
             id: business.id,
             name: business.name,
@@ -119,7 +124,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
     }));
   };
 
-
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -138,23 +143,26 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       if (!user?.id) {
         throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
       }
-
+  
+      // Get the business ID from either the query param or the form data
+      const businessId = businessIdFromQuery || id || formData.id;
+      
       // Prepare the data to be sent
       const requestData = {
         name: formData.name,
         description: formData.description || null,
-        category: Number(formData.category),
+        category_id: formData.category,  // Changed from 'category' to 'category_id'
         // For new records only
         ...(!isEditMode && { user_id: user.id }),
         image_url: null
       };
-
-      console.log('Sending data to API:', requestData);
-      
-      let result;
-      if (isEditMode && id) {
-        // For update, use a direct fetch call to ensure data is sent correctly
-        const response = await fetch(`http://emprendu-backend.test/api/entrepreneurships/${id}`, {
+  
+      let response: Response;
+      let result: any;
+  
+      if (isEditMode && businessId) {
+        // Update existing business
+        response = await fetch(`${API_URL}/entrepreneurships/${businessId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -163,30 +171,9 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
           },
           body: JSON.stringify(requestData)
         });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al actualizar el emprendimiento');
-        }
-        
-        result = await response.json();
-        if (!result || !result.id) {
-          throw new Error('La API no devolvió una respuesta válida al actualizar.');
-        }
-        toast.success('✅ Emprendimiento actualizado exitosamente', {
-          duration: 3000,
-          position: 'top-center',
-          style: {
-            background: '#10B981',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          },
-        });
       } else {
-        // For create, use a direct fetch call
-        const response = await fetch('http://emprendu-backend.test/api/entrepreneurships', {
+        // Create new business
+        response = await fetch(`${API_URL}/entrepreneurships`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -195,28 +182,30 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
           },
           body: JSON.stringify(requestData)
         });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al crear el emprendimiento');
-        }
-        
-        result = await response.json();
-        if (!result || !result.id) {
-          throw new Error('La API no devolvió una respuesta válida al crear.');
-        }
-        toast.success('🎉 ¡Emprendimiento creado exitosamente!', {
-          duration: 3000,
-          position: 'top-center',
-          style: {
-            background: '#10B981',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '8px',
-          },
-        });
       }
-
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el emprendimiento`);
+      }
+      
+      result = await response.json();
+      
+      if (!result || !result.id) {
+        throw new Error('La API no devolvió una respuesta válida.');
+      }
+  
+      toast.success(`✅ Emprendimiento ${isEditMode ? 'actualizado' : 'creado'} exitosamente`, {
+        duration: 3000,
+        position: 'top-center',
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+      });
+  
       // Call success callback if provided
       if (onSuccess) {
         onSuccess();
@@ -242,7 +231,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       setIsLoading(false);
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

@@ -518,7 +518,7 @@ export function Perfil() {
                     return (
                       <Link
                         key={favorito.id ?? `${title}-${imgUrl}`}
-                        to={`/feed/emprendimiento/${entreId || ''}`}
+                        to={`/business/${entreId || ''}`}
                         className="block"
                         onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                       >
