@@ -37,34 +37,39 @@ import rosas from "../assets/rosas.jpg";
           <button className="text-3xl md:text-4xl text-secondary hover:text-red-500 transition-colors focus-brand">♡</button>
         </div>
         <p className="text-center text-secondary text-sm md:text-base">3.8 / 5</p>
-
         {/* Productos */}
         <div className="mt-8 mb-4">
           <h2 className="text-xl md:text-2xl font-semibold text-primary">Productos</h2>
           <div className="h-0.5 w-12 bg-brand/40 rounded mt-2" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <ProductCard
-            imgUrl={rosas}
-            title="Ramo de dos rosas"
-            description="Ramo de dos rosas con follaje y colores a elegir"
-            price={4000}
-            
-          />
-          <ProductCard
-            imgUrl={rosas}
-            title="Ramo de dos rosas"
-            description="Ramo de dos rosas con follaje y colores a elegir"
-            price={4000}
-          
-          />
-          <ProductCard
-            imgUrl={rosas}
-            title="Ramo de dos rosas"
-            description="Ramo de dos rosas con follaje y colores a elegir"
-            price={4000}
-            
-          />
+        <ProductCard
+          imgUrl={rosas}
+          title="Ramo de dos rosas"
+          description="Ramo de dos rosas con follaje y colores a elegir"
+          price={4000}
+          productId="p1"
+          entrepreneurshipId="hasu"
+          entrepreneurshipName="HASU"
+        />
+        <ProductCard
+          imgUrl={rosas}
+          title="Ramo de dos rosas"
+          description="Ramo de dos rosas con follaje y colores a elegir"
+          price={4000}
+          productId="p2"
+          entrepreneurshipId="hasu"
+          entrepreneurshipName="HASU"
+        />
+        <ProductCard
+          imgUrl={rosas}
+          title="Ramo de dos rosas"
+          description="Ramo de dos rosas con follaje y colores a elegir"
+          price={4000}
+          productId="p3"
+          entrepreneurshipId="hasu"
+          entrepreneurshipName="HASU"
+        />
         </div>
       </div>
     </div>

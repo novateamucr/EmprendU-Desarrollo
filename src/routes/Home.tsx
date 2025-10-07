@@ -717,6 +717,9 @@ export default function Home() {
                       price={product.price}
                       imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}
                       categoryName={product?.category_id != null ? (categoryNameById.get(Number(product.category_id)) || 'General') : undefined}
+                      productId={String(product.id)}
+                      entrepreneurshipId={String(product.entrepreneurship_id)}
+                      entrepreneurshipName={product.entrepreneurship?.name || (entrepreneurships.find((e: any) => e.id === product.entrepreneurship_id)?.name ?? 'Emprendimiento')}
                     />
                   </AnimatedCard>
                     </Link>

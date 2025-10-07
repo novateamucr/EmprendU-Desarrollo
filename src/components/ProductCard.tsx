@@ -1,5 +1,4 @@
 import { useCart } from '../context/CartContext';
-import { toast } from 'react-toastify';
 
 export interface ProductCardProps {
   title: string;
@@ -17,6 +16,8 @@ export function ProductCard(props: ProductCardProps) {
   const { addItem } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    // Avoid triggering parent Link navigation when button is inside a Link wrapper
+    e.preventDefault();
     e.stopPropagation();
     addItem(
       props.entrepreneurshipId,
@@ -61,7 +62,7 @@ export function ProductCard(props: ProductCardProps) {
             onClick={handleAddToCart}
             className="mt-1 px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:bg-brandDark transition-colors"
           >
-            Agregar al carrito
+            Hacer pedido
           </button>
         </div>
       </div>

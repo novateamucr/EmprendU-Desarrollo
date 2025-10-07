@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
 import { Facebook, WhatsApp, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
@@ -76,7 +76,6 @@ export default function ProductDetail() {
   }, []);
 
   const { addItem } = useCart();
-  const navigate = useNavigate();
 
   const handleOrder = () => {
     if (!product || !product.entrepreneurship) return;
@@ -93,8 +92,7 @@ export default function ProductDetail() {
       }
     );
     
-    // Optionally navigate to cart or show a notification
-    navigate('/cart');
+    // No redirection; Layout will show a transient notification
   };
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -183,7 +181,7 @@ export default function ProductDetail() {
                   onClick={handleOrder}
                   className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors"
                 >
-                  Agregar al carrito
+                  Hacer pedido
                 </button>
                 {/* Share caption and icon buttons (tighter spacing) */}
                 <div className="flex flex-col gap-1">
