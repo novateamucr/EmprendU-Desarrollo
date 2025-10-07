@@ -1,303 +1,392 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Save, Upload, Loader2 } from 'lucide-react';
-import { Button } from '../components/Button';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Save, Loader2} from 'lucide-react';
+import { Button } from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
-import { Select } from '../components/ui/Select';
-import { toast } from 'react-hot-toast';
+import { Card } from '../components/ui/Card';
 import { entrepreneurshipApi } from '../services/entrepreneurshipService';
+import { userApi, User } from '../services/userService';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { userApi } from '../services/userService';
-
-interface BusinessFormData {
-  name: string;
-  description: string;
-  category: string;
-  user_id?: number;
-  image_url: string | null;
-}
 
 interface Category {
   id: number;
-  name: string;
+  nombre: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export default function BusinessForm() {
+// Form data interface matching API requirements
+interface BusinessFormData {
+  id?: number;
+  name: string;
+  description: string;
+  category: number | string;
+  user_id?: number;
+  image_url?: string | null;
+}
+
+interface BusinessSetupProps {
+  initialData?: Partial<BusinessFormData> | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+// API base URL
+const API_URL = 'http://emprendu-backend.test/api';
+
+// Categories will be loaded from the API
+
+export default function BusinessSetup({ initialData, onSuccess, onCancel }: BusinessSetupProps) {
+  const { id } = useParams<{ id?: string }>();
+  const isEditMode = Boolean(id) || Boolean(initialData?.id);
   const navigate = useNavigate();
-  const { id } = useParams();
+  const location = useLocation();
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingBusiness, setLoadingBusiness] = useState(false);
-  const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
-  // Fetch users for owner selector
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  
+  const [formData, setFormData] = useState<BusinessFormData>({
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    category: initialData?.category || '',
+    user_id: initialData?.user_id || user?.id || undefined,
+    image_url: initialData?.image_url || null
+  });
+  // Load users from API
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await userApi.getAll();
         setUsers(data);
       } catch (error) {
-        toast.error('Error al cargar los usuarios');
+        console.error('Error fetching users:', error);
+        toast.error('No se pudieron cargar los usuarios');
+      } finally {
+        setIsLoadingUsers(false);
       }
     };
     fetchUsers();
   }, []);
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<BusinessFormData>({
-    name: '',
-    description: '',
-    category: '',
-    image_url: null,
-    user_id: user?.id
-  });
-
-  // Cargar datos del emprendimiento si hay id
-  useEffect(() => {
-    const fetchBusiness = async () => {
-      if (!id) return;
-      setLoadingBusiness(true);
-      try {
-        const business = await entrepreneurshipApi.getById(id);
-        setFormData({
-          name: business.name || '',
-          description: business.description || '',
-          category: business.category ? String(business.category) : '',
-          image_url: business.image_url || null,
-          user_id: business.user_id || user?.id
-        });
-      } catch (error) {
-        toast.error('Error al cargar el emprendimiento');
-      } finally {
-        setLoadingBusiness(false);
-      }
-    };
-    fetchBusiness();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  // Fetch categories
+  // Load categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // This is a placeholder - replace with actual API call to fetch categories
-        const mockCategories = [
-          { id: 1, name: 'Alimentos' },
-          { id: 2, name: 'Artesanías' },
-          { id: 3, name: 'Tecnología' },
-          { id: 4, name: 'Moda' },
-          { id: 5, name: 'Belleza' },
-        ];
-        setCategories(mockCategories);
+        const response = await axios.get<Category[]>(`${API_URL}/categories`);
+        setCategories(response.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
-        toast.error('Error al cargar las categorías');
+        toast.error('No se pudieron cargar las categorías');
+      } finally {
+        setIsLoadingCategories(false);
       }
     };
 
     fetchCategories();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  // Load business data if in edit mode and no initial data provided
+  useEffect(() => {
+    if (isEditMode && id && !initialData) {
+      const fetchBusiness = async () => {
+        try {
+          setIsLoading(true);
+          const business = await entrepreneurshipApi.getById(id);
+          setFormData({
+            id: business.id,
+            name: business.name,
+            description: business.description || '',
+            category: business.category,
+            user_id: business.user_id,
+            image_url: business.image_url || null
+          });
+        } catch (error) {
+          console.error('Error fetching business:', error);
+          setError('No se pudo cargar la información del emprendimiento');
+          toast.error('Error al cargar el emprendimiento');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchBusiness();
+    } else if (initialData) {
+      // If initialData is provided, use it to populate the form
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        description: initialData.description || ''
+      }));
+    }
+  }, [id, isEditMode, initialData]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked :
+        (name === 'user_id' || name === 'category' ? Number(value) : value)
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // For now, we'll just store the file name
-      // In a real app, you would upload the file to a server
-      setFormData(prev => ({
-        ...prev,
-        image_url: file.name
-      }));
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.name || !formData.description || !formData.category) {
-      toast.error('Por favor completa todos los campos requeridos');
+    
+    // Prevent multiple submissions
+    if (isLoading) return;
+    
+    if (!formData.category) {
+      setError('Por favor selecciona una categoría');
       return;
     }
-
+    
     try {
-      setIsSubmitting(true);
+      setIsLoading(true);
+      setError(null);
+      
+      if (!user?.id) {
+        throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
+      }
 
-      const businessData = {
+      // Prepare the data to be sent
+      const requestData = {
         name: formData.name,
-        description: formData.description,
-        category: parseInt(formData.category),
-        image_url: formData.image_url || '',
-        user_id: user?.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        description: formData.description || null,
+        category: Number(formData.category),
+        user_id: formData.user_id || user?.id,
+        image_url: null
       };
 
-      if (id) {
-        await entrepreneurshipApi.update(id, businessData);
-        toast.success('Emprendimiento actualizado exitosamente');
+      console.log('Sending data to API:', requestData);
+      
+      let result;
+      if (isEditMode && id) {
+        // For update, use a direct fetch call to ensure data is sent correctly
+        const response = await fetch(`http://emprendu-backend.test/api/entrepreneurships/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al actualizar el emprendimiento');
+        }
+        
+        result = await response.json();
+        if (!result || !result.id) {
+          throw new Error('La API no devolvió una respuesta válida al actualizar.');
+        }
+        toast.success('✅ Emprendimiento actualizado exitosamente', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+        });
       } else {
-        await entrepreneurshipApi.create(businessData);
-        toast.success('Emprendimiento creado exitosamente');
+        // For create, use a direct fetch call
+        const response = await fetch('http://emprendu-backend.test/api/entrepreneurships', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al crear el emprendimiento');
+        }
+        
+        result = await response.json();
+        if (!result || !result.id) {
+          throw new Error('La API no devolvió una respuesta válida al crear.');
+        }
+        toast.success('🎉 ¡Emprendimiento creado exitosamente!', {
+          duration: 3000,
+          position: 'top-center',
+          style: {
+            background: '#10B981',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+        });
       }
-      navigate('/admin/emprendimientos');
-    } catch (error) {
-      console.error('Error guardando el emprendimiento:', error);
-      toast.error('Error al guardar el emprendimiento');
+
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Default navigation if no callback provided
+        navigate('/admin/emprendimientos');
+      }
+    } catch (err: any) {
+      console.error('Error saving business:', err);
+      const errorMessage = err.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
+      setError(errorMessage);
+      toast.error(`❌ ${errorMessage}`, {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          padding: '16px',
+          borderRadius: '8px',
+        },
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mt-20 mx-auto p-6">
-      {loadingBusiness && (
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="animate-spin h-6 w-6 mr-2" />
-          <span className="text-gray-600">Cargando datos del emprendimiento...</span>
-        </div>
-      )}
-      
+    <div className="container mx-auto px-4 py-8 max-w-3xl mt-10">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">
+          {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
+        </h1>
+        <p className="text-muted-foreground">
+          {isEditMode
+            ? 'Actualiza la información de tu emprendimiento.'
+            : 'Completa la información básica para crear un nuevo emprendimiento.'}
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          {/* Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del emprendimiento <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Ej: Mi Tienda Online"
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción <span className="text-red-500">*</span>
-            </label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Describe tu emprendimiento"
-              required
-            />
-          </div>
-
-
-          {/* Category */}
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              Categoría <span className="text-red-500">*</span>
-            </label>
-            <Select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecciona una categoría</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Owner (usuario) */}
-          <div>
-            <label htmlFor="user_id" className="block text-sm font-medium text-gray-700 mb-1">
-              Propietario (usuario) <span className="text-red-500">*</span>
-            </label>
-            <Select
-              id="user_id"
-              name="user_id"
-              value={formData.user_id ?? ''}
-              onChange={e => setFormData(prev => ({ ...prev, user_id: Number(e.target.value) }))}
-              required
-            >
-              <option value="">Selecciona un usuario</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Imagen del emprendimiento
-            </label>
-            <div className="mt-1 flex items-center">
-              <label
-                htmlFor="image-upload"
-                className="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <div className="flex items-center">
-                  <Upload className="h-4 w-4 mr-2" />
-                  {formData.image_url ? 'Cambiar imagen' : 'Subir imagen'}
-                </div>
-                <input
-                  id="image-upload"
-                  name="image-upload"
-                  type="file"
-                  className="sr-only"
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                />
+      <Card className="p-6">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Nombre del emprendimiento *
               </label>
-              {formData.image_url && (
-                <span className="ml-3 text-sm text-gray-500">{formData.image_url}</span>
-              )}
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Ej: Mi Tienda Online"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium mb-1">
+                Categoría *
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+              >
+                <option value="">Selecciona una categoría</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="user_id" className="block text-sm font-medium mb-1">
+                Propietario del emprendimiento *
+              </label>
+              <select
+                id="user_id"
+                name="user_id"
+                value={formData.user_id ?? ''}
+                onChange={handleInputChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+                disabled={isLoadingUsers}
+              >
+                <option value="">Selecciona un usuario</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">
+                Descripción
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Describe tu emprendimiento..."
+                rows={4}
+              />
+            </div>
+
+            {error && (
+              <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel || (() => navigate(-1))}
+                disabled={isLoading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isEditMode ? 'Actualizando...' : 'Creando...'}
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isEditMode ? 'Actualizar' : 'Crear'} emprendimiento
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate(-1)}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="bg-primary-600 hover:bg-primary-700"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Guardar emprendimiento
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </Card>
     </div>
   );
 }
