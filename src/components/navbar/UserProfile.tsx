@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -71,6 +71,15 @@ export function UserProfile() {
           >
             <User size={16} className="mr-2" />
             Perfil
+          </button>
+          <button
+            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
+            onClick={() => { setIsOpen(false); navigate('/orders'); }}
+            aria-label="Ir a mis pedidos"
+            role="menuitem"
+          >
+            <Package size={16} className="mr-2" />
+            Mis pedidos
           </button>
           <button
             onClick={() => {

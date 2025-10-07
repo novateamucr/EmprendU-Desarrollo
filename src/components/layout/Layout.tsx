@@ -12,7 +12,7 @@ type LayoutProps = {
 
 export function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
-  const { getItemCount } = useCart();
+  const { getItemCount, showJustAdded } = useCart();
   const cartItemCount = getItemCount();
   
   const navItems = [
@@ -101,6 +101,19 @@ export function Layout({ children }: LayoutProps) {
         rightContent={rightContent}
         className="w-full z-50"
       />
+      {/* Pulsating bubble notification */}
+      {showJustAdded && (
+        <div
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="relative rounded-full bg-brand text-white shadow-lg px-4 py-2 flex items-center gap-2 border border-white/40">
+            <span className="absolute inset-0 rounded-full animate-ping bg-brand/40" aria-hidden="true"></span>
+            <span className="relative z-10 text-sm font-semibold">Pedido agreagardo al carrito</span>
+          </div>
+        </div>
+      )}
       <main className="flex-1 w-full overflow-auto">
         <div className="max-w-7xl mx-auto w-full h-full px-4 py-6  ">
           {children}

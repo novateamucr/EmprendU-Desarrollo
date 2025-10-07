@@ -25,6 +25,8 @@ import { CartProvider } from './context/CartContext';
 import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
 import ProductDetail from './routes/ProductDetail';
+import MyOrders from './routes/MyOrders';
+import MyOrderDetail from './routes/MyOrderDetail';
 import AdminDashB from './routes/AdminDashB';
 
 // Entrepreneur
@@ -75,6 +77,8 @@ function App() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
                   <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/orders" element={<MyOrders />} />
+                  <Route path="/orders/:id" element={<MyOrderDetail />} />
                   <Route path="/business/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/feedback" element={<BusinessFeedback />} />
