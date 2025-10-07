@@ -12,7 +12,8 @@ export default {
         border: '#E6E6E6',
         background: '#F2F2F2',
         brand: '#76b0cd',
-        brandDark: '#5b98b8',
+        // Darker hover shade for brand buttons
+        brandDark: '#4a7fa0',
       },
       boxShadow: {
         soft: '0 6px 20px rgba(0,0,0,0.06)',

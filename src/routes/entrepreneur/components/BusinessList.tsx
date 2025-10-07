@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Package, Loader2, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
@@ -49,40 +49,41 @@ export default function BusinessList() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        setIsLoading(true);
-        const response = await entrepreneurshipApi.getAll({ 
-          per_page: 100,
-          include: 'owner,category_relation,products,favorites',
-          user_id: user?.id,
-        });
+  const loadBusinesses = async () => {
+    try {
+      setIsLoading(true);
+      const response = await entrepreneurshipApi.getAll({ 
+        per_page: 100,
+        include: 'owner,category_relation,products,favorites',
+        user_id: user?.id,
+      });
+      
+      if (response && response.data) {
+        const mappedData = response.data.map((business: Entrepreneurship) => ({
+          ...business,
+          id: business.id.toString(),
+          productCount: business.products?.length || 0,
+          category: business.category_relation?.nombre || 'Sin categoría',
+        })) as unknown as Business[];
         
-        if (response && response.data) {
-          const mappedData = response.data.map((business: Entrepreneurship) => ({
-            ...business,
-            id: business.id.toString(),
-            productCount: business.products?.length || 0,
-            category: business.category_relation?.nombre || 'Sin categoría',
-          })) as unknown as Business[];
-          
-          setBusinesses(mappedData);
-          setError(null);
-        } else {
-          throw new Error('Formato de respuesta inesperado');
-        }
-      } catch (err) {
-        console.error('Error loading businesses:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-        setError(`No se pudieron cargar los emprendimientos: ${errorMessage}`);
-        toast.error('Error al cargar los emprendimientos');
-      } finally {
-        setIsLoading(false);
+        setBusinesses(mappedData);
+        setError(null);
+      } else {
+        throw new Error('Formato de respuesta inesperado');
       }
-    };
+    } catch (err) {
+      console.error('Error loading businesses:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(`No se pudieron cargar los emprendimientos: ${errorMessage}`);
+      toast.error('Error al cargar los emprendimientos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchBusinesses();
+  useEffect(() => {
+    loadBusinesses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const requestDelete = (id: string) => {
@@ -304,6 +305,7 @@ export default function BusinessList() {
         isOpen={deleteModalOpen}
         onClose={() => { if (!isDeleting) { setDeleteModalOpen(false); setPendingDeleteId(null); } }}
         title="Eliminar emprendimiento"
+        variant="danger"
       >
         <div className="space-y-4">
           <p className="text-gray-700">

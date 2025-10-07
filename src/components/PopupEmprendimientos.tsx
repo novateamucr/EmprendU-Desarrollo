@@ -1,3 +1,5 @@
+import { PopupHeader } from './ui/PopupHeader';
+
 interface PopupEmprendimientosProps {
   onClose: () => void;
   onSiguiente: () => void;
@@ -7,7 +9,7 @@ export function PopupEmprendimientos({ onClose, onSiguiente }: PopupEmprendimien
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Selecciona tu emprendimiento</h2>
+        <PopupHeader title="Selecciona tu emprendimiento" variant="help" />
 
         <div className="space-y-4">
           <div>

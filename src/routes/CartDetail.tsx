@@ -120,7 +120,7 @@ export default function CartDetail() {
         </div>
       </div>
 
-      <Modal isOpen={orderOpen} onClose={() => setOrderOpen(false)} title="Pedido realizado">
+      <Modal isOpen={orderOpen} onClose={() => setOrderOpen(false)} title="Pedido realizado" variant="success">
         <div className="space-y-3 text-secondary text-sm">
           <p>Pedido realizado, se le comunicará al emprendedor.</p>
           <div className="flex justify-end pt-2">

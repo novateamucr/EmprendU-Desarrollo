@@ -311,6 +311,7 @@ export function FeedEmpredimientoDetalle() {
           isOpen={confirmOpen}
           onClose={() => setConfirmOpen(false)}
           title="Eliminar de favoritos"
+          variant="danger"
         >
           <div className="space-y-4">
             <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>

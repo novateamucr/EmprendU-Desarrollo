@@ -91,6 +91,7 @@ export function RoleSelector({ value, onChange, onRoleChangeWarning, suppressWar
         isOpen={showEmprendedorModal}
         onClose={() => setShowEmprendedorModal(false)}
         title="Cambio de rol a Emprendedor"
+        variant="confirm"
       >
         <div className="space-y-4 text-sm text-secondary">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -134,6 +135,7 @@ export function RoleSelector({ value, onChange, onRoleChangeWarning, suppressWar
         isOpen={showCompradorModal}
         onClose={() => setShowCompradorModal(false)}
         title="Cambio de rol a Comprador"
+        variant="confirm"
       >
         <div className="space-y-4 text-sm text-secondary">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
