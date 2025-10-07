@@ -1,20 +1,11 @@
 import { useState } from 'react';
-import { Outlet, useNavigate, Routes, Route } from 'react-router-dom';
+import { Outlet, useNavigate} from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Store, 
-  Package, 
-  Settings, 
-  Plus,
-  ArrowLeft,
-  PackageOpen
+  Store,
+  ArrowLeft
 } from 'lucide-react';
-import { Button } from '../../components/Button';
-import BusinessList from './components/BusinessList';
-import BusinessSetup from './components/BusinessSetup';
-import BusinessForm from './components/BusinessForm';
-import Dashboard from './Dashboard';
-import InventoryPage from './inventory/InventoryPage';
+
 
 type MenuItem = {
   id: string;

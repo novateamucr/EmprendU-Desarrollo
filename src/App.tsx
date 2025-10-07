@@ -25,6 +25,7 @@ import { CartProvider } from './context/CartContext';
 import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
 import ProductDetail from './routes/ProductDetail';
+import AdminDashB from './routes/AdminDashB';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -85,10 +86,11 @@ function App() {
                   {/* Admin Routes */}
                   <Route path="/admin/usuarios" element={<GestorUsuarios />} />
                   <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
-
                   <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />
                   <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
                   <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
+                  <Route path="/admin/dashboard" element={<AdminDashB />} />
+
                   {/* Entrepreneur Routes */}
                   <Route path="/entrepreneur" element={<EntrepreneurManager />}>
                     <Route index element={<Dashboard />} />

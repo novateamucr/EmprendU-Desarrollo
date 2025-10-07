@@ -1,5 +1,4 @@
 import { useCart } from '../context/CartContext';
-import { toast } from 'react-toastify';
 
 export interface ProductCardProps {
   title: string;
