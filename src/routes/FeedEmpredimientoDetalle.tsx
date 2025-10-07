@@ -19,7 +19,7 @@ export function FeedEmpredimientoDetalle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [catMap, setCatMap] = useState<Record<number, string>>({});
-  const [searchQuery, setSearchQuery] = useState(''); 
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: profile } = useProfile() as unknown as { data?: UserProfile };
   const addFav = useAddFavorite();
@@ -37,18 +37,26 @@ export function FeedEmpredimientoDetalle() {
   const [showPopup, setShowPopup] = useState(false);
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState("none");
 
-  // 🔍 Filtrar productos por nombre
-  const filteredProducts = business?.products?.filter((product: any) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
 
-  
+
+  //Buscador y filtros
+  const filteredPrice = (business?.products || [])
+    .filter((product: any) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a: any, b: any) => {
+      if (sortOrder === "lowToHigh") return a.price - b.price;
+      if (sortOrder === "highToLow") return b.price - a.price;
+      return 0;
+    });
+
 
   const submitReview = async (rating: number, comments: string) => {
     setLoading(true);
     try {
-      
+
       const response = await fetch("http://emprendu-backend.test/api/reviews", {
         method: "POST",
         headers: {
@@ -58,7 +66,7 @@ export function FeedEmpredimientoDetalle() {
         body: JSON.stringify({
           rating: rating,
           review: comments,
-          user_id: user?.id,         
+          user_id: user?.id,
           entrepreneurship_id: businessIdNum,
         }),
       });
@@ -82,12 +90,12 @@ export function FeedEmpredimientoDetalle() {
   };
 
   const fetchReviews = async () => {
-  if (!id) return; // usar id del params
-  try {
-    const res = await fetch(`http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`, {
-      headers: { "Authorization": `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error("Error al obtener reviews");
+    if (!id) return; // usar id del params
+    try {
+      const res = await fetch(`http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Error al obtener reviews");
       const data = await res.json();
       setReviews(data); // <--- guarda todos los reviews
 
@@ -97,12 +105,12 @@ export function FeedEmpredimientoDetalle() {
       } else {
         setAverageRating(null);
       }
-  }
- catch (err) {
-    console.error("Error cargando reviews:", err);
-    setAverageRating(null);
-  }
-};
+    }
+    catch (err) {
+      console.error("Error cargando reviews:", err);
+      setAverageRating(null);
+    }
+  };
 
 
   useEffect(() => {
@@ -150,21 +158,21 @@ export function FeedEmpredimientoDetalle() {
       <div className="px-4 max-w-6xl mx-auto">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-6">
-          <img
-            src={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
-            alt={business.name}
-            className="mx-auto md:h-72 object-cover rounded-2xl"
-          />
-          <div className="mt-4">
-            <span className="inline-block border border-border text-secondary px-3 py-1 rounded-full text-xs">
-              {business.category_relation?.nombre || 'General'}
-            </span>
-          </div>
-           <div className="flex flex-wrap justify-center gap-8">
+            <img
+              src={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
+              alt={business.name}
+              className="mx-auto md:h-72 object-cover rounded-2xl"
+            />
+            <div className="mt-4">
+              <span className="inline-block border border-border text-secondary px-3 py-1 rounded-full text-xs">
+                {business.category_relation?.nombre || 'General'}
+              </span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-8">
               {[1, 2, 3, 4, 5].map((star) => (
                 <span
                   key={star}
-                  
+
                   className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
                 >
                   ★
@@ -177,65 +185,66 @@ export function FeedEmpredimientoDetalle() {
               </p>
             )}
             <Btn
-                    style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
-                    key="abrirPopup"
-                    text="¡Califica este emprendimiento!"
-                    onClick={() => setShowPopup(true)}
-                  />
+              style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
+              key="abrirPopup"
+              text="¡Califica este emprendimiento!"
+              onClick={() => setShowPopup(true)}
+            />
 
-                  {showPopup && (
-                          <BusinessFeedbackPopup
-                            show={showPopup}
-                            title="¡Califica tu experiencia!"
-                            imageUrl={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
-                            onSubmit={(rating: number, comments: string) => {
-                              submitReview(rating, comments);
-                            }}
-                            onCancel={() => setShowPopup(false)}
-                          />
-                        )}
-            <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
-          <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (businessIdNum == null) return;
-              const favId = localFavId ?? favMap.get(businessIdNum)?.id ?? null;
-              if (favId) {
-                setPendingRemove(favId);
-                setConfirmOpen(true);
-              } else {
-                // Esperar respuesta del backend antes de reflejar el cambio
-                setLocalPending(true);
-                addFav.mutate(businessIdNum, {
-                  onSuccess: (res: any) => {
-                    const createdId = res?.favorite?.id;
-                    if (createdId) setLocalFavId(createdId);
-                  },
-                  onSettled: () => setLocalPending(false)
-                });
-              }
-            }}
-            className="mt-3 px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors inline-flex items-center gap-2"
-            disabled={localPending}
-            aria-label={displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          >
-            {displayFav ? (
-              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
-            ) : (
-              <FavoriteBorder sx={{ fontSize: 18 }} />
+            {showPopup && (
+              <BusinessFeedbackPopup
+                show={showPopup}
+                title="¡Califica tu experiencia!"
+                imageUrl={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
+                onSubmit={(rating: number, comments: string) => {
+                  submitReview(rating, comments);
+                }}
+                onCancel={() => setShowPopup(false)}
+              />
             )}
-            {displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          </button>
+            <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
+            <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
+            <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (businessIdNum == null) return;
+                const favId = localFavId ?? favMap.get(businessIdNum)?.id ?? null;
+                if (favId) {
+                  setPendingRemove(favId);
+                  setConfirmOpen(true);
+                } else {
+                  // Esperar respuesta del backend antes de reflejar el cambio
+                  setLocalPending(true);
+                  addFav.mutate(businessIdNum, {
+                    onSuccess: (res: any) => {
+                      const createdId = res?.favorite?.id;
+                      if (createdId) setLocalFavId(createdId);
+                    },
+                    onSettled: () => setLocalPending(false)
+                  });
+                }
+              }}
+              className="mt-3 px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors inline-flex items-center gap-2"
+              disabled={localPending}
+              aria-label={displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              {displayFav ? (
+                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
+              ) : (
+                <FavoriteBorder sx={{ fontSize: 18 }} />
+              )}
+              {displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            </button>
           </div>
         </div>
 
         {/* Productos del emprendimiento */}
         {/* 🔍 Buscador */}
-          <div className="relative mb-6 max-w-md">
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+          <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
             <input
               type="text"
@@ -245,10 +254,31 @@ export function FeedEmpredimientoDetalle() {
               className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
             />
           </div>
-          
-        {filteredProducts.length > 0 ? (
+
+          {/* Selector de orden de precio */}
+          <div className="w-full md:w-64 relative">
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none"
+            >
+              <option value="none">Ordenar por precio</option>
+              <option value="lowToHigh">Menor a mayor</option>
+              <option value="highToLow">Mayor a menor</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        {filteredPrice.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product: any) => (
+            {filteredPrice.map((product: any) => (
+
               <Link key={product.id} to={`/product/${product.id}`} className="block">
                 <ProductCard
                   imgUrl={product.image_url || 'https://placehold.co/600x600?text=Sin+imagen'}

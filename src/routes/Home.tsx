@@ -573,17 +573,22 @@ export default function Home() {
                   )}
                 </div>
                 {/* Zone Selector */}
-                <div className="w-full md:w-64">
+                <div className="w-full md:w-64 relative">
                   <select
                     value={selectedZone}
                     onChange={(e) => setSelectedZone(e.target.value)}
-                    className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                    className="w-full px-3 py-3 pr-8 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none"
                   >
                     <option value="Todas">Todas las zonas</option>
                     {zones.map((z) => (
                       <option key={z} value={z}>{z}</option>
                     ))}
                   </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
