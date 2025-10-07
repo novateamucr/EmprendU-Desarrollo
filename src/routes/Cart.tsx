@@ -12,7 +12,7 @@ export default function Cart() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [placingId, setPlacingId] = useState<string | null>(null);
 
   const isProfileComplete = () => {
     return !!(user?.phone && user?.province && user?.canton && user?.district && user?.address);
@@ -28,7 +28,7 @@ export default function Cart() {
         <div className="max-w-4xl mx-auto p-6">
           <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <ShoppingBag className="w-6 h-6" />
-            Carrito de compras
+            Carrito de pedidos
           </h1>
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">Tu carrito está vacío</p>
@@ -51,7 +51,7 @@ export default function Cart() {
     }
 
     try {
-      setIsPlacingOrder(true);
+      setPlacingId(entrepreneurshipId);
       await placeOrder(entrepreneurshipId);
       toast.success('Pedido realizado con éxito');
 
@@ -64,7 +64,7 @@ export default function Cart() {
       console.error('Error al realizar el pedido:', error);
       toast.error('Error al realizar el pedido. Por favor, inténtalo de nuevo.');
     } finally {
-      setIsPlacingOrder(false);
+      setPlacingId(null);
     }
   };
 
@@ -73,7 +73,7 @@ export default function Cart() {
       <div className="max-w-4xl mx-auto p-8">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <ShoppingBag className="w-6 h-6" />
-          <span>Carrito de compras</span>
+          <span>Carrito de pedidos</span>
         </h1>
         {groups.map((group) => (
           <div key={group.entrepreneurshipId} className="mb-8">
@@ -84,11 +84,7 @@ export default function Cart() {
               >
                 {group.entrepreneurshipName}
               </button>
-              {isPlaced(group.entrepreneurshipId) ? (
-                <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded">
-                  Pedido realizado
-                </span>
-              ) : (
+              {!isPlaced(group.entrepreneurshipId) && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -103,6 +99,12 @@ export default function Cart() {
                 </button>
               )}
             </div>
+
+            {isPlaced(group.entrepreneurshipId) && (
+              <div className="mx-4 mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2">
+                El emprendedor ya sabe de tu pedido, espera a que lo acepte o se contacte con usted.
+              </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-sm divide-y">
               {group.items.map((item) => (
@@ -124,37 +126,43 @@ export default function Cart() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {item.quantity > 1 ? (
+                      {!isPlaced(group.entrepreneurshipId) && (
+                        <>
+                          {item.quantity > 1 ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeItem(group.entrepreneurshipId, item.productId);
+                              }}
+                              className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      {!isPlaced(group.entrepreneurshipId) && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                            updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
                           }}
                           className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
                         >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeItem(group.entrepreneurshipId, item.productId);
-                          }}
-                          className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full"
-                        >
-                          <Trash2 className="w-4 h-4" />
+                          <Plus className="w-4 h-4" />
                         </button>
                       )}
-                      <span className="w-8 text-center">{item.quantity}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
-                        }}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
                       <div className="w-20 text-right font-medium">
                         ₡{(item.price * item.quantity).toLocaleString()}
                       </div>
@@ -172,13 +180,13 @@ export default function Cart() {
                 </div>
                 <button
                   onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
-                  disabled={isPlaced(group.entrepreneurshipId) || isPlacingOrder}
+                  disabled={isPlaced(group.entrepreneurshipId) || placingId === group.entrepreneurshipId}
                   className={`px-4 py-2 rounded-md flex items-center gap-2 ${isPlaced(group.entrepreneurshipId)
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       : 'bg-brand text-white hover:bg-brandDark'
                     }`}
                 >
-                  {isPlacingOrder ? (
+                  {placingId === group.entrepreneurshipId ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -187,7 +195,7 @@ export default function Cart() {
                       Procesando...
                     </>
                   ) : isPlaced(group.entrepreneurshipId) ? (
-                    'Pedido realizado'
+                    'Pedido solicitado'
                   ) : (
                     'Confirmar pedido'
                   )}

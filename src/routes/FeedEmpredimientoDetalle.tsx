@@ -260,6 +260,9 @@ export function FeedEmpredimientoDetalle() {
                   }
                   description={product.description || ''}
                   price={product.price}
+                  productId={String(product.id)}
+                  entrepreneurshipId={String(business.id)}
+                  entrepreneurshipName={business.name}
                 />
               </Link>
             ))}

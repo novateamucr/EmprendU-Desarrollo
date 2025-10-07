@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 // Types
 export type CartItem = {
@@ -8,7 +8,6 @@ export type CartItem = {
   quantity: number;
   imageUrl?: string;
 };
-
 export type CartGroup = {
   entrepreneurshipId: string;
   entrepreneurshipName: string;
@@ -25,6 +24,7 @@ type CartContextValue = {
   clearCart: () => void;
   getItemCount: () => number;
   getGroupItemCount: (entrepreneurshipId: string) => number;
+  showJustAdded: boolean;
 };
 
 const CART_STORAGE_KEY = 'app_cart';
@@ -46,6 +46,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     return [];
   });
+
+  const [showJustAdded, setShowJustAdded] = useState(false);
+  const justAddedTimer = useRef<number | null>(null);
 
   const [placedIds, setPlacedIds] = useState<string[]>(() => {
     // Load placed IDs from localStorage on initial render
@@ -143,6 +146,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       return updatedGroups;
     });
+
+    // Trigger transient UI flag for "Producto agregado"
+    setShowJustAdded(true);
+    if (justAddedTimer.current) {
+      window.clearTimeout(justAddedTimer.current);
+    }
+    justAddedTimer.current = window.setTimeout(() => {
+      setShowJustAdded(false);
+      justAddedTimer.current = null;
+    }, 1600);
   };
 
   const updateQty: CartContextValue['updateQty'] = (entrepreneurshipId, productId, quantity) => {
@@ -197,7 +210,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     clearCart,
     getItemCount,
     getGroupItemCount,
-  }), [groups, placedIds]);
+    showJustAdded,
+  }), [groups, placedIds, showJustAdded]);
 
   return (
     <CartContext.Provider value={contextValue}>

@@ -50,21 +50,27 @@ export function Feed1() {
                         title="Café"
                         description="Mezcla única de granos tostados artesanalmente"
                         price={3500}
-
+                        productId="c1"
+                        entrepreneurshipId="cafeluna"
+                        entrepreneurshipName="Café Luna"
                     />
                     <ProductCard
                         imgUrl={cafe}
                         title="Café"
                         description="Mezcla única de granos tostados artesanalmente"
                         price={3500}
-
+                        productId="c2"
+                        entrepreneurshipId="cafeluna"
+                        entrepreneurshipName="Café Luna"
                     />
                     <ProductCard
                         imgUrl={cafe}
                         title="Café"
                         description="Mezcla única de granos tostados artesanalmente"
                         price={3500}
-
+                        productId="c3"
+                        entrepreneurshipId="cafeluna"
+                        entrepreneurshipName="Café Luna"
                     />
                 </div>
             </div>
