@@ -150,7 +150,7 @@ export default function Login() {
   );
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-background">
       {optPanelInicia}
       <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
         <div className="w-full max-w-md p-4">
