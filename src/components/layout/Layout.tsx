@@ -59,6 +59,13 @@ export function Layout({ children }: LayoutProps) {
       // Only show to admins (role 3)
       visible: user?.role === 3
     },
+    { 
+      type: 'link' as const, 
+      label: 'Dashboard', 
+      to: '/admin/dashboard',
+      // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
   ];
 
   const rightContent = (
