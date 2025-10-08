@@ -8,8 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Fair extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','name','description','start_date','end_date','province','canton','district','address'];
-
+    protected $fillable = [
+        'user_id',
+        'title',
+        'location',
+        'time',
+        'image',
+        'province',
+        'canton',
+        'district'
+    ];
     public function owner()
     {
         return $this->belongsTo(User::class, 'user_id');

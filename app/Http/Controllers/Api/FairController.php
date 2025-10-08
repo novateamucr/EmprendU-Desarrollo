@@ -8,16 +8,13 @@ use App\Models\Fair;
 
 class FairController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = $request->query('per_page', 15);
-        $q = Fair::with('owner');
+        // Trae todas las ferias
+        $fairs = Fair::all(); // plural para reflejar que son varias
 
-        if ($user = $request->query('user_id')) {
-            $q->where('user_id', $user);
-        }
-
-        return response()->json($q->paginate($perPage));
+        // Devuelve los datos en JSON
+        return response()->json($fairs);
     }
 
     public function store(Request $request)
