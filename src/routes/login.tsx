@@ -144,7 +144,7 @@ export default function Login() {
       title="¡Inicia ahora!"
       text="Ingresa tus datos y comienza a explorar emprendimientos en tu zona"
       button={registerBtn}
-      imgSrc="/small_white_logo.png"
+      imgSrc="/small_white_logo.png" 
       imgPosition="left"
     />
   );

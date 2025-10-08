@@ -16,7 +16,7 @@ export default function OptionPanel(props: OptionPanelProps) {
         <img
           src={props.imgSrc}
           alt="logo"
-          className={`absolute top-6 ${
+          className={`absolute top-6 animate-float ${
             props.imgPosition === "left" ? "left-6" : "right-6"
           } w-12 h-12`}
         />
