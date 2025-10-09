@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
+import { FairsProvider } from './context/FairsContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Layout } from './components/layout/Layout';
 import LandingPage from './routes/Landing';
@@ -69,9 +70,11 @@ function App() {
                 {/* Protected Routes */}
                 <Route element={
                   <ProtectedRoute>
+                    <FairsProvider>
                     <Layout>
                       <Outlet />
                     </Layout>
+                    </FairsProvider>
                   </ProtectedRoute>
                 }>
                   <Route path="/home" element={<Home />} />
