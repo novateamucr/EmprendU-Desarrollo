@@ -47,17 +47,17 @@ export default function Ferias() {
     <div className="pt-24 flex flex-col min-h-full">
       <div className="px-4 max-w-6xl mx-auto w-full">
         <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
-          Fairs y Actividades
+          Ferias y Actividades
         </h1>
         <p className="text-secondary mb-8">
-          Aquí puedes encontrar fairs abiertas y en las que estás participando.
+          Aquí puedes encontrar ferias abiertas y en las que estás participando.
         </p>
 
         {/* Fairs abiertas */}
         <section>
-          <h2 className="text-lg font-semibold text-primary mb-2">Fairs abiertas</h2>
+          <h2 className="text-lg font-semibold text-primary mb-2">Ferias abiertas</h2>
           <p className="text-secondary text-sm mb-4">
-            Aquí aparecerán las fairs en las que puedes inscribirte
+            Aquí aparecerán las ferias en las que puedes inscribirte
           </p>
 
           {/* Filtros */}
@@ -66,7 +66,7 @@ export default function Ferias() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
               <input
                 type="text"
-                placeholder="Buscar fair..."
+                placeholder="Buscar feria"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
