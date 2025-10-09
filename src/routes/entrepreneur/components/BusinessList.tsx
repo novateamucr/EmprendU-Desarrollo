@@ -162,7 +162,7 @@ export default function BusinessList() {
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
         </div>
         <Button asChild className="bg-black hover:bg-black/90 text-white">
-          <Link to="/entrepreneur/businesses/new">
+          <Link to="/entrepreneur/business/setup">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
           </Link>
