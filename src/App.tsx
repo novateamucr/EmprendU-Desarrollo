@@ -79,7 +79,7 @@ function App() {
                 }>
                   <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
-                  <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/profile/edit/:id" element={<EditarPerfil />} />
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/orders/:id" element={<MyOrderDetail />} />
                   <Route path="/business/:id" element={<FeedEmpredimientoDetalle />} />

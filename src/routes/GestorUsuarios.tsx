@@ -34,23 +34,28 @@ const getRoleName = (roleId: number) => {
 
 
 
+
 export default function GestorUsuarios() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Tipar correctamente el usuario a eliminar
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  // Estado local para usuarios editable
+  const [usuarios, setUsuarios] = useState<any[]>([]);
   type UsuarioType = typeof usuarios extends (infer U)[] ? U : any;
   const [userToDelete, setUserToDelete] = useState<UsuarioType | null>(null);
 
-  // Use the useUsers hook to fetch real user data
-  const { users: allUsers, loading, error, refetch } = useUsers();
-  // Estado local para usuarios editable
-  const [usuarios, setUsuarios] = useState(allUsers || []);
+  // Use the useUsers hook to fetch real user data (adaptar hook para aceptar página y devolver totalPages)
+  // El hook debe retornar { users, loading, error, pagination, refetch }
+  const { users: allUsers, loading, error, pagination, refetch } = useUsers({ page: currentPage });
 
   // Sincronizar usuarios locales cuando cambian los usuarios globales
   React.useEffect(() => {
     if (allUsers) setUsuarios(allUsers);
-  }, [allUsers]);
+  if (pagination && pagination.last_page) setTotalPages(pagination.last_page);
+  }, [allUsers, pagination]);
 
   // Filter users based on search term
   const filteredUsers = React.useMemo(() => {
@@ -223,7 +228,7 @@ export default function GestorUsuarios() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Link
-                            to={`/profile/edit`}
+                            to={`/profile/edit/${user.id}`}
                             className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm focus-brand"
                           >
                             Editar
@@ -252,6 +257,32 @@ export default function GestorUsuarios() {
               )}
             </tbody>
           </table>
+          {/* PAGINACIÓN */}
+          <div className="flex justify-center mt-6 gap-2">
+            <button
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
         {/* Modal de confirmación de eliminación */}
         <Modal

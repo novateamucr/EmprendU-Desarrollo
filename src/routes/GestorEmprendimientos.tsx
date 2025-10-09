@@ -7,7 +7,7 @@ import useEntrepreneurships from "../hooks/useEntrepreneurships";
 const button = (
   <Link
     to="/admin/emprendimientos/nuevo"
-    className="bg-black text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
+    className="bg-brand text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
   >
     + Añadir emprendimiento
   </Link>
@@ -28,14 +28,17 @@ export default function GestorEmprendimientos() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [entrepreneurshipToDelete, setEntrepreneurshipToDelete] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Usar el hook de emprendimientos
-  const { entrepreneurships: allEntrepreneurships, loading, error, refetch } = useEntrepreneurships();
+  // Usar el hook de emprendimientos con paginación
+  const { entrepreneurships: allEntrepreneurships, loading, error, pagination, refetch } = useEntrepreneurships({ page: currentPage });
   const [entrepreneurships, setEntrepreneurships] = useState(allEntrepreneurships || []);
 
   React.useEffect(() => {
     if (allEntrepreneurships) setEntrepreneurships(allEntrepreneurships);
-  }, [allEntrepreneurships]);
+    if (pagination && (pagination.last_page || pagination.lastPage)) setTotalPages(pagination.last_page || pagination.lastPage);
+  }, [allEntrepreneurships, pagination]);
 
   // Filtrar emprendimientos por nombre, propietario o categoría
   const filteredEntrepreneurships = React.useMemo(() => {
@@ -182,6 +185,32 @@ export default function GestorEmprendimientos() {
               )}
             </tbody>
           </table>
+          {/* PAGINACIÓN */}
+          <div className="flex justify-center mt-6 gap-2">
+            <button
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
         {/* Modal de confirmación de eliminación */}
         <Modal
