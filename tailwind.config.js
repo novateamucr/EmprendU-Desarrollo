@@ -13,6 +13,7 @@ export default {
         background: '#F2F2F2',
         brand: '#76b0cd',
         brandDark: '#4a7fa0',
+        brandLight: '#81bcdaff',
       },
       boxShadow: {
         soft: '0 6px 20px rgba(0,0,0,0.06)',
