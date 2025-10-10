@@ -110,7 +110,7 @@ export function Layout({ children }: LayoutProps) {
         >
           <div className="relative rounded-full bg-brand text-white shadow-lg px-4 py-2 flex items-center gap-2 border border-white/40">
             <span className="absolute inset-0 rounded-full animate-ping bg-brand/40" aria-hidden="true"></span>
-            <span className="relative z-10 text-sm font-semibold">Pedido agreagardo al carrito</span>
+            <span className="relative z-10 text-sm font-semibold">Pedido agregado al carrito</span>
           </div>
         </div>
       )}
