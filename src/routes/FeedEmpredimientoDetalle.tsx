@@ -12,6 +12,7 @@ import BusinessFeedbackPopup from "../components/ui/BusinessFeedback";
 import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
 import { BusinessDetailSkeleton } from '../components/skeletons/BusinessDetailSkeleton';
+import Footer from "@/components/footer/Footer";
 
 export function FeedEmpredimientoDetalle() {
   const { id } = useParams();
@@ -168,22 +169,26 @@ export function FeedEmpredimientoDetalle() {
                 {business.category_relation?.nombre || 'General'}
               </span>
             </div>
-            <div className="flex flex-wrap justify-center gap-8">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-
-                  className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            {averageRating && (
-              <p className="text-sm text-gray-500 mt-1">
-                {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
-              </p>
-            )}
+                     <div className="flex flex-wrap justify-center gap-8">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <div key={star} className="relative group">
+                    <span
+                      className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+                    >
+                      ★
+                    </span>
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black p-3 text-xs leading-5 rounded whitespace-wrap">
+                     ¡Realiza un pedido para calificar este emprendimiento!
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {averageRating && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
+                </p>
+              )}
             <Btn
               style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
               key="abrirPopup"
@@ -195,6 +200,7 @@ export function FeedEmpredimientoDetalle() {
               <BusinessFeedbackPopup
                 show={showPopup}
                 title="¡Califica tu experiencia!"
+                entrepreneurshipName={business.name}
                 imageUrl={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
                 onSubmit={(rating: number, comments: string) => {
                   submitReview(rating, comments);
@@ -341,7 +347,7 @@ export function FeedEmpredimientoDetalle() {
             </div>
           </div>
         </Modal>
-
+      <Footer />
       </div>
     </div>
   );
