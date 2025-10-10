@@ -5,6 +5,7 @@ import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
 import { FairsProvider } from './context/FairsContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { RoleBasedRoute } from './components/auth/RoleBasedRoute';
 import { Layout } from './components/layout/Layout';
 import LandingPage from './routes/Landing';
 import { FeedEmpredimientoDetalle } from './routes/FeedEmpredimientoDetalle';
@@ -79,35 +80,45 @@ function App() {
                     </FairsProvider>
                   </ProtectedRoute>
                 }>
+                  {/* Public Routes */}
                   <Route path="/home" element={<Home />} />
-                  <Route path="/profile" element={<Perfil />} />
-                  <Route path="/profile/edit/:id" element={<EditarPerfil />} />
-                  <Route path="/orders" element={<MyOrders />} />
-                  <Route path="/orders/:id" element={<MyOrderDetail />} />
                   <Route path="/business/:id" element={<FeedEmpredimientoDetalle />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/feedback" element={<BusinessFeedback />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/cart/detail" element={<CartDetail />} />
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
                   <Route path="/FAQs" element={<FAQs />} />
                   <Route path="/contactUs" element={<ContactUs />} />
                   
-                  {/* Admin Routes */}
-                  <Route path="/admin/usuarios" element={<GestorUsuarios />} />
-                  <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
-                  <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />
-                  <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
-                  <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
-                  <Route path="/admin/dashboard" element={<AdminDashB />} />
+                  {/* Regular User Routes (role 1) */}
+                  <Route element={<RoleBasedRoute allowedRoles={[1, 2, 3]}> <Outlet /> </RoleBasedRoute>}>
+                    <Route path="/profile" element={<Perfil />} />
+                    <Route path="/profile/edit" element={<EditarPerfil />} />
+                    <Route path="/orders" element={<MyOrders />} />
+                    <Route path="/orders/:id" element={<MyOrderDetail />} />
+                    <Route path="/feedback" element={<BusinessFeedback />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/cart/detail" element={<CartDetail />} />
+                  </Route>
+                  
+                  {/* Admin Routes (role 3) */}
+                  <Route element={<RoleBasedRoute allowedRoles={[3]} redirectTo="/home"> <Outlet /> </RoleBasedRoute>}>
+                    <Route path="/admin/usuarios" element={<GestorUsuarios />} />
+                    <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
+                    <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />
+                    <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
+                    <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
+                    <Route path="/admin/dashboard" element={<AdminDashB />} />
+                    <Route path="/profile/edit/:id" element={<EditarPerfil />} />
+                  </Route>
 
-                  {/* Entrepreneur Routes */}
-                  <Route path="/entrepreneur" element={<EntrepreneurManager />}>
-                    <Route index element={<Dashboard />} />
-                    <Route path="businesses" element={<BusinessList />} />
-                    <Route path="business/setup" element={<BusinessSetup />} />
-                    <Route path="inventory" element={<InventoryPage />} />
+                  {/* Entrepreneur Routes (role 2) */}
+                  <Route element={<RoleBasedRoute allowedRoles={[2]} redirectTo="/home"> <Outlet /> </RoleBasedRoute>}>
+                    <Route path="/entrepreneur" element={<EntrepreneurManager />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="businesses" element={<BusinessList />} />
+                      <Route path="business/setup" element={<BusinessSetup />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                    </Route>
                   </Route>
                 </Route>
 

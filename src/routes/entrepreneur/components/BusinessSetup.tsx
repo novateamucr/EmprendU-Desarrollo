@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Save, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
+import Input from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Card } from '../../../components/ui/Card';
 import { entrepreneurshipApi } from '../../../services/entrepreneurshipService';
@@ -43,7 +44,6 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   const navigate = useNavigate();
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   
   // Check if we're in edit mode by checking both route params and query params
   const urlParams = new URLSearchParams(location.search);
@@ -70,7 +70,6 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         console.error('Error fetching categories:', error);
         toast.error('No se pudieron cargar las categorías');
       } finally {
-        setIsLoadingCategories(false);
       }
     };
 

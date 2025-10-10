@@ -70,21 +70,23 @@ export function Layout({ children }: LayoutProps) {
 
   const rightContent = (
     <div className="flex items-center gap-2">
-      <Link
-        to="/cart"
-        className="relative p-2 rounded-full hover:bg-brand/10 transition-colors focus-brand"
-        aria-label="Ir al carrito"
-      >
-        <ShoppingCart className="w-5 h-5 text-secondary" />
-        {cartItemCount > 0 && (
-          <span
-            aria-label="Total de productos en el carrito"
-            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-white text-[10px] font-semibold flex items-center justify-center"
-          >
-            {cartItemCount}
-          </span>
-        )}
-      </Link>
+      {user?.role !== 3 && (
+        <Link
+          to="/cart"
+          className="relative p-2 rounded-full hover:bg-brand/10 transition-colors focus-brand"
+          aria-label="Ir al carrito"
+        >
+          <ShoppingCart className="w-5 h-5 text-secondary" />
+          {cartItemCount > 0 && (
+            <span
+              aria-label="Total de productos en el carrito"
+              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-white text-[10px] font-semibold flex items-center justify-center"
+            >
+              {cartItemCount}
+            </span>
+          )}
+        </Link>
+      )}
       <UserProfile />
     </div>
   );
