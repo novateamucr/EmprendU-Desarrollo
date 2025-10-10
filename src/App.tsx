@@ -28,6 +28,8 @@ import ProductDetail from './routes/ProductDetail';
 import MyOrders from './routes/MyOrders';
 import MyOrderDetail from './routes/MyOrderDetail';
 import AdminDashB from './routes/AdminDashB';
+import FAQs from './routes/FAQs';
+import ContactUs from './routes/ContactUs';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -86,6 +88,8 @@ function App() {
                   <Route path="/cart/detail" element={<CartDetail />} />
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
+                  <Route path="/FAQs" element={<FAQs />} />
+                  <Route path="/contactUs" element={<ContactUs />} />
                   
                   {/* Admin Routes */}
                   <Route path="/admin/usuarios" element={<GestorUsuarios />} />

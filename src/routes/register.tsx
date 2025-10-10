@@ -137,7 +137,9 @@ export default function RouteComponent() {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
-      {optPanelRegister}
+      <div className="hidden md:block w-0 md:w-[35%] h-screen">
+        {optPanelRegister}
+      </div>
       <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
         <div className="w-full max-w-md p-4">
           <AuthForm
@@ -220,6 +222,16 @@ export default function RouteComponent() {
               {error}
             </div>
           )}
+          <div className="block md:hidden mt-6 text-center text-sm text-gray-600">
+            ¿Ya tienes cuenta?{" "}
+            <a
+              href="/login"
+              className="text-brand font-semibold hover:underline"
+              onClick={e => { e.preventDefault(); navigate('/login'); }}
+            >
+              Inicia sesión aquí
+            </a>
+          </div>
         </div>
       </div>
     </div>

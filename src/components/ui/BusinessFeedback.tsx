@@ -4,6 +4,7 @@ import Btn from "../ui/Btn";
 interface BusinessFeedbackProps {
   show: boolean;
   title: string;
+  entrepreneurshipName: string;
   imageUrl: string;
   onSubmit: (rating: number, comments: string) => void;
   onCancel: () => void;
@@ -12,6 +13,7 @@ interface BusinessFeedbackProps {
 export default function BusinessFeedback({
   show,
   title,
+  entrepreneurshipName,
   imageUrl,
   onSubmit,
   onCancel,
@@ -36,17 +38,19 @@ export default function BusinessFeedback({
           ${submitted ? "pb-6 h-[80%]" : "pb-8 max-h-[80%]"}`}>
 
         {/* Parte gris*/}
-        <div className={`bg-slate-200 w-full flex flex-col items-center justify-center gap-4 rounded-t-xl p-3
+        <div className={`bg-radial from-blue-400 from-40% to-white w-full flex flex-col items-center justify-center gap-2 rounded-t-xl pt-3
             transition-all duration-500 ${submitted ? "h-[80%]" : "h-[50%]"}`}>
           
           {!submitted && (
-            <h2 className="text-lg font-bold text-slate-700 text-center">{title}</h2>
+            <h2 className="text-lg font-bold text-slate-700 text-center mt-2">{title}</h2>
           )}
-
+          {!submitted && (
+            <p className="text-slate-600 text-center">{entrepreneurshipName}</p>
+          )}
           <img
             src={imageUrl}
             className={`rounded-full border-2 border-slate-300 transition-all duration-500
-              ${submitted ? "w-60 h-60" : "w-28 h-28"} hover:scale-105 hover:-translate-y-2`}
+              ${submitted ? "w-60 h-60" : "w-40 h-40"} hover:scale-105 hover:-translate-y-2`}
           />
 
           {!submitted ? (
@@ -61,7 +65,7 @@ export default function BusinessFeedback({
         </div>
 
         {!submitted ? (
-          <div className="flex flex-col items-center mt-4 gap-3">
+          <div className="flex flex-col items-center gap-3">
             {/* Estrellas */}
             <div className="flex flex-wrap justify-center gap-8">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -98,14 +102,14 @@ export default function BusinessFeedback({
 
             {/* Link Cancelar */}
             <button
-              className="text-gray-400 text-xs mt-4 hover:text-gray-500 hover:underline"
+              className="text-gray-400 text-xs mt-1 hover:text-gray-500 hover:underline"
               onClick={onCancel}
             >
               Calificar luego
             </button>
           </div>
         ) : (
-          <div className="flex justify-center mt-14">
+          <div className="flex justify-center">
             <button
               className="text-gray-400 text-xs hover:text-gray-500 hover:underline"
               onClick={onCancel}
