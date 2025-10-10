@@ -43,11 +43,18 @@ export function EditarPerfil() {
   const [, setPreviousRole] = useState<string | null>(null);
   const [showRoleChangeWarning, setShowRoleChangeWarning] = useState(false);
 
+  // Helper para mapear role numérico a string
+  const mapRole = (role: any): 'comprador' | 'emprendedor' | 'administrador' => {
+    if (role === 'administrador' || role === 3) return 'administrador';
+    if (role === 'emprendedor' || role === 2) return 'emprendedor';
+    return 'comprador';
+  };
+
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: user ? {
       name: user.name,
-      role: user.role,
+      role: mapRole(user.role),
       email: user.email,
       phone: user.phone || '',
       location: {
@@ -187,7 +194,7 @@ export function EditarPerfil() {
     // Reset de valores del formulario para asegurar prellenado correcto
     profileForm.reset({
       name: user.name,
-      role: user.role,
+      role: mapRole(user.role),
       email: user.email,
       phone: user.phone || '',
       location: {
@@ -197,8 +204,6 @@ export function EditarPerfil() {
         address: user.location?.address || ''
       }
     });
-
-    // No es necesario llamar hooks; los efectos de provincias/cantones/distritos manejarán el prefill
 
     lastPrefilledUserIdRef.current = user.id;
   }, [user?.id]);

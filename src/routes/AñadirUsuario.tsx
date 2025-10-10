@@ -310,7 +310,7 @@ export function AñadirUsuario() {
       <Modal isOpen={modalOpen} onClose={() => {
         setModalOpen(false);
         if (onModalClose) onModalClose();
-      }} title={modalTitle}>
+      }} title={modalTitle} variant={modalTitle === 'Error' ? 'error' : 'success'}>
         <div className="text-center">
           <p>{modalMessage}</p>
           <div className="flex justify-center mt-6">
@@ -321,7 +321,6 @@ export function AñadirUsuario() {
               }}
               className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
-              Aceptar
             </button>
           </div>
         </div>

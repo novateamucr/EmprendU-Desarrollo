@@ -154,7 +154,7 @@ export function BusinessSelect({
           
           <div className="border-t border-gray-100 px-4 py-2">
             <a
-              href="/entrepreneur/businesses/new"
+              href="/entrepreneur/business/setup"
               className="flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium"
               onClick={(e) => {
                 e.stopPropagation();

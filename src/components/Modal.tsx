@@ -1,14 +1,17 @@
 import { useEffect, ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { PopupHeader, type PopupVariant } from './ui/PopupHeader';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
+  variant?: PopupVariant; // info | confirm | danger | success | warning | error | help
   children: ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, subtitle, variant = 'info', children }: ModalProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -32,17 +35,19 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 id="modal-title" className="text-lg font-semibold text-primary">
-            {title}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full transition-colors hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
-            aria-label="Cerrar modal"
-          >
-            <X className="w-5 h-5 text-secondary hover:text-brand" />
-          </button>
+        <div className="p-6 border-b border-border">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <PopupHeader title={title} subtitle={subtitle} variant={variant} />
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full transition-colors hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+              aria-label="Cerrar modal"
+            >
+              <X className="w-5 h-5 text-secondary hover:text-brand" />
+            </button>
+          </div>
         </div>
         <div className="p-6">
           {children}

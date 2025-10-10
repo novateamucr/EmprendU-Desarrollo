@@ -144,14 +144,16 @@ export default function Login() {
       title="¡Inicia ahora!"
       text="Ingresa tus datos y comienza a explorar emprendimientos en tu zona"
       button={registerBtn}
-      imgSrc="/small_white_logo.png"
+      imgSrc="/small_white_logo.png" 
       imgPosition="left"
     />
   );
 
   return (
-    <div className="flex min-h-screen w-full">
-      {optPanelInicia}
+    <div className="flex min-h-screen w-full bg-background">
+      <div className="hidden md:block w-0 md:w-[35%] h-screen">
+        {optPanelInicia}
+      </div>
       <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
         <div className="w-full max-w-md p-4">
           <form onSubmit={handleSubmit} className="w-full">
@@ -177,6 +179,12 @@ export default function Login() {
               {error}
             </div>
           )}
+          <div className="block md:hidden mt-6 text-center text-sm text-gray-600">
+            ¿No tienes cuenta?{' '}
+            <Link to="/register" className="text-brand font-semibold hover:underline">
+              Regístrate aquí
+            </Link>
+          </div>
         </div>
       </div>
     </div>

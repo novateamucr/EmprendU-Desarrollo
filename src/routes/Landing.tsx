@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
+import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 
 import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero-blue.png";
@@ -196,11 +197,11 @@ export default function Landing() {
 
         {/* Imagen con íconos */}
         <div className="relative flex justify-center">
-          <img src={hero} alt="Hero" className="w-72 md:w-90 relative z-10" />
-          <img src={hero} alt="icono" className="absolute w-16 top-0 right-20" />
-          <img src={hero} alt="icono" className="absolute w-14 top-10 left-12" />
-          <img src={hero} alt="icono" className="absolute w-20 bottom-0 left-0" />
-          <img src={hero} alt="icono" className="absolute w-12 bottom-10 right-8" />
+          <img src={hero} alt="Hero" className="w-72 md:w-90 relative z-10 animate-float" />
+          <img src={hero} alt="icono" className="absolute w-16 top-0 right-20 animate-float " />
+          <img src={hero} alt="icono" className="absolute w-14 top-10 left-12 animate-float-slow" />
+          <img src={hero} alt="icono" className="absolute w-20 bottom-0 left-0 animate-float-fast" />
+          <img src={hero} alt="icono" className="absolute w-12 bottom-10 right-8 animate-float-fast" />
         </div>
       </section>
 
@@ -209,23 +210,23 @@ export default function Landing() {
         <h2 className="text-2xl font-bold text-center mb-12">
           ¿Por qué usar EmprendU?
         </h2>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
-          <CardLanding
-            title="Visibilidad"
-            imgUrl={vision}
-            description="Da a conocer tu emprendimiento y llega a más personas en tu comunidad y más allá."
-          />
-          <CardLanding
-            title="Conexión"
-            imgUrl="/icons/conexion.svg"
-            description="Conecta con clientes, colaboradores y aliados estratégicos para hacer crecer tu idea."
-          />
-          <CardLanding
-            title="Crecimiento"
-            imgUrl="/icons/crecimiento.svg"
-            description="Encuentra herramientas, oportunidades y apoyo para impulsar tu emprendimiento."
-          />
-        </div>
+         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
+      <CardLanding
+        title="Visibilidad"
+        icon={<Eye className="w-8 h-8 text-brand" />}
+        description="Da a conocer tu emprendimiento y llega a más personas en tu comunidad y más allá."
+      />
+      <CardLanding
+        title="Conexión"
+        icon={<Users className="w-8 h-8 text-brand" />}
+        description="Conecta con clientes, colaboradores y aliados estratégicos para hacer crecer tu idea."
+      />
+      <CardLanding
+        title="Crecimiento"
+        icon={<TrendingUp className="w-8 h-8 text-brand" />}
+        description="Encuentra herramientas, oportunidades y apoyo para impulsar tu emprendimiento."
+      />
+    </div>
       </section>
 
       {/* ¿Cómo funciona? */}

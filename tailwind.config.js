@@ -12,7 +12,8 @@ export default {
         border: '#E6E6E6',
         background: '#F2F2F2',
         brand: '#76b0cd',
-        brandDark: '#5b98b8',
+        brandDark: '#4a7fa0',
+        brandLight: '#81bcdaff',
       },
       boxShadow: {
         soft: '0 6px 20px rgba(0,0,0,0.06)',
@@ -25,7 +26,36 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
+
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-12px)' },
+        },
+        'float-slow': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-8px) rotate(3deg)' },
+        },
+        'float-fast': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-15px)' },
+        },
+      
+        'float-diagonal': {
+          '0%, 100%': { transform: 'translate(0, 0)' },
+          '25%': { transform: 'translate(6px, -8px)' },
+          '50%': { transform: 'translate(0, -12px)' },
+          '75%': { transform: 'translate(-6px, -8px)' },
+        },
+      },
+
+      animation: {
+        float: 'float 4s ease-in-out infinite',
+        'float-slow': 'float-slow 6s ease-in-out infinite',
+        'float-fast': 'float-fast 3.5s ease-in-out infinite',
+        'float-diagonal': 'float-diagonal 5s ease-in-out infinite',
+      },
     },
   },
   plugins: [],
-}
+};

@@ -209,6 +209,7 @@ export default function Cart() {
           isOpen={showProfileReminder}
           onClose={() => setShowProfileReminder(false)}
           title="Información requerida"
+          variant="info"
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">

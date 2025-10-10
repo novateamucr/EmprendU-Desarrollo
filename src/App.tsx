@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { UserProvider } from './context/UserContext';
+import { FairsProvider } from './context/FairsContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Layout } from './components/layout/Layout';
 import LandingPage from './routes/Landing';
@@ -28,6 +29,8 @@ import ProductDetail from './routes/ProductDetail';
 import MyOrders from './routes/MyOrders';
 import MyOrderDetail from './routes/MyOrderDetail';
 import AdminDashB from './routes/AdminDashB';
+import FAQs from './routes/FAQs';
+import ContactUs from './routes/ContactUs';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -69,14 +72,16 @@ function App() {
                 {/* Protected Routes */}
                 <Route element={
                   <ProtectedRoute>
+                    <FairsProvider>
                     <Layout>
                       <Outlet />
                     </Layout>
+                    </FairsProvider>
                   </ProtectedRoute>
                 }>
                   <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Perfil />} />
-                  <Route path="/profile/edit" element={<EditarPerfil />} />
+                  <Route path="/profile/edit/:id" element={<EditarPerfil />} />
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/orders/:id" element={<MyOrderDetail />} />
                   <Route path="/business/:id" element={<FeedEmpredimientoDetalle />} />
@@ -86,6 +91,8 @@ function App() {
                   <Route path="/cart/detail" element={<CartDetail />} />
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
+                  <Route path="/FAQs" element={<FAQs />} />
+                  <Route path="/contactUs" element={<ContactUs />} />
                   
                   {/* Admin Routes */}
                   <Route path="/admin/usuarios" element={<GestorUsuarios />} />
