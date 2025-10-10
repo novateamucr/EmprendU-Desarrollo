@@ -20,7 +20,7 @@ export default function Ferias() {
 
   const zones = ["San Ramón", "Cartago", "Heredia", "San José"];
 
-  // Funciones para popups
+  
   const handleInscribirse = () => setShowPopupEmprendimientos(true);
   const handleVerDetalles = () => setShowPopupDetalles(true);
   const handleSiguiente = () => {
@@ -32,7 +32,7 @@ export default function Ferias() {
     console.log("Inscripción confirmada");
   };
 
-  // Filtrado de fairs abiertas según búsqueda y zona
+ 
   const openFairs = fairs.filter(
     (f) =>
       f.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -53,14 +53,14 @@ export default function Ferias() {
           Aquí puedes encontrar ferias abiertas y en las que estás participando.
         </p>
 
-        {/* Fairs abiertas */}
+        
         <section>
           <h2 className="text-lg font-semibold text-primary mb-2">Ferias abiertas</h2>
           <p className="text-secondary text-sm mb-4">
             Aquí aparecerán las ferias en las que puedes inscribirte
           </p>
 
-          {/* Filtros */}
+          
           <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
@@ -88,7 +88,7 @@ export default function Ferias() {
             </div>
           </div>
 
-          {/* Cards de fairs abiertas */}
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {openFairs.map((fair: Fair) => (
               <FeriaCard
@@ -114,7 +114,7 @@ export default function Ferias() {
         </div>
       </footer>
 
-      {/* Popups */}
+      
       {showPopupEmprendimientos && (
         <PopupEmprendimientos
           onClose={() => setShowPopupEmprendimientos(false)}

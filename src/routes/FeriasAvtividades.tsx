@@ -2,19 +2,19 @@ import footerHero from "../assets/hero-w.png";
 import { Search } from '@mui/icons-material';
 import { useState } from 'react';
 import { FeriaCard } from '../components/FeriaCard';
-import { PopupDetalles } from '../components/PopupDetalles';
-import { useFairs } from "../context/FairsContext"; // ✅ importar contexto
+import { VerDetalles } from '../components/VerDetalles';
+import { useFairs } from "../context/FairsContext";
 
 export default function FeriasPage() {
-  const { fairs } = useFairs(); // ✅ obtener ferias del contexto
+  const { fairs } = useFairs();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedZone, setSelectedZone] = useState('Todas');
-  const [selectedFeria, setSelectedFeria] = useState<any>(null); // ✅ almacena la feria actual
+  const [selectedFeria, setSelectedFeria] = useState<any>(null);
   const [showPopupDetalles, setShowPopupDetalles] = useState(false);
 
   const zones = ['San Ramón', 'Cartago', 'Heredia'];
 
-  // 🔍 Filtrado de ferias según búsqueda y zona
+  
   const filteredFerias = fairs.filter((feria) => {
     const matchesQuery = feria.title?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesZone = selectedZone === 'Todas' || feria.location === selectedZone;
@@ -36,7 +36,7 @@ export default function FeriasPage() {
           Aquí puedes ver las próximas ferias y actividades.
         </p>
 
-        {/* Filtros */}
+        
         <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
@@ -62,13 +62,13 @@ export default function FeriasPage() {
           </div>
         </div>
 
-        {/* Lista de ferias */}
+        
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFerias.length > 0 ? (
               filteredFerias.map((feria) => (
                 <FeriaCard
-                   key={feria.id}
+                  key={feria.id}
                   title={feria.title}
                   imgUrl={feria.image ?? "img/default.jpg"}
                   location={feria.location}
@@ -86,7 +86,7 @@ export default function FeriasPage() {
         </section>
       </div>
 
-      {/* Footer */}
+      
       <footer className="bg-brand text-white py-6 mt-auto rounded-t-2xl">
         <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
           <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
@@ -94,14 +94,10 @@ export default function FeriasPage() {
         </div>
       </footer>
 
-
-        {/* Popup de detalles */}
-        {showPopupDetalles && (
-          <PopupDetalles
-            onClose={() => setShowPopupDetalles(false)}
-          />
-        )}
-      </div>
-   
+      
+      {showPopupDetalles && selectedFeria && (
+        <VerDetalles feria={selectedFeria} onClose={() => setShowPopupDetalles(false)} />
+      )}
+    </div>
   );  
 }

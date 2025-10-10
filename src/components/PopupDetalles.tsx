@@ -9,21 +9,21 @@ export function PopupDetalles({ onClose }: PopupDetallesProps) {
   return (
     
 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  {/* Contenedor del Popup */}
+  
   <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg text-center">
 
     <PopupHeader title="Detalles de la Feria" subtitle="Revisa toda la información del evento" variant="info" />
 
-    {/* Resumen / Detalles */}
+    
     <div className="rounded-xl p-4 text-left space-y-4 border border-gray-100">
       
-      {/* Actividad */}
+     
       <div className="pb-4">
         <h3 className="text-gray-800 font-semibold">Actividad</h3>
         <p className="text-sm text-gray-600">Actividad de exposición y venta de productos</p>
       </div>
 
-      {/* Ubicación */}
+      
       <div className="flex items-center gap-3 pb-4">
         <svg className="w-5 h-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
@@ -32,13 +32,13 @@ export function PopupDetalles({ onClose }: PopupDetallesProps) {
         <p className="text-sm text-gray-600">Parque de San Ramón</p>
       </div>
 
-      {/* Fecha y hora */}
+     
       <div className="pb-4">
         <h3 className="text-gray-800 font-semibold">Fecha y hora</h3>
         <p className="text-sm text-gray-600">Sábado 5 de Octubre · 10:00 am - 6:00 pm</p>
       </div>
 
-      {/* Emprendimiento */}
+      
       <div>
         <h3 className="text-gray-800 font-semibold">Emprendimiento</h3>
         <div className="flex items-center gap-3 mt-2">
@@ -52,7 +52,7 @@ export function PopupDetalles({ onClose }: PopupDetallesProps) {
 
     </div>
 
-    {/* Botón cerrar */}
+    
     <div className="flex justify-end mt-6">
   <button
     className="px-4 py-2 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition"
