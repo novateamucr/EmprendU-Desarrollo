@@ -9,7 +9,7 @@ import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
-import vision from "../assets/vision_8440711.png";
+
 
 
 // Animación del menú móvil
@@ -279,9 +279,9 @@ export default function Landing() {
 
           <div className="flex justify-center mt-10">
             <div className="flex gap-4">
-            <Link to="/">
+            <Link to="/login">
               <button className="px-6 py-3 border bg-brand text-white rounded-full hover:bg-brandDark transition-colors">
-                Conocer mas
+                Comenzar ahora
               </button>
             </Link>
           </div>
