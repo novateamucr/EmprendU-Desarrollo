@@ -480,7 +480,7 @@ export default function Home() {
     <>
       {/* Main Content */}
       <div className="pt-24 flex flex-col min-h-full">
-        <div className="px-4 max-w-6xl mx-auto w-full">
+        <div className="w-full px-32">
         {/* Header */}
         <AnimatedContainer className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
@@ -583,78 +583,87 @@ export default function Home() {
               })()}
             </AnimatedContainer>
 
-            {/* Search Bar + Zone Selector */}
-            <div className="mb-8  rounded-lg ">
-              <h2 className="text-base font-semibold text-primary mb-2">Buscar emprendimientos</h2>
-              <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl mx-auto">
-                <div className="relative flex-[2] w-full">
-                  <Search sx={{ fontSize: 20 }} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
-                  <input
-                    type="text"
-                    placeholder="Buscar emprendimientos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="w-full pl-12 pr-4 py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
-                  />
-                  {/* Search Suggestions */}
-                  {showSuggestions && filteredSuggestions.length > 0 && (
-                    <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                      {filteredSuggestions.map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            setSearchQuery(suggestion);
-                            setShowSuggestions(false);
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3"
-                        >
-                          <Search sx={{ fontSize: 16 }} className="text-secondary" />
-                          <span className="text-primary">{suggestion}</span>
-                        </button>
-                      ))}
-                    </AnimatedContainer>
-                  )}
-                </div>
-                {/* Province Selector */}
-                <div className="w-full md:w-56 relative flex-1">
-                  <select
-                    value={selectedProvince || 'Todos'}
-                    onChange={e => setSelectedProvince(e.target.value)}
-                    className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
-                  >
-                    <option value="Todos">Todas las provincias</option>
-                    {provinces.map((p) => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+              {/* Search Bar + Zone Selector */}
+              <div className="mb-8 rounded-lg">
+                <h2 className="text-base font-semibold text-primary mb-2">Buscar emprendimientos</h2>
+
+                <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+                  {/* Search Bar (un poco más largo) */}
+                  <div className="relative flex-[1] w-full">
+                    <Search
+                      sx={{ fontSize: 20 }}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Buscar emprendimientos..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      className="w-full pl-12 pr-4 py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
+                    />
+                    {/* Search Suggestions */}
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                      <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                        {filteredSuggestions.map((suggestion, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSearchQuery(suggestion);
+                              setShowSuggestions(false);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3"
+                          >
+                            <Search sx={{ fontSize: 16 }} className="text-secondary" />
+                            <span className="text-primary">{suggestion}</span>
+                          </button>
+                        ))}
+                      </AnimatedContainer>
+                    )}
                   </div>
-                </div>
-                {/* Zone Selector */}
-                <div className="w-full md:w-56 relative flex-1">
-                  <select
-                    value={selectedZone}
-                    onChange={(e) => setSelectedZone(e.target.value)}
-                    className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
-                  >
-                    <option value="Todas">Todos los cantones</option>
-                    {zones.map((z) => (
-                      <option key={z} value={z}>{z}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+
+                  {/* Province Selector */}
+                  <div className="w-full md:w-52 relative">
+                    <select
+                      value={selectedProvince || 'Todos'}
+                      onChange={(e) => setSelectedProvince(e.target.value)}
+                      className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                    >
+                      <option value="Todos">Todas las provincias</option>
+                      {provinces.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Zone Selector */}
+                  <div className="w-full md:w-52 relative">
+                    <select
+                      value={selectedZone}
+                      onChange={(e) => setSelectedZone(e.target.value)}
+                      className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                    >
+                      <option value="Todas">Todos los cantones</option>
+                      {zones.map((z) => (
+                        <option key={z} value={z}>{z}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+
+
 
             {/* Categories */}
             <Categories
