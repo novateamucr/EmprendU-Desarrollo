@@ -31,6 +31,63 @@ import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
 
+export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
+  const { token } = useAuth();
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(
+          `http://emprendu-backend.test/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (!res.ok) throw new Error("Error al obtener reviews");
+
+        const data = await res.json();
+        setReviews(data);
+
+        if (data.length > 0) {
+          const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
+          setAverageRating(avg);
+        } else {
+          setAverageRating(null);
+        }
+      } catch (err) {
+        console.error("Error cargando reviews:", err);
+        setAverageRating(null);
+      }
+    };
+
+    if (entrepreneurshipId) {
+      fetchReviews();
+    }
+  }, [entrepreneurshipId, token]);
+
+  return (
+    <>
+      <div className="flex flex-wrap justify-center gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <div key={star} className="relative group">
+            <span
+              className={`text-sm ${
+                averageRating && star <= Math.round(averageRating)
+                  ? "text-yellow-500"
+                  : "text-gray-300"
+              }`}
+            >
+              ★
+            </span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 // Soft animations with Emotion
 const fadeInUp = keyframes`
   from {
@@ -563,8 +620,7 @@ export default function Home() {
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="text-lg font-semibold text-primary">{featured?.name || "Emprendimiento"}</h3>
                             <div className="flex items-center gap-1">
-                              <Star sx={{ fontSize: 16 }} className="text-amber-500" />
-                              <span className="text-sm text-secondary">-</span>
+                              <BusinessStars entrepreneurshipId={Number(featured.id)} />
                             </div>
                           </div>
                           <p className="text-secondary text-sm mb-3">
@@ -743,8 +799,7 @@ export default function Home() {
                             <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex items-center gap-1 text-secondary">
-                                <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                                <span className="text-xs">-</span>
+                                <BusinessStars entrepreneurshipId={Number(business.id)} />
                               </div>
                               <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
                                 {business.category_relation?.nombre || 'General'}
