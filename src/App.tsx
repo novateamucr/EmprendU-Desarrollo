@@ -69,6 +69,8 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/password-reset" element={<PwReset />} />
                 <Route path="/new-password" element={<NewPw />} />
+                <Route path="/FAQs" element={<FAQs />} />
+                <Route path="/contactUs" element={<ContactUs />} />
 
                 {/* Protected Routes */}
                 <Route element={
@@ -86,8 +88,7 @@ function App() {
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
-                  <Route path="/FAQs" element={<FAQs />} />
-                  <Route path="/contactUs" element={<ContactUs />} />
+
                   
                   {/* Regular User Routes (role 1) */}
                   <Route element={<RoleBasedRoute allowedRoles={[1, 2, 3]}> <Outlet /> </RoleBasedRoute>}>

@@ -26,6 +26,10 @@ import { Modal } from '../components/Modal';
 } from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
 import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
+import x from "../assets/x.svg";
+import insta from "../assets/instagram_icon.svg";
+import youtube from "../assets/youtube_icon.svg";
+import tiktok from "../assets/tiktok_icon.svg";
 
 // Soft animations with Emotion
 const fadeInUp = keyframes`
@@ -816,14 +820,26 @@ export default function Home() {
         </div>
         {/* Footer */}
         <footer
-          id="contacto"
-          className="bg-brand text-white py-6 mt-auto rounded-t-2xl"
-        >
-          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
-            <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-            <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+        id="contacto"
+        className="bg-brand text-white py-6 rounded-t-2xl"
+      >
+        <div className="items-center flex flex-col gap-4">
+          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12 border-b border-white pb-4  w-full">
+            <div className="flex align-middle items-center gap-6">
+              <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+              <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
+              <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+            </div>
+            <div className="flex gap-6">
+              <a href=""><img src={x} alt="x socials" className=" h-7" /></a>
+              <a href=""><img src={insta} alt="instagram" className=" h-8" /></a>
+              <a href=""><img src={youtube} alt="youtube" className=" h-7" /></a>
+              <a href=""><img src={tiktok} alt="" className=" h-7"/></a>
+            </div>    
           </div>
-        </footer>
+          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
+        </div>
+      </footer>
       </div>
       {/* Confirm remove favorite (Home) */}
       <Modal
