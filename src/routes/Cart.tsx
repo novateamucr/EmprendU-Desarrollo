@@ -8,11 +8,12 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 export default function Cart() {
-  const { groups, placeOrder, isPlaced, removeItem, clearCart, updateQty } = useCart();
+  const { groups, placeOrder, isPlaced, removeItem, clearCart, updateQty, cancelOrder } = useCart();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [placingId, setPlacingId] = useState<string | null>(null);
+  const [cancelGroupId, setCancelGroupId] = useState<string | null>(null);
 
   const isProfileComplete = () => {
     return !!(user?.phone && user?.province && user?.canton && user?.district && user?.address);
@@ -52,14 +53,8 @@ export default function Cart() {
 
     try {
       setPlacingId(entrepreneurshipId);
-      await placeOrder(entrepreneurshipId);
+      await placeOrder(entrepreneurshipId, Number(user?.id));
       toast.success('Pedido realizado con éxito');
-
-      // If this was the last group, clear the cart
-      if (groups.length === 1) {
-        clearCart();
-        navigate('/home');
-      }
     } catch (error) {
       console.error('Error al realizar el pedido:', error);
       toast.error('Error al realizar el pedido. Por favor, inténtalo de nuevo.');
@@ -76,7 +71,7 @@ export default function Cart() {
           <span>Carrito de pedidos</span>
         </h1>
         {groups.map((group) => (
-          <div key={group.entrepreneurshipId} className="mb-8">
+          <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}` } className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <button
                 onClick={() => navigate(`/business/${group.entrepreneurshipId}`)}
@@ -84,7 +79,7 @@ export default function Cart() {
               >
                 {group.entrepreneurshipName}
               </button>
-              {!isPlaced(group.entrepreneurshipId) && (
+              {group.status !== 'requested' && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -100,7 +95,7 @@ export default function Cart() {
               )}
             </div>
 
-            {isPlaced(group.entrepreneurshipId) && (
+            {group.status === 'requested' && (
               <div className="mx-4 mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2">
                 El emprendedor ya sabe de tu pedido, espera a que lo acepte o se contacte con usted.
               </div>
@@ -123,10 +118,17 @@ export default function Cart() {
                       <div>
                         <h3 className="font-medium hover:underline">{item.name}</h3>
                         <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
+                        {item.selectionSummary && item.selectionSummary.length > 0 && (
+                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4">
+                            {item.selectionSummary.slice(0, 3).map((s, idx) => (
+                              <li key={idx}>{s}</li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {!isPlaced(group.entrepreneurshipId) && (
+                      {group.status !== 'requested' && (
                         <>
                           {item.quantity > 1 ? (
                             <button
@@ -152,7 +154,7 @@ export default function Cart() {
                         </>
                       )}
                       <span className="w-8 text-center">{item.quantity}</span>
-                      {!isPlaced(group.entrepreneurshipId) && (
+                      {group.status !== 'requested' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -180,8 +182,8 @@ export default function Cart() {
                 </div>
                 <button
                   onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
-                  disabled={isPlaced(group.entrepreneurshipId) || placingId === group.entrepreneurshipId}
-                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${isPlaced(group.entrepreneurshipId)
+                  disabled={group.status === 'requested' || placingId === group.entrepreneurshipId}
+                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${group.status === 'requested'
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       : 'bg-brand text-white hover:bg-brandDark'
                     }`}
@@ -194,12 +196,20 @@ export default function Cart() {
                       </svg>
                       Procesando...
                     </>
-                  ) : isPlaced(group.entrepreneurshipId) ? (
+                  ) : group.status === 'requested' ? (
                     'Pedido solicitado'
                   ) : (
                     'Confirmar pedido'
                   )}
                 </button>
+                {group.status === 'requested' && (
+                  <button
+                    onClick={() => setCancelGroupId(group.groupId)}
+                    className="px-4 py-2 rounded-md border border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    Cancelar pedido
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -233,6 +243,35 @@ export default function Cart() {
                 className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark"
               >
                 Completar perfil
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={!!cancelGroupId}
+          onClose={() => setCancelGroupId(null)}
+          title="Cancelar pedido"
+          variant="warning"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">¿Seguro que deseas cancelar este pedido? Esta acción eliminará el pedido de forma permanente.</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setCancelGroupId(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                No, volver
+              </button>
+              <button
+                onClick={async () => {
+                  if (!cancelGroupId) return;
+                  await cancelOrder(cancelGroupId);
+                  setCancelGroupId(null);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Sí, cancelar
               </button>
             </div>
           </div>

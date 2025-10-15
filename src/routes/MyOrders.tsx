@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { Clock, CheckCircle2, BadgeCheck, Star } from 'lucide-react';
+import { listMyOrders } from '../services/orderService';
+import { Clock, CheckCircle2, BadgeCheck, Star, XCircle } from 'lucide-react';
+// import { Modal } from '../components/Modal';
 
-// Types for mock orders
-type OrderStatus = 'pedido_solicitado' | 'pedido_aceptado' | 'pedido_completado' | 'pedido_calificado';
+// Types for orders shown in MyOrders
+type OrderStatus = 'pedido_solicitado' | 'pedido_aceptado' | 'pedido_cancelado' | 'pedido_completado' | 'pedido_calificado';
 
 type Order = {
   id: string;
@@ -26,6 +28,7 @@ type Order = {
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pedido_solicitado: 'Pedido solicitado',
   pedido_aceptado: 'Pedido aceptado',
+  pedido_cancelado: 'Pedido cancelado',
   pedido_completado: 'Pedido completado',
   pedido_calificado: 'Pedido calificado',
 };
@@ -34,12 +37,14 @@ function StatusBadge({ status }: { status: OrderStatus }) {
   const styles: Record<OrderStatus, string> = {
     pedido_solicitado: 'bg-sky-50 text-sky-700 border-sky-200',
     pedido_aceptado: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    pedido_cancelado: 'bg-rose-50 text-rose-700 border-rose-200',
     pedido_completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     pedido_calificado: 'bg-amber-50 text-amber-700 border-amber-200',
   };
   const icons: Record<OrderStatus, JSX.Element> = {
     pedido_solicitado: <Clock size={14} className="shrink-0" />,
     pedido_aceptado: <CheckCircle2 size={14} className="shrink-0" />,
+    pedido_cancelado: <XCircle size={14} className="shrink-0" />,
     pedido_completado: <BadgeCheck size={14} className="shrink-0" />,
     pedido_calificado: <Star size={14} className="shrink-0" />,
   };
@@ -54,42 +59,15 @@ function StatusBadge({ status }: { status: OrderStatus }) {
   );
 }
 
-const STORAGE_KEY = 'mock_orders_history';
-
-function ensureSeeded() {
-  const existing = localStorage.getItem(STORAGE_KEY);
-  if (existing) return;
-  const seed: Order[] = [
-    // Evitamos sembrar un pedido en estado 'pedido_solicitado'. Esos vendrán del carrito.
-    {
-      id: 'ORD-2025-002',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-      entrepreneurshipName: 'Café Luna',
-      entrepreneurshipId: 102,
-      items: 1,
-      total: 3500,
-      status: 'pedido_aceptado',
-    },
-    {
-      id: 'ORD-2025-003',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-      entrepreneurshipName: 'Panadería Del Sol',
-      entrepreneurshipId: 103,
-      items: 5,
-      total: 12500,
-      status: 'pedido_completado',
-    },
-    {
-      id: 'ORD-2025-004',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
-      entrepreneurshipName: 'Artesanías Tica',
-      entrepreneurshipId: 104,
-      items: 3,
-      total: 21000,
-      status: 'pedido_calificado',
-    },
-  ];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+// Map backend status -> local status keys
+function mapStatus(s?: string): OrderStatus {
+  const s2 = String(s || '').toLowerCase();
+  if (s2 === 'requested' || s2 === 'draft') return 'pedido_solicitado';
+  if (s2 === 'accepted') return 'pedido_aceptado';
+  if (s2 === 'canceled') return 'pedido_cancelado';
+  if (s2 === 'completed') return 'pedido_completado';
+  if (s2 === 'rated') return 'pedido_calificado';
+  return 'pedido_solicitado';
 }
 
 export default function MyOrders() {
@@ -99,17 +77,17 @@ export default function MyOrders() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
-  const { groups, isPlaced } = useCart();
+  const { groups } = useCart();
 
-  // Derivar pedidos 'solicitados' desde el carrito (uno por emprendimiento)
+  // Derivar pedidos 'solicitados' desde el carrito (uno por grupo solicitado)
   const cartOrders: Order[] = useMemo(() => {
     return (groups || [])
-      .filter(g => isPlaced(g.entrepreneurshipId))
+      .filter(g => g.status === 'requested')
       .map(g => {
         const items = g.items.reduce((sum, it) => sum + (it.quantity ?? 0), 0);
         const total = g.items.reduce((sum, it) => sum + (it.price * (it.quantity ?? 0)), 0);
         return {
-          id: `CART-${g.entrepreneurshipId}`,
+          id: String(g.orderId ?? g.groupId),
           createdAt: new Date().toISOString(),
           entrepreneurshipName: g.entrepreneurshipName,
           entrepreneurshipId: Number(g.entrepreneurshipId),
@@ -126,28 +104,51 @@ export default function MyOrders() {
         };
       })
       .filter(o => o.items > 0);
-  }, [groups, isPlaced]);
+  }, [groups]);
 
-  // Cargar base desde storage y mezclar con pedidos derivados del carrito.
+  // Cargar pedidos reales del backend y mezclar con los derivados del carrito (solicitados actuales)
   useEffect(() => {
-    ensureSeeded();
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      let base: Order[] = raw ? JSON.parse(raw) : [];
-      // Emprendimientos confirmados actualmente (para reemplazar sus CART-* entries)
-      const currentCartEntreIds = new Set(cartOrders.map(o => o.entrepreneurshipId));
-      // Mantener CART-* anteriores que no estén siendo reemplazados por los actuales
-      const preserved = base.filter(o => {
-        if (!String(o.id).startsWith('CART-')) return true;
-        const idNum = Number(String(o.id).replace('CART-', ''));
-        return !currentCartEntreIds.has(idNum);
-      });
-      const merged = [...cartOrders, ...preserved];
-      setOrders(merged);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    } catch {
-      setOrders(cartOrders);
-    }
+    (async () => {
+      try {
+        // Try backend orders (sin filtros o con draft/requested)
+        const attempts: any[] = [];
+        attempts.push(await listMyOrders({ status: 'draft,requested' }).catch(() => null));
+        attempts.push(await listMyOrders(undefined as any).catch(() => null));
+        let raw: any[] = [];
+        for (const res of attempts) {
+          const arr = (res?.data && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : (res?.data?.data || res?.data || []));
+          if (Array.isArray(arr) && arr.length) { raw = arr; break; }
+        }
+        const backendOrders: Order[] = (raw || []).map((o: any) => {
+          const entre = o.entrepreneurship || {};
+          const entrepreneurshipId = Number(o.entrepreneurship_id ?? entre.id ?? 0);
+          const entrepreneurshipName = String(entre.name ?? o.entrepreneurship_name ?? `Emprendimiento #${entrepreneurshipId || ''}`);
+          const items = Array.isArray(o.items) ? o.items.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0) : 0;
+          const total = Number(o.grand_total ?? 0);
+          return {
+            id: String(o.id),
+            createdAt: String(o.created_at ?? new Date().toISOString()),
+            entrepreneurshipName,
+            entrepreneurshipId,
+            items,
+            total,
+            status: mapStatus(o.status),
+          } as Order;
+        });
+
+        // Merge backend + requested-from-cart (avoid duplicates by id)
+        const mapById = new Map<string, Order>();
+        backendOrders.forEach(o => mapById.set(o.id, o));
+        cartOrders.forEach(co => {
+          // If there's a backend order with same entrepreneurship and status requested, prefer backend; else include cart
+          if (!mapById.has(co.id)) mapById.set(co.id, co);
+        });
+        setOrders(Array.from(mapById.values()));
+      } catch {
+        // Fallback: show only cart-derived orders
+        setOrders(cartOrders);
+      }
+    })();
   }, [cartOrders]);
 
   const filtered = useMemo(() => {
@@ -233,7 +234,7 @@ export default function MyOrders() {
                   <div className="col-span-3 md:col-span-2 text-sm font-semibold text-primary">
                     ₡{o.total.toLocaleString()}
                   </div>
-                  <div className="col-span-12 md:col-span-2 flex md:justify-center mt-2 md:mt-0">
+                  <div className="col-span-12 md:col-span-2 flex items-center justify-center gap-2 mt-2 md:mt-0">
                     <StatusBadge status={o.status} />
                   </div>
                 </div>
@@ -276,6 +277,7 @@ export default function MyOrders() {
           )}
         </div>
       </div>
+      {/* Cancel action removed from list; available in order detail view */}
     </div>
   );
 }

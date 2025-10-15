@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/Button';
 import { Plus } from 'lucide-react';
 import { Skeleton } from '@mui/material';
 import { SkeletonProductList } from '../../../components/ui/SkeletonProductList';
-import { getProducts, Product } from '../../../services/productService';
+import { getAllProducts, Product } from '../../../services/productService';
 import { ProductList } from './components/ProductList';
 import ProductForm from './components/ProductForm';
 import { useToast } from '../../../hooks/useToast';
@@ -12,6 +12,7 @@ import { useToast } from '../../../hooks/useToast';
 export default function InventoryPage() {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get('businessId');
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
@@ -77,8 +78,8 @@ export default function InventoryPage() {
       setIsLoading(true);
       console.log('Fetching all products for frontend filtering');
       
-      // Fetch all products
-      const allProducts = await getProducts();
+      // Fetch all products across all pages
+      const allProducts = await getAllProducts();
       console.log('All products from API:', allProducts);
       
       // Filter products by businessId on the frontend
@@ -121,8 +122,8 @@ export default function InventoryPage() {
   };
 
   const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    setShowProductForm(true);
+    if (!businessId) return;
+    navigate(`/emprendimientos/${businessId}/productos/${product.id}/editar`, { state: { product } });
   };
 
   const handleFormSubmit = async () => {

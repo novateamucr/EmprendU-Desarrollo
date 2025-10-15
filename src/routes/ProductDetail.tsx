@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
 import { Facebook, WhatsApp, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
+import {
+  getProductOptions,
+  getOptionValues,
+  getCustomForms,
+  type ProductOption,
+  type ProductOptionValue,
+  type ProductCustomForm,
+} from '../services/productConfigService';
 
 // Skeleton component for loading state
 const ProductDetailSkeleton = () => (
@@ -77,9 +85,75 @@ export default function ProductDetail() {
 
   const { addItem } = useCart();
 
+  // Load configurable form data (hooks must be declared before any return)
+  const [optList, setOptList] = useState<ProductOption[]>([]);
+  const [formList, setFormList] = useState<ProductCustomForm[]>([]);
+  const [valuesByOpt, setValuesByOpt] = useState<Record<number, ProductOptionValue[]>>({});
+  const [formLoading, setFormLoading] = useState(false);
+  // Controlled selections
+  const [selectedByOption, setSelectedByOption] = useState<Record<number, number[]>>({});
+  const [customValues, setCustomValues] = useState<Record<number, string | number | boolean>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!product?.id) return;
+      setFormLoading(true);
+      try {
+        const [opts, forms] = await Promise.all([
+          getProductOptions(product.id),
+          getCustomForms(product.id),
+        ]);
+        if (!mounted) return;
+        setOptList(opts || []);
+        setFormList(forms || []);
+        // fetch values for each option
+        const entries = await Promise.all(
+          (opts || []).map(async (o) => {
+            const vals = await getOptionValues(product.id, o.id);
+            return [o.id, vals || []] as const;
+          })
+        );
+        if (!mounted) return;
+        const map: Record<number, ProductOptionValue[]> = {};
+        entries.forEach(([id, vals]) => { map[id] = vals; });
+        setValuesByOpt(map);
+      } finally {
+        if (mounted) setFormLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [product?.id]);
+
+  const unifiedItems = useMemo(() => {
+    return [
+      ...optList.map(o => ({ kind: 'option' as const, order: o.display_order, data: o })),
+      ...formList.map(f => ({ kind: 'form' as const, order: f.display_order, data: f })),
+    ].sort((a,b) => a.order - b.order);
+  }, [optList, formList]);
+
   const handleOrder = () => {
     if (!product || !product.entrepreneurship) return;
-    
+    // Build selection summary strings
+    const summary: string[] = [];
+    // Options
+    optList.forEach((o) => {
+      const selectedIds = selectedByOption[o.id] || [];
+      if (selectedIds.length > 0) {
+        const vals = (valuesByOpt[o.id] || []).filter(v => selectedIds.includes(v.id));
+        const label = `${o.name}: ${vals.map(v => v.value).join(', ')}`;
+        summary.push(label);
+      }
+    });
+    // Custom forms
+    formList.forEach((f) => {
+      const v = customValues[f.id];
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        summary.push(`${f.label}: ${String(v)}`);
+      }
+    });
+
     addItem(
       product.entrepreneurship.id.toString(),
       product.entrepreneurship.name,
@@ -88,10 +162,26 @@ export default function ProductDetail() {
         name: product.name,
         price: product.price,
         ...(product.image_url && { imageUrl: product.image_url }), // Only include imageUrl if it exists
-        quantity: 1
+        quantity: 1,
+        selections: {
+          options: optList.map(o => ({
+            optionId: o.id,
+            optionName: o.name,
+            valueIds: selectedByOption[o.id] || [],
+            valueLabels: (valuesByOpt[o.id] || [])
+              .filter(v => (selectedByOption[o.id] || []).includes(v.id))
+              .map(v => v.value),
+          }))
+            .filter(e => (e.valueIds?.length || 0) > 0),
+          customs: formList.map(f => ({ formId: f.id, formLabel: f.label, value: customValues[f.id] }))
+            .filter(e => e.value !== undefined && e.value !== null && String(e.value).trim() !== ''),
+        },
+        selectionSummary: summary,
       }
     );
-    
+    // Reset form selections
+    setSelectedByOption({});
+    setCustomValues({});
     // No redirection; Layout will show a transient notification
   };
 
@@ -171,6 +261,139 @@ export default function ProductDetail() {
               <div className="mt-4">
                 <h2 className="text-lg font-semibold text-primary">Descripción detallada</h2>
                 <p className="text-secondary whitespace-pre-line mt-2">{product.long_description}</p>
+              </div>
+            )}
+
+            {/* Configurable form (between descriptions and price) */}
+            {(formLoading || unifiedItems.length > 0) && (
+              <div className="mt-5">
+                <h3 className="text-lg font-semibold text-primary mb-2">Personaliza tu pedido</h3>
+                {formLoading && <div className="text-sm text-secondary">Cargando opciones…</div>}
+                {!formLoading && unifiedItems.length > 0 && (
+                  <div className="space-y-4">
+                    {unifiedItems.map((it) => (
+                      <div key={(it.kind === 'option' ? (it.data as ProductOption).id : (it.data as ProductCustomForm).id)}>
+                        {it.kind === 'option' ? (
+                          (() => {
+                          const o = it.data as ProductOption;
+                          const vals = valuesByOpt[o.id] || [];
+                          if (o.type === 'select') {
+                            return (
+                              <div className="space-y-1">
+                                <label className="text-sm text-secondary">{o.name}{o.required ? ' *' : ''}</label>
+                                <select
+                                  className="w-full border rounded px-3 py-2"
+                                  value={(selectedByOption[o.id]?.[0]) ?? ''}
+                                  onChange={(e) => {
+                                    const vId = Number(e.target.value);
+                                    setSelectedByOption(prev => ({ ...prev, [o.id]: vId ? [vId] : [] }));
+                                  }}
+                                >
+                                  <option value="">Selecciona…</option>
+                                  {vals.map(v => (
+                                    <option key={v.id} value={v.id}>{v.value}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          }
+                          if (o.type === 'multiselect') {
+                            return (
+                              <div className="space-y-1">
+                                <label className="text-sm text-secondary">{o.name}{o.required ? ' *' : ''}</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {vals.map(v => {
+                                    const checked = (selectedByOption[o.id] || []).includes(v.id);
+                                    return (
+                                      <label key={v.id} className="inline-flex items-center gap-2 text-sm">
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={(e) => {
+                                            setSelectedByOption(prev => {
+                                              const current = new Set(prev[o.id] || []);
+                                              if (e.target.checked) current.add(v.id); else current.delete(v.id);
+                                              return { ...prev, [o.id]: Array.from(current) };
+                                            });
+                                          }}
+                                        /> {v.value}
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                                {(o.min_select || o.max_select) && (
+                                  <div className="text-xs text-secondary">{o.min_select ? `Mín: ${o.min_select}` : ''} {o.max_select ? `Máx: ${o.max_select}` : ''}</div>
+                                )}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()
+                      ) : (
+                        (() => {
+                          const f = it.data as ProductCustomForm;
+                          if (f.input_type === 'text') {
+                            return (
+                              <div className="space-y-1">
+                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <input
+                                  className="w-full border rounded px-3 py-2"
+                                  type="text"
+                                  placeholder={f.help_text || ''}
+                                  maxLength={f.max_length ?? undefined}
+                                  value={String(customValues[f.id] ?? '')}
+                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                />
+                              </div>
+                            );
+                          }
+                          if (f.input_type === 'textarea') {
+                            return (
+                              <div className="space-y-1">
+                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <textarea
+                                  className="w-full border rounded px-3 py-2"
+                                  rows={3}
+                                  placeholder={f.help_text || ''}
+                                  maxLength={f.max_length ?? undefined}
+                                  value={String(customValues[f.id] ?? '')}
+                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                />
+                              </div>
+                            );
+                          }
+                          if (f.input_type === 'number') {
+                            return (
+                              <div className="space-y-1">
+                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <input
+                                  className="w-full border rounded px-3 py-2"
+                                  type="number"
+                                  placeholder={f.help_text || ''}
+                                  value={customValues[f.id] === undefined ? '' : String(customValues[f.id])}
+                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value === '' ? '' : Number(e.target.value) }))}
+                                />
+                              </div>
+                            );
+                          }
+                          if (f.input_type === 'boolean') {
+                            return (
+                              <label className="inline-flex items-center gap-2 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(customValues[f.id] ?? false)}
+                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.checked }))}
+                                /> {f.label}{f.required ? ' *' : ''}
+                              </label>
+                            );
+                          }
+                          return null;
+                        })()
+                      )}
+                    </div>
+                  ))}
+                </div>
+                )}
               </div>
             )}
 

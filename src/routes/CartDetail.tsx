@@ -3,14 +3,20 @@ import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { Modal } from '../components/Modal';
 import { useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function CartDetail() {
   const { entrepreneurshipId } = useParams();
   const navigate = useNavigate();
-  const { groups, updateQty, removeItem, placeOrder, isPlaced } = useCart();
+  const { groups, updateQty, removeItem, placeOrder } = useCart();
   const [orderOpen, setOrderOpen] = useState(false);
+  const { user } = useAuth();
 
-  const group = useMemo(() => groups.find(g => g.entrepreneurshipId === entrepreneurshipId), [groups, entrepreneurshipId]);
+  const group = useMemo(() => {
+    const draft = groups.find(g => g.entrepreneurshipId === entrepreneurshipId && g.status === 'draft');
+    if (draft) return draft;
+    return groups.find(g => g.entrepreneurshipId === entrepreneurshipId) || null;
+  }, [groups, entrepreneurshipId]);
 
   if (!group) {
     return (
@@ -25,7 +31,7 @@ export default function CartDetail() {
   }
 
   const handlePlaceOrder = async () => {
-    await placeOrder(group.entrepreneurshipId);
+    await placeOrder(group.entrepreneurshipId, Number(user?.id));
     setOrderOpen(true);
   };
 
@@ -37,7 +43,7 @@ export default function CartDetail() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold text-primary">Carrito de {group.entrepreneurshipName}</h1>
-            {isPlaced(group.entrepreneurshipId) && (
+            {group.status === 'requested' && (
               <span className="text-xs text-brand italic">pedido realizado</span>
             )}
           </div>
@@ -52,7 +58,7 @@ export default function CartDetail() {
                 <p className="text-sm text-secondary">₡{item.price.toLocaleString('es-CR')}</p>
               </div>
 
-              {isPlaced(group.entrepreneurshipId) ? (
+              {group.status === 'requested' ? (
                 <div className="flex items-center gap-2">
                   <span className="w-8 text-center">{item.quantity}</span>
                 </div>
@@ -78,7 +84,7 @@ export default function CartDetail() {
 
               <div className="text-right">
                 <p className="text-primary font-medium">₡{(item.price * item.quantity).toLocaleString('es-CR')}</p>
-                {!isPlaced(group.entrepreneurshipId) && (
+                {group.status !== 'requested' && (
                   <button
                     className="text-xs text-red-600 hover:underline mt-1"
                     onClick={() => removeItem(group.entrepreneurshipId, item.productId)}
@@ -97,7 +103,7 @@ export default function CartDetail() {
         </div>
 
         <div className="flex justify-end mt-6">
-          {isPlaced(group.entrepreneurshipId) ? (
+          {group.status === 'requested' ? (
             <button
               // TODO: preparar ruta real de contacto con el emprendedor
               onClick={() => {
