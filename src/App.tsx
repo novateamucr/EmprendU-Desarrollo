@@ -39,6 +39,7 @@ import Dashboard from './routes/entrepreneur/Dashboard';
 import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
 import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
+import EditProductPage from './routes/entrepreneur/inventory/EditProductPage';
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,8 @@ function App() {
                       <Route path="business/setup" element={<BusinessSetup />} />
                       <Route path="inventory" element={<InventoryPage />} />
                     </Route>
+                    {/* Edit product route in entrepreneur panel */}
+                    <Route path="/emprendimientos/:businessId/productos/:productId/editar" element={<EditProductPage />} />
                   </Route>
                 </Route>
 

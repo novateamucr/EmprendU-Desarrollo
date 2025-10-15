@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
+import ChannelsEditor from './entrepreneur/components/ChannelsEditor';
 import { entrepreneurshipApi } from '../services/entrepreneurshipService';
 import { userApi, User } from '../services/userService';
 import { toast } from 'react-hot-toast';
@@ -387,6 +388,24 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
           </div>
         </form>
       </Card>
+      {/* Redes y contactos (Admin) */}
+      <div className="mt-8">
+        <Card className="p-6">
+          {isEditMode && (formData.id || id) ? (
+            <ChannelsEditor entrepreneurshipId={Number(formData.id || id)} />
+          ) : (
+            <div className="space-y-2">
+              <div>
+                <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
+                <p className="text-sm text-muted-foreground">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
+              </div>
+              <div className="p-4 rounded border bg-gray-50 text-sm text-gray-600">
+                Una vez crees el emprendimiento, podrás añadir WhatsApp, Teléfono, Maps, Sitio web, Email y más.
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

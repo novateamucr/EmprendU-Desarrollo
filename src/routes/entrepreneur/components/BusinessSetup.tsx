@@ -5,16 +5,16 @@ import { Button } from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Card } from '../../../components/ui/Card';
-import { entrepreneurshipApi } from '../../../services/entrepreneurshipService';
+import { entrepreneurshipApi, categoryApi } from '../../../services/entrepreneurshipService';
+import ChannelsEditor from './ChannelsEditor';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 
 interface Category {
   id: number;
   nombre: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Form data interface matching API requirements
@@ -33,8 +33,6 @@ interface BusinessSetupProps {
   onCancel?: () => void;
 }
 
-// API base URL
-const API_URL = 'http://emprendu-backend.test/api';
 
 // Categories will be loaded from the API
 
@@ -59,13 +57,17 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const businessId = businessIdFromQuery || id || formData.id;
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   // Load categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get<Category[]>(`${API_URL}/categories`);
-        setCategories(response.data);
+        const data = await categoryApi.getAll();
+        // map to expected shape {id, nombre}
+        const normalized = data.map((c: any) => ({ id: c.id, nombre: c.nombre ?? c.name ?? c.label ?? 'Categoría' }));
+        setCategories(normalized as Category[]);
       } catch (error) {
         console.error('Error fetching categories:', error);
         toast.error('No se pudieron cargar las categorías');
@@ -132,86 +134,58 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
     
     if (!formData.category) {
       setError('Por favor selecciona una categoría');
-      return;
     }
     
     try {
       setIsLoading(true);
       setError(null);
-      
+
       if (!user?.id) {
         throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
       }
-  
-      // Get the business ID from either the query param or the form data
-      const businessId = businessIdFromQuery || id || formData.id;
-      
-      // Prepare the data to be sent
-      const requestData = {
-        name: formData.name,
-        description: formData.description || null,
-        category_id: formData.category,  // Changed from 'category' to 'category_id'
-        // For new records only
-        ...(!isEditMode && { user_id: user.id }),
-        image_url: null
-      };
-  
-      let response: Response;
+
+      const currentBusinessId = businessIdFromQuery || id || formData.id;
       let result: any;
-  
-      if (isEditMode && businessId) {
-        // Update existing business
-        response = await fetch(`${API_URL}/entrepreneurships/${businessId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(requestData)
-        });
+
+      if (isEditMode && currentBusinessId) {
+        // Actualizar
+        result = await entrepreneurshipApi.update(String(currentBusinessId), {
+          name: formData.name,
+          description: formData.description || '',
+          category: Number(formData.category),
+          image_url: null as any,
+        } as any);
       } else {
-        // Create new business
-        response = await fetch(`${API_URL}/entrepreneurships`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(requestData)
-        });
+        // Crear
+        result = await entrepreneurshipApi.create({
+          // campos mínimos usados por el servicio (se enviará como FormData)
+          name: formData.name,
+          description: formData.description,
+          category: Number(formData.category) as any,
+          image_url: (formData.image_url || '') as any,
+          user_id: user.id as any,
+          // completar para satisfacer el tipo local, aunque el backend no los requiere
+          created_at: '' as any,
+          updated_at: '' as any,
+          owner: undefined as any,
+          category_relation: undefined as any,
+          products: [] as any,
+        } as any);
       }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Error al ${isEditMode ? 'actualizar' : 'crear'} el emprendimiento`);
-      }
-      
-      result = await response.json();
-      
-      if (!result || !result.id) {
-        throw new Error('La API no devolvió una respuesta válida.');
-      }
-  
-      toast.success(`✅ Emprendimiento ${isEditMode ? 'actualizado' : 'creado'} exitosamente`, {
+
+      toast.success(isEditMode ? 'Emprendimiento actualizado' : 'Emprendimiento creado', {
         duration: 3000,
         position: 'top-center',
-        style: {
-          background: '#10B981',
-          color: '#fff',
-          padding: '16px',
-          borderRadius: '8px',
-        },
+        style: { background: '#10B981', color: '#fff', padding: '16px', borderRadius: '8px' },
       });
-  
-      // Call success callback if provided
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        // Default navigation if no callback provided
-        navigate('/entrepreneur/businesses');
+
+      if (!isEditMode) {
+        navigate(`/entrepreneur/business/setup?businessId=${result.id}`);
+        return;
       }
+
+      // Mostrar confirmación para salir del editor
+      setShowExitConfirm(true);
     } catch (err: any) {
       console.error('Error saving business:', err);
       const errorMessage = err.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
@@ -240,16 +214,21 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">
-          {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
-        </h1>
-        <p className="text-muted-foreground">
-          {isEditMode
-            ? 'Actualiza la información de tu emprendimiento.'
-            : 'Completa la información básica para crear un nuevo emprendimiento.'}
-        </p>
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">
+            {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditMode
+              ? 'Actualiza la información de tu emprendimiento.'
+              : 'Completa la información básica para crear un nuevo emprendimiento.'}
+          </p>
+        </div>
+        <Button type="button" onClick={() => navigate('/entrepreneur/businesses')}>
+          Listo
+        </Button>
       </div>
 
       <Card className="p-6">
@@ -336,6 +315,43 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
           </div>
         </form>
       </Card>
+
+      <div className="mt-8">
+        <Card className="p-6">
+          {businessId ? (
+            <ChannelsEditor entrepreneurshipId={Number(businessId)} />
+          ) : (
+            <div className="space-y-2">
+              <div>
+                <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
+                <p className="text-sm text-muted-foreground">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
+              </div>
+              <div className="p-4 rounded border bg-gray-50 text-sm text-gray-600">
+                Una vez crees el emprendimiento, podrás añadir WhatsApp, Teléfono, Maps, Sitio web, Email y más.
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Confirmación para salir del editor tras actualizar */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowExitConfirm(false)} />
+          <div className="relative z-10 bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <h3 className="text-lg font-semibold mb-2">¿Quieres salir del editar perfil?</h3>
+            <p className="text-sm text-muted-foreground mb-4">Puedes seguir editando o volver a tus emprendimientos.</p>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowExitConfirm(false)}>
+                Seguir editando
+              </Button>
+              <Button type="button" onClick={() => navigate('/entrepreneur/businesses')}>
+                Sí
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
