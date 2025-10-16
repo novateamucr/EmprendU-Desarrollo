@@ -34,4 +34,9 @@ class Entrepreneurship extends Model
     {
         return $this->hasMany(UserFavorite::class);
     }
+
+    public function channels()
+    {
+        return $this->hasMany(EntrepreneurshipChannel::class);
+    }
 }
