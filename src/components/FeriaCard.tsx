@@ -18,6 +18,8 @@ export function FeriaCard(props: FeriaCardProps) {
         alt={props.title}
       />
 
+      
+
      
       <div className="p-4">
        
