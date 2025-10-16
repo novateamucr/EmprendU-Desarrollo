@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Entrepreneurship;
+use Illuminate\Support\Facades\DB;
+use Throwable;
+use Illuminate\Support\Facades\Schema;
 
 class EntrepreneurshipController extends Controller
 {
@@ -66,7 +69,61 @@ class EntrepreneurshipController extends Controller
 
     public function destroy(Entrepreneurship $entrepreneurship)
     {
-        $entrepreneurship->delete();
-        return response()->json(['message' => 'Deleted']);
+        try {
+            DB::beginTransaction();
+
+            // Remove or detach related records to avoid FK issues
+            // Channels (hasMany) – soft delete supported
+            if (method_exists($entrepreneurship, 'channels')) {
+                $rel = $entrepreneurship->channels();
+                $table = $rel->getRelated()->getTable();
+                if (Schema::hasTable($table)) {
+                    $rel->delete();
+                }
+            }
+
+            // Products (hasMany)
+            if (method_exists($entrepreneurship, 'products')) {
+                $rel = $entrepreneurship->products();
+                $table = $rel->getRelated()->getTable();
+                if (Schema::hasTable($table)) {
+                    $rel->delete();
+                }
+            }
+
+            // Favorites (hasMany)
+            if (method_exists($entrepreneurship, 'favorites')) {
+                $rel = $entrepreneurship->favorites();
+                $table = $rel->getRelated()->getTable();
+                if (Schema::hasTable($table)) {
+                    $rel->delete();
+                }
+            }
+
+            // Fairs (belongsToMany) – detach pivot
+            if (method_exists($entrepreneurship, 'fairs')) {
+                $rel = $entrepreneurship->fairs();
+                // for belongsToMany, table existence can be on pivot
+                $pivot = $rel->getTable();
+                if (Schema::hasTable($pivot)) {
+                    $rel->detach();
+                }
+            }
+
+            $entrepreneurship->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Deleted']);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            \Log::error('Failed to delete entrepreneurship', [
+                'entrepreneurship_id' => $entrepreneurship->id,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'message' => 'No se pudo eliminar el emprendimiento. Verifique relaciones asociadas.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
