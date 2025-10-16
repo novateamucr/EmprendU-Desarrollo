@@ -25,7 +25,7 @@ export default function Cart() {
   if (!groups.length) {
     return (
       <Layout>
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="w-full max-w-4xl mx-auto p-6 mt-10">
           <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <ShoppingBag className="w-6 h-6" />
             Carrito de pedidos
@@ -70,7 +70,7 @@ export default function Cart() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="w-full max-w-4xl mx-auto p-6 mt-10">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <ShoppingBag className="w-6 h-6" />
           <span>Carrito de pedidos</span>
@@ -106,7 +106,7 @@ export default function Cart() {
               </div>
             )}
 
-            <div className="bg-white rounded-lg shadow-sm divide-y">
+            <div className="bg-white rounded-lg shadow-sm divide-y ">
               {group.items.map((item) => (
                 <div 
                   key={item.productId} 
@@ -171,7 +171,7 @@ export default function Cart() {
                 </div>
               ))}
 
-              <div className="p-4 flex justify-between items-center border-t">
+              <div className="p-4 flex justify-between items-center border-t ">
                 <div className="text-sm text-gray-600">
                   {group.items.length} {group.items.length === 1 ? 'producto' : 'productos'} • Total:
                   <span className="font-semibold ml-1">

@@ -155,7 +155,7 @@ export function FeedEmpredimientoDetalle() {
   if (!business) return <div className="text-center py-8 text-gray-500">Emprendimiento no encontrado.</div>;
 
   return (
-   <div className="w-full px-32">
+   <div className="w-full px-32 mt-20">
   <div className="w-full">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-6">
@@ -282,7 +282,7 @@ export function FeedEmpredimientoDetalle() {
         </div>
 
         {filteredPrice.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPrice.map((product: any) => (
 
               <Link key={product.id} to={`/product/${product.id}`} className="block">
