@@ -89,41 +89,133 @@ export const getProduct = async (id: number): Promise<Product> => {
 
 // Create a new product
 // POST /api/products
-export const createProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> => {
+// Create a new product
+// POST /api/products
+export const createProduct = async (productData: {
+  name: string;
+  description: string;
+  price: number;
+  category_id: number;
+  entrepreneurship_id: number;
+  long_description?: string;
+  image: File;
+}): Promise<Product> => {
+  const formData = new FormData();
+  
+  // Append all fields to formData
+  formData.append('name', productData.name);
+  formData.append('description', productData.description);
+  formData.append('price', productData.price.toString());
+  formData.append('category_id', productData.category_id.toString());
+  formData.append('entrepreneurship_id', productData.entrepreneurship_id.toString());
+  
+  if (productData.long_description) {
+    formData.append('long_description', productData.long_description);
+  }
+  
+  // Append the image file
+  formData.append('image', productData.image);
+
   try {
-    const response = await axios.post(`${API_URL}/products`, {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      image_url: productData.image_url,
-      entrepreneurship_id: productData.entrepreneurship_id
+    const response = await axios.post(`${API_URL}/products`, formData, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      },
     });
+
     return response.data.data;
   } catch (error) {
     console.error('Error creating product:', error);
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // Handle validation errors
+        if (error.response.status === 422 && error.response.data.errors) {
+          throw new Error(
+            Object.entries(error.response.data.errors)
+              .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+              .join('\n')
+          );
+        }
+        throw new Error(error.response.data.message || 'Error creating product');
+      }
+      throw new Error(error.message || 'Network error while creating product');
+    }
     throw error;
   }
 };
 
-// Update a product
-// PUT /api/products/{product}
-export const updateProduct = async (id: number, productData: Partial<Product>): Promise<Product> => {
+// In productService.ts - updateProduct function
+export const updateProduct = async (
+  id: number,
+  productData: Partial<Product> & { image?: File }
+): Promise<Product> => {
+  const formData = new FormData();
+  
+  // Add _method=PUT for Laravel to handle the request correctly
+  formData.append('_method', 'PUT');
+  
+  // Append all fields to formData if they exist
+  formData.append('name', productData.name || '');
+  formData.append('description', productData.description || '');
+  formData.append('price', productData.price?.toString() || '0');
+  formData.append('category_id', '1'); // Default category
+  formData.append('entrepreneurship_id', productData.entrepreneurship_id?.toString() || '');
+  
+  if (productData.long_description) {
+    formData.append('long_description', productData.long_description);
+  }
+  
+  // Handle image - only append if it's a File object
+  if (productData.image !== undefined) {
+    if (productData.image instanceof File) {
+      formData.append('image', productData.image);
+    }
+    // If image is explicitly set to null, we need to remove it
+    else if (productData.image === null) {
+      formData.append('remove_image', '1');
+    }
+  } else if (productData.image_url !== undefined) {
+    formData.append('image_url', productData.image_url || '');
+  }
+
   try {
-    const response = await axios.put(`${API_URL}/products/${id}`, {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      image_url: productData.image_url,
-      // Don't include entrepreneurship_id in update to prevent changing ownership
-    }, {
+    // Use POST instead of PUT since we're using _method=PUT
+    const response = await axios.post(`${API_URL}/products/${id}`, formData, {
       headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-      }
+      },
     });
-    return response.data.data;
+
+    return response.data.product || response.data;
+
   } catch (error) {
     console.error(`Error updating product ${id}:`, error);
-    throw error;
+    
+    if (axios.isAxiosError(error)) {
+      // Handle validation errors (422)
+      if (error.response?.status === 422) {
+        const errorMessage = error.response.data?.message || 'Validation error';
+        const validationErrors = error.response.data?.errors 
+          ? Object.entries(error.response.data.errors)
+              .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+              .join('\n')
+          : errorMessage;
+        
+        throw new Error(validationErrors);
+      }
+      
+      // Handle other API errors
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    // Handle network errors or other unexpected errors
+    throw new Error(error instanceof Error ? error.message : 'Failed to update product');
   }
 };
 
