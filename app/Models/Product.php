@@ -14,4 +14,14 @@ class Product extends Model
     {
         return $this->belongsTo(Entrepreneurship::class);
     }
+
+    public function options()
+    {
+        return $this->hasMany(ProductOption::class)->orderBy('display_order');
+    }
+
+    public function customForms()
+    {
+        return $this->hasMany(ProductCustomForm::class)->orderBy('display_order');
+    }
 }
