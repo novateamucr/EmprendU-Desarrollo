@@ -1,5 +1,5 @@
 import { Search } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { entrepreneurshipApi, Entrepreneurship, categoryApi } from '../services/entrepreneurshipService';
 import { ProductCard } from '../components/ProductCard';
@@ -38,10 +38,21 @@ export function FeedEmpredimientoDetalle() {
   const { token, user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [averageRating, setAverageRating] = useState<number | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const commentCount = useMemo(() => reviews.filter(r => (r.review ?? '').trim() !== '').length, [reviews]);
+  const commentedReviews = reviews.filter(r => (r.review ?? '').trim() !== '');
   const [sortOrder, setSortOrder] = useState("none");
 
-
+  type Review = {
+    id: number;
+    rating: number;
+    review: string | null;
+    user_id: number;
+    entrepreneurship_id: number;
+    created_at: string;
+    updated_at: string;
+    user?: { id: number; name: string };
+  };
 
   //Buscador y filtros
   const filteredPrice = (business?.products || [])
@@ -92,24 +103,32 @@ export function FeedEmpredimientoDetalle() {
   };
 
   const fetchReviews = async () => {
-    if (!id) return; // usar id del params
-    try {
-      const res = await fetch(`http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Error al obtener reviews");
-      const data = await res.json();
-      setReviews(data); // <--- guarda todos los reviews
+    if (!id) return;
 
-      if (data.length > 0) {
-        const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(
+        `http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`,
+        { headers }
+      );
+
+      if (!res.ok) throw new Error("Error al obtener reviews");
+
+      const list: Review[] = await res.json(); // tu API devuelve un array plano
+
+      setReviews(list);
+
+      if (list.length > 0) {
+        const avg = list.reduce((acc, r) => acc + Number(r.rating || 0), 0) / list.length;
         setAverageRating(avg);
       } else {
         setAverageRating(null);
       }
-    }
-    catch (err) {
+    } catch (err) {
       console.error("Error cargando reviews:", err);
+      setReviews([]);
       setAverageRating(null);
     }
   };
@@ -170,26 +189,26 @@ export function FeedEmpredimientoDetalle() {
                 {business.category_relation?.nombre || 'General'}
               </span>
             </div>
-                     <div className="flex flex-wrap justify-center gap-8">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <div key={star} className="relative group">
-                    <span
-                      className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
-                    >
-                      ★
-                    </span>
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black p-3 text-xs leading-5 rounded whitespace-wrap">
-                     ¡Realiza un pedido para calificar este emprendimiento!
-                    </div>
+            <div className="flex flex-wrap justify-center gap-8">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <div key={star} className="relative group">
+                  <span
+                    className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+                  >
+                    ★
+                  </span>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black p-3 text-xs leading-5 rounded whitespace-wrap">
+                    ¡Realiza un pedido para calificar este emprendimiento!
                   </div>
-                ))}
-              </div>
-              {averageRating && (
-                <p className="text-sm text-gray-500 mt-1">
-                  {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
-                </p>
-              )}
+                </div>
+              ))}
+            </div>
+            {averageRating && (
+              <p className="text-sm text-gray-500 mt-1">
+                {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
+              </p>
+            )}
             <Btn
               style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
               key="abrirPopup"
@@ -317,6 +336,50 @@ export function FeedEmpredimientoDetalle() {
           </div>
         )}
 
+       {averageRating !== null && (
+  <div className=" mt-20 pb-4 flex flex-wrap justify-center gap-8 items-center">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <div key={star} className="relative group">
+        <span
+          className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+        >
+          ★
+        </span>
+      </div>
+    ))}
+    {averageRating && (
+      <p className="text-2xl  mt-1 flex items-center gap-2">
+        {averageRating.toFixed(1)}{" "}
+        <p className='text-xs text-gray-500'>
+          {reviews.length} calificaciones - {commentCount} comentarios
+        </p>
+      </p>
+    )}
+  </div>
+)}
+          
+        </div>
+          <h1 className="text-2xl font-bold pb-8 border-b-2">Comentarios</h1>
+
+        <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500">Todavía no hay comentarios.</p>)}
+          {commentedReviews.map(r => (
+            <div key={r.id} className="border-b pb-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{r.user?.name}</span>
+                  <div className="flex text-yellow-400">
+                    {'★'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}
+                    {'☆'.repeat(5 - Math.max(0, Math.min(5, Number(r.rating) || 0)))}
+                  </div>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {new Date(r.created_at).toLocaleString()}
+                </span>
+
+              </div>
+              <p className="text-sm text-gray-700 mt-2">{r.review}</p>
+            </div>
+          ))}
 
         {/* Confirm remove favorite */}
         <Modal
@@ -353,7 +416,7 @@ export function FeedEmpredimientoDetalle() {
             </div>
           </div>
         </Modal>
-      <Footer />
+        <Footer />
       </div>
     </div>
   );

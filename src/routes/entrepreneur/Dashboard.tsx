@@ -15,8 +15,11 @@ import {
   PieChart,
   LineChart,
   Filter,
-  ChevronDown
+  ChevronDown, 
+  Info
 } from 'lucide-react';
+import { ModalAnimaciones } from '../../components/ui/ModalAnimaciones';
+import RealizarPedidoGif from '../../assets/CrearEmprendu.gif';
 
 // Lista de provincias de Costa Rica
 const PROVINCES = [
@@ -136,6 +139,7 @@ export default function Dashboard() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState<Province>('Todas');
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  const [showExtraModal, setShowExtraModal] = useState(false);
   
   // Mock customer data
   const [customers, setCustomers] = useState([
@@ -518,6 +522,14 @@ export default function Dashboard() {
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg">
             Crea tu primer emprendimiento para comenzar a vender productos y llegar a más clientes en nuestra plataforma.
           </p>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg">¿Cómo crear mi primer emprendimiento?</p>
+           <button
+              onClick={() => setShowExtraModal(true)}
+              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Abrir información"
+            >
+              <Info className="w-4 h-4 text-gray-600" />
+            </button>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
               <Link to="/entrepreneur/business/setup" className="flex items-center gap-2">
@@ -525,6 +537,34 @@ export default function Dashboard() {
                 Crear mi primer emprendimiento
               </Link>
             </Button>
+             <ModalAnimaciones
+                        isOpen={showExtraModal}
+                        onClose={() => setShowExtraModal(false)}
+                        title="¿Cómo agrego un emprendimiento?"
+                        pointerGifSrc={RealizarPedidoGif}
+                      >
+                        <div className="space-y-4 text-gray-700 text-sm">
+                          <div>
+                            <p className="font-semibold">Ingresa a Mis Emprendimientos</p>
+                            <p>Dirígete a la pestaña de Mis emprendimientos en la barra de navegación</p>
+                          </div>
+            
+                          <div>
+                            <p className="font-semibold">Ingresa al Dashboard</p>
+                            <p>Dirígete al Dashboard en la barra de navegación lateral</p>
+                          </div>
+            
+                          <div>
+                            <p className="font-semibold">Haz click en Crear mi primer emprendimiento</p>
+                            <p>Presiona el botón de Crear Mi primer emprendimiento</p>
+                          </div>
+            
+                          <div>
+                            <p className="font-semibold">Agregar los datos de tu emprendimiento</p>
+                            <p>Completa los datos solicitados, con el nombre de tu emprendimiento, la categoría de los productos que vendes, y una descripción del emprendimiento</p>
+                          </div>
+                        </div>
+                      </ModalAnimaciones>
             <Button asChild variant="outline" size="lg">
               <Link to="/home" className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
@@ -533,7 +573,7 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-      </div>
+      </div>      
     );
   }
   return (
