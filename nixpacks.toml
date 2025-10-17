@@ -9,5 +9,6 @@ nixPkgs = [
   "php82Extensions.zip",
   "php82Extensions.pdo",
   "php82Extensions.pdo_pgsql",
-  "php82Extensions.pgsql"
+  "php82Extensions.pgsql",
+  "nodejs-18_x"  # <- Added Node.js 18
 ]
