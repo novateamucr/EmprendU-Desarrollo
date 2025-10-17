@@ -3,7 +3,7 @@ import Footer from "@/components/footer/Footer";
 export default function ContactUs() {
   return (
     <div className="flex flex-col h-[95vh]">
-      <main className="flex-1 flex items-center justify-center mt-5" > 
+      <main className="flex-1 flex items-center justify-center mt-14 p-28" > 
         <div className="w-full mx-auto flex flex-col md:flex-row gap-6 md:gap-12 lg:gap-16 items-center">
           <div className="flex flex-col gap-2 w-full md:w-1/2">
             <h3 className="text-sm md:text-xl font-bold text-blue-400 leading-tight">CONTACTO</h3>
