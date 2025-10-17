@@ -60,6 +60,7 @@ export default function BusinessFeedbackTestPage() {
         <BusinessFeedbackPopup
           show={showPopup}
           title="¡Califica tu experiencia!"
+          entrepreneurshipName="Nombre del emprendimiento"
           imageUrl=""
           onSubmit={(rating: number, comments: string) => {
             submitReview(rating, comments);

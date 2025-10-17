@@ -26,6 +26,67 @@ import { Modal } from '../components/Modal';
 } from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
 import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
+import x from "../assets/x.svg";
+import insta from "../assets/instagram_icon.svg";
+import youtube from "../assets/youtube_icon.svg";
+import tiktok from "../assets/tiktok_icon.svg";
+
+export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
+  const { token } = useAuth();
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(
+          `http://emprendu-backend.test/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (!res.ok) throw new Error("Error al obtener reviews");
+
+        const data = await res.json();
+        setReviews(data);
+
+        if (data.length > 0) {
+          const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
+          setAverageRating(avg);
+        } else {
+          setAverageRating(null);
+        }
+      } catch (err) {
+        console.error("Error cargando reviews:", err);
+        setAverageRating(null);
+      }
+    };
+
+    if (entrepreneurshipId) {
+      fetchReviews();
+    }
+  }, [entrepreneurshipId, token]);
+
+  return (
+    <>
+      <div className="flex flex-wrap justify-center gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <div key={star} className="relative group">
+            <span
+              className={`text-sm ${
+                averageRating && star <= Math.round(averageRating)
+                  ? "text-yellow-500"
+                  : "text-gray-300"
+              }`}
+            >
+              ★
+            </span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 // Soft animations with Emotion
 const fadeInUp = keyframes`
@@ -559,8 +620,7 @@ export default function Home() {
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="text-lg font-semibold text-primary">{featured?.name || "Emprendimiento"}</h3>
                             <div className="flex items-center gap-1">
-                              <Star sx={{ fontSize: 16 }} className="text-amber-500" />
-                              <span className="text-sm text-secondary">-</span>
+                              <BusinessStars entrepreneurshipId={Number(featured.id)} />
                             </div>
                           </div>
                           <p className="text-secondary text-sm mb-3">
@@ -739,8 +799,7 @@ export default function Home() {
                             <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex items-center gap-1 text-secondary">
-                                <Star sx={{ fontSize: 14 }} className="text-amber-500" />
-                                <span className="text-xs">-</span>
+                                <BusinessStars entrepreneurshipId={Number(business.id)} />
                               </div>
                               <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
                                 {business.category_relation?.nombre || 'General'}
@@ -816,14 +875,26 @@ export default function Home() {
         </div>
         {/* Footer */}
         <footer
-          id="contacto"
-          className="bg-brand text-white py-6 mt-auto rounded-t-2xl"
-        >
-          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12">
-            <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-            <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+        id="contacto"
+        className="bg-brand text-white py-6 rounded-t-2xl"
+      >
+        <div className="items-center flex flex-col gap-4">
+          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12 border-b border-white pb-4  w-full">
+            <div className="flex align-middle items-center gap-6">
+              <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+              <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
+              <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+            </div>
+            <div className="flex gap-6">
+              <a href=""><img src={x} alt="x socials" className=" h-7" /></a>
+              <a href=""><img src={insta} alt="instagram" className=" h-8" /></a>
+              <a href=""><img src={youtube} alt="youtube" className=" h-7" /></a>
+              <a href=""><img src={tiktok} alt="" className=" h-7"/></a>
+            </div>    
           </div>
-        </footer>
+          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
+        </div>
+      </footer>
       </div>
       {/* Confirm remove favorite (Home) */}
       <Modal

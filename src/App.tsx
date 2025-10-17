@@ -39,6 +39,7 @@ import Dashboard from './routes/entrepreneur/Dashboard';
 import BusinessList from './routes/entrepreneur/components/BusinessList';
 import BusinessSetup from './routes/entrepreneur/components/BusinessSetup';
 import InventoryPage from './routes/entrepreneur/inventory/InventoryPage';
+import EditProductPage from './routes/entrepreneur/inventory/EditProductPage';
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,8 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/password-reset" element={<PwReset />} />
                 <Route path="/new-password" element={<NewPw />} />
+                <Route path="/FAQs" element={<FAQs />} />
+                <Route path="/contactUs" element={<ContactUs />} />
 
                 {/* Protected Routes */}
                 <Route element={
@@ -86,8 +89,7 @@ function App() {
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
-                  <Route path="/FAQs" element={<FAQs />} />
-                  <Route path="/contactUs" element={<ContactUs />} />
+
                   
                   {/* Regular User Routes (role 1) */}
                   <Route element={<RoleBasedRoute allowedRoles={[1, 2, 3]}> <Outlet /> </RoleBasedRoute>}>
@@ -119,6 +121,8 @@ function App() {
                       <Route path="business/setup" element={<BusinessSetup />} />
                       <Route path="inventory" element={<InventoryPage />} />
                     </Route>
+                    {/* Edit product route in entrepreneur panel */}
+                    <Route path="/emprendimientos/:businessId/productos/:productId/editar" element={<EditProductPage />} />
                   </Route>
                 </Route>
 

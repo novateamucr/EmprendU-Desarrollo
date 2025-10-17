@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import BusinessFeedbackPopup from '../components/ui/BusinessFeedback';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { Modal } from '../components/Modal';
 
 // Keep types in sync with MyOrders.tsx
 export type OrderStatus = 'pedido_solicitado' | 'pedido_aceptado' | 'pedido_completado' | 'pedido_calificado';
@@ -53,6 +55,8 @@ export default function MyOrderDetail() {
   const [showPopup, setShowPopup] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { token, user } = useAuth();
+  const { cancelOrder } = useCart();
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -175,10 +179,23 @@ export default function MyOrderDetail() {
             </div>
           )}
 
+          {order.status === 'pedido_solicitado' && String(order.id).startsWith('CART-') && (
+            <div className="pt-2">
+              <button
+                className="px-4 py-2 rounded-md border border-red-300 text-red-600 text-sm hover:bg-red-50"
+                onClick={() => setCancelOpen(true)}
+                disabled={submitting}
+              >
+                Cancelar pedido
+              </button>
+            </div>
+          )}
+
           {showPopup && (
             <BusinessFeedbackPopup
               show={showPopup}
               title="¡Califica tu experiencia!"
+              entrepreneurshipName={order.entrepreneurshipName}
               imageUrl={''}
               onSubmit={async (rating: number, comments: string) => {
                 if (!order) return;
@@ -218,6 +235,41 @@ export default function MyOrderDetail() {
 
         </div>
       </div>
+
+      <Modal
+        isOpen={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        title="Cancelar pedido"
+        variant="warning"
+      >
+        <div className="space-y-3 text-secondary text-sm">
+          <p>¿Seguro que deseas cancelar este pedido? Esta acción eliminará el pedido de forma permanente.</p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setCancelOpen(false)}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              No, volver
+            </button>
+            <button
+              onClick={async () => {
+                if (!order) return;
+                const groupId = String(order.id).replace('CART-', '');
+                await cancelOrder(groupId);
+                // Remove from local storage history as well
+                const updated = orders.filter(o => o.id !== order.id);
+                setOrders(updated);
+                localStorage.setItem('mock_orders_history', JSON.stringify(updated));
+                setCancelOpen(false);
+                navigate('/orders');
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Sí, cancelar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

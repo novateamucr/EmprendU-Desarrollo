@@ -52,11 +52,34 @@ export const getProducts = async (): Promise<Product[]> => {
   }
 };
 
+/**
+ * Fetch all products across all pagination pages
+ */
+export const getAllProducts = async (): Promise<Product[]> => {
+  const results: Product[] = [];
+  try {
+    let url: string | null = `${API_URL}/products`;
+    while (url) {
+      const response: { data: PaginatedResponse<Product> } = await axios.get<PaginatedResponse<Product>>(url);
+      results.push(...(response.data.data || []));
+      url = response.data.next_page_url;
+    }
+    return results;
+  } catch (error) {
+    console.error('Error fetching all products:', error);
+    throw error;
+  }
+};
+
 // Get a single product
 // GET /api/products/{product}
 export const getProduct = async (id: number): Promise<Product> => {
   try {
-    const response = await axios.get(`${API_URL}/products/${id}`);
+    const response = await axios.get(`${API_URL}/products/${id}` , {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      }
+    });
     return response.data.data;
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
@@ -92,6 +115,10 @@ export const updateProduct = async (id: number, productData: Partial<Product>): 
       price: productData.price,
       image_url: productData.image_url,
       // Don't include entrepreneurship_id in update to prevent changing ownership
+    }, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      }
     });
     return response.data.data;
   } catch (error) {
