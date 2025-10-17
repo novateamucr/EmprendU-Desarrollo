@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Entrepreneurship;
+use App\Services\OpenAIService;
+use App\Services\FileUploadService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -21,41 +25,226 @@ class ProductController extends Controller
         return response()->json($q->paginate($perPage));
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request, FileUploadService $fileUploadService)
+{
+    DB::beginTransaction();
+    try {
+        // Validate the request data
         $data = $request->validate([
-            'entrepreneurship_id' => 'required|exists:entrepreneurships,id',
             'name' => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'long_description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'image_url' => 'nullable|url|max:255',
-            'category_id' => 'nullable|integer|exists:entrepreneurship_categories,id',
+            'category_id' => 'required|exists:entrepreneurship_categories,id',
+            'entrepreneurship_id' => 'required|exists:entrepreneurships,id',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'long_description' => 'nullable|string',
         ]);
 
-        $product = Product::create($data);
-        return response()->json($product->load('entrepreneurship'), 201);
+        // Create the product first
+        $product = Product::create([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'long_description' => $data['long_description'] ?? null,
+            'price' => $data['price'],
+            'category_id' => $data['category_id'],
+            'entrepreneurship_id' => $data['entrepreneurship_id'],
+        ]);
+
+        // Handle the image upload
+        $imageUrl = $fileUploadService->upload(
+            $request->file('image'),
+            'products/' . $product->id
+        );
+
+        if (!$imageUrl) {
+            throw new \Exception('Failed to upload product image');
+        }
+
+        // Update the product with the image URL
+        $product->update(['image_url' => $imageUrl]);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Product created successfully',
+            'data' => $product->load('entrepreneurship'),
+            'image_url' => $imageUrl
+        ], 201);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        DB::rollBack();
+        return response()->json([
+            'message' => 'Validation error',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error creating product: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        // Clean up the product if it was created but the image upload failed
+        if (isset($product)) {
+            $product->delete();
+        }
+        
+        return response()->json([
+            'message' => 'Error creating product',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show(Product $product)
     {
         return response()->json($product->load('entrepreneurship'));
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product, FileUploadService $fileUploadService)
     {
-        $data = $request->validate([
-            'entrepreneurship_id' => 'sometimes|required|exists:entrepreneurships,id',
-            'name' => 'sometimes|required|string|max:150',
-            'description' => 'nullable|string',
-            'long_description' => 'nullable|string',
-            'price' => 'sometimes|required|numeric|min:0',
-            'image_url' => 'nullable|url|max:255',
-            'category_id' => 'nullable|integer|exists:entrepreneurship_categories,id',
-        ]);
+        DB::beginTransaction();
+        
+        try {
+            // Log the raw request data for debugging
+            \Log::info('=== RAW REQUEST DATA ===', [
+                'all' => $request->all(),
+                'files' => $request->allFiles(),
+                'has_file' => $request->hasFile('image'),
+                'headers' => $request->headers->all()
+            ]);
 
-        $product->update($data);
-        return response()->json($product->fresh()->load('entrepreneurship'));
+            // Get all input data including files
+            $input = $request->all();
+            
+            // Handle form data for file uploads
+            if ($request->hasFile('image')) {
+                $input['image'] = $request->file('image');
+            }
+
+            // Validate the request data
+            $rules = [
+                'name' => 'sometimes|required|string|max:150',
+                'description' => 'sometimes|required|string',
+                'price' => 'sometimes|required|numeric|min:0',
+                'category_id' => 'sometimes|required|exists:entrepreneurship_categories,id',
+                'entrepreneurship_id' => 'sometimes|required|exists:entrepreneurships,id',
+                'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'long_description' => 'nullable|string',
+                'image_url' => 'sometimes|string|nullable|url'
+            ];
+
+            $validator = \Validator::make($input, $rules);
+
+            if ($validator->fails()) {
+                throw new \Illuminate\Validation\ValidationException($validator);
+            }
+
+            $validated = $validator->validated();
+            $changesDetected = false;
+            $updateData = [];
+
+            // Handle numeric conversions
+            if (array_key_exists('price', $validated)) {
+                $validated['price'] = (float)$validated['price'];
+            }
+            if (array_key_exists('category_id', $validated)) {
+                $validated['category_id'] = (int)$validated['category_id'];
+            }
+            if (array_key_exists('entrepreneurship_id', $validated)) {
+                $validated['entrepreneurship_id'] = (int)$validated['entrepreneurship_id'];
+            }
+
+            // Check for changes in regular fields
+            $fieldsToCheck = ['name', 'description', 'price', 'category_id', 'entrepreneurship_id', 'long_description'];
+            foreach ($fieldsToCheck as $field) {
+                if (array_key_exists($field, $validated)) {
+                    $newValue = $validated[$field];
+                    $currentValue = $product->$field;
+                    
+                    // Convert both to string for comparison to handle different types
+                    if ((string)$newValue !== (string)$currentValue) {
+                        $updateData[$field] = $newValue;
+                        $changesDetected = true;
+                    }
+                }
+            }
+
+            // Handle image upload if a new image was provided
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                
+                if ($file->isValid()) {
+                    // Delete old image if exists
+                    if ($product->image_url) {
+                        $fileUploadService->delete($product->image_url);
+                    }
+
+                    // Upload new image
+                    $imageUrl = $fileUploadService->upload(
+                        $file,
+                        'products/' . $product->id,
+                        'public'
+                    );
+
+                    if (!$imageUrl) {
+                        throw new \Exception('Failed to upload product image');
+                    }
+
+                    $updateData['image_url'] = $imageUrl;
+                    $changesDetected = true;
+                } else {
+                    throw new \Exception('Invalid file: ' . $file->getErrorMessage());
+                }
+            } elseif (array_key_exists('image_url', $validated) && $validated['image_url'] !== $product->image_url) {
+                // Handle direct image_url update or removal
+                $updateData['image_url'] = $validated['image_url'] ?: null;
+                $changesDetected = true;
+            }
+
+            // Log the changes
+            \Log::info('=== UPDATE DETAILS ===', [
+                'changes_detected' => $changesDetected,
+                'update_data' => $updateData,
+                'current_product' => $product->toArray()
+            ]);
+
+            if (!$changesDetected) {
+                return response()->json([
+                    'message' => 'No changes detected',
+                    'product' => $product->fresh()
+                ], 200);
+            }
+
+            // Update the product with the changed data
+            $product->update($updateData);
+            
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Product updated successfully',
+                'product' => $product->fresh()->load('category')
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating product', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['image']),
+                'files' => $request->allFiles()
+            ]);
+
+            return response()->json([
+                'message' => 'Error updating product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Product $product)
@@ -63,4 +252,5 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['message' => 'Deleted']);
     }
+
 }

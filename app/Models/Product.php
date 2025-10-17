@@ -15,6 +15,11 @@ class Product extends Model
         return $this->belongsTo(Entrepreneurship::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(EntrepreneurshipCategory::class, 'category_id');
+    }
+
     public function options()
     {
         return $this->hasMany(ProductOption::class)->orderBy('display_order');
