@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProductOptionController;
 use App\Http\Controllers\Api\ProductOptionValueController;
 use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
+use App\Http\Controllers\InscripcionController;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
@@ -69,3 +70,5 @@ Route::post('orders/{order}/items', [OrdersController::class, 'addItem']);
 Route::patch('orders/{order}/status', [OrdersController::class, 'updateStatus']);
 Route::delete('orders/{order}', [OrdersController::class, 'destroy']);
 
+Route::post('/inscripciones', [InscripcionController::class, 'store']);
+Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
