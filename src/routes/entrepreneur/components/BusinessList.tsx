@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye, Info } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
@@ -9,6 +9,9 @@ import { Skeleton, SkeletonBusinessList } from '../../../components/ui/Skeleton'
 import { entrepreneurshipApi, Entrepreneurship } from '../../../services/entrepreneurshipService';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
+
+import { ModalAnimaciones } from '../../../components/ui/ModalAnimaciones';
+import RealizarPedidoGif from '../../../assets/AddProduct2.gif';
 
 // Enhanced Business type with all relationships
 type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
@@ -48,6 +51,7 @@ export default function BusinessList() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showExtraModal, setShowExtraModal] = useState(false);
 
   const loadBusinesses = async () => {
     try {
@@ -167,8 +171,38 @@ export default function BusinessList() {
             Nuevo Emprendimiento
           </Link>
         </Button>
+         <button
+              onClick={() => setShowExtraModal(true)}
+              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Abrir información"
+            >
+              <Info className="w-4 h-4 text-gray-600" />
+            </button>
       </div>
-      
+      <ModalAnimaciones
+            isOpen={showExtraModal}
+            onClose={() => setShowExtraModal(false)}
+            title="¿Cómo agrego productos?"
+            pointerGifSrc={RealizarPedidoGif}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Ingresa al Mis emprendimientos</p>
+                <p>Dirígete a Mis emprendimientos en la barra de navegación lateral</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Selecciona el ícono de ver productos </p>
+                <p>En el emprendimiento al que quieras agregarle productos, ingresa al ícono de Ver productos</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Agregar Productos</p>
+                <p>En el Inventario, haz click en Agregar Producto, y completa la información solicitada; la imagen del producto, su nombre, descripción y el precio, y luego guarda</p>
+              </div>
+            </div>
+          </ModalAnimaciones>
+          
       {businesses.length === 0 ? (
         <div className="container mx-auto px-4 py-12">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center max-w-3xl mx-auto">

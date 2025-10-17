@@ -52,10 +52,10 @@ export default function FAQ() {
   };
 
   return (
-    <div className="flex flex-col h-[95vh]">
+    <div className="flex flex-col h-[96vh] mt-6">
       <main className="flex-1">
         <div className="flex items-center justify-center mt-16 md:mt-0 h-full">
-          <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center mt-20">
+          <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center px-20 pt-10 mt-4">
             <div className="flex flex-col gap-3 p-6" style={{ minWidth: 260 }}>
               <h1 className="text-5xl md:text-6xl font-bold text-blue-400 leading-tight">
                 Preguntas
@@ -83,7 +83,7 @@ export default function FAQ() {
               category-scroll
             "
                 style={{
-                  height: containerHeight, // 4 tarjetas base visibles
+                  height: containerHeight, 
                   overscrollBehavior: "contain",
                 }}
               >
