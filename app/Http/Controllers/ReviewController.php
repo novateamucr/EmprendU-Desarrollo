@@ -18,7 +18,10 @@ class ReviewController extends Controller
         return response()->json(['message' => 'Falta el parámetro entrepreneurship_id'], 400);
     }
 
-    $reviews = Review::where('entrepreneurship_id', $entrepreneurshipId)->get();
+   $reviews = Review::with(['user:id,name']) // carga user con solo id y name
+    ->where('entrepreneurship_id', $entrepreneurshipId)
+    ->latest() 
+    ->get();
 
     return response()->json($reviews);
 }

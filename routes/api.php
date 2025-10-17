@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ProductOptionController;
 use App\Http\Controllers\Api\ProductOptionValueController;
 use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
+use App\Http\Controllers\InscripcionController;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
@@ -76,3 +77,6 @@ Route::post('assistant/chat', [AIAssistantController::class, 'chat'])->middlewar
 Route::post('assistant/virtual', [AIAssistantController::class, 'virtualAssistant'])->middleware('auth:api');
 Route::post('assistant/validate/entrepreneurship', [AIAssistantController::class, 'validateEntrepreneurship'])->middleware('auth:api');
 Route::post('assistant/validate/product', [AIAssistantController::class, 'validateProduct'])->middleware('auth:api');
+
+Route::post('/inscripciones', [InscripcionController::class, 'store']);
+Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
