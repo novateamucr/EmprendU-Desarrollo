@@ -10,17 +10,7 @@ nixPkgs = [
   "php82Extensions.pdo",
   "php82Extensions.pdo_pgsql",
   "php82Extensions.pgsql",
-  "nodejs-18_x"
+  "nodejs-18_x",
+   "nginx"
 ]
 
-[phases.build]
-commands = [
-  "composer install --no-dev --optimize-autoloader",
-  "npm ci",
-  "npm run build"
-]
-
-[phases.start]
-commands = [
-  "php artisan serve --host 0.0.0.0 --port $PORT"
-]
