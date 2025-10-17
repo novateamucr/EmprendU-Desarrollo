@@ -1,16 +1,15 @@
 [phases.setup]
 nixPkgs = [
-  "php82",
-  "php82Packages.composer",
-  "php82Extensions.mbstring",
-  "php82Extensions.tokenizer",
-  "php82Extensions.xml",
-  "php82Extensions.curl",
-  "php82Extensions.zip",
-  "php82Extensions.pdo",
-  "php82Extensions.pdo_pgsql",
-  "php82Extensions.pgsql",
+  "php81",
+  "php81Packages.composer",
+  "php81Extensions.mbstring",
+  "php81Extensions.tokenizer",
+  "php81Extensions.xml",
+  "php81Extensions.curl",
+  "php81Extensions.zip",
+  "php81Extensions.pdo",
+  "php81Extensions.pdo_mysql",  
+  "php81Extensions.mysqlnd",    
   "nodejs-18_x",
-   "nginx"
+  "nginx"
 ]
-
