@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, Plus, Minus } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, Info } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
-import { Modal } from '../components/Modal';
+import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
 import { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import RealizarPedidoGif from '../assets/RealizarPedido.gif';
 
 export default function Cart() {
   const { groups, placeOrder, isPlaced, removeItem, clearCart, updateQty, cancelOrder } = useCart();
@@ -14,6 +15,8 @@ export default function Cart() {
   const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [placingId, setPlacingId] = useState<string | null>(null);
   const [cancelGroupId, setCancelGroupId] = useState<string | null>(null);
+
+  const [showExtraModal, setShowExtraModal] = useState(false);
 
   const isProfileComplete = () => {
     return !!(user?.phone && user?.province && user?.canton && user?.district && user?.address);
@@ -30,6 +33,15 @@ export default function Cart() {
           <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <ShoppingBag className="w-6 h-6" />
             Carrito de pedidos
+
+            {/* Botón pequeño junto al título */}
+            <button
+              onClick={() => setShowExtraModal(true)}
+              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Abrir información"
+            >
+              <Info className="w-4 h-4 text-gray-600" />
+            </button>
           </h1>
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">Tu carrito está vacío</p>
@@ -40,6 +52,40 @@ export default function Cart() {
               Seguir comprando
             </button>
           </div>
+
+          <ModalAnimaciones
+            isOpen={showExtraModal}
+            onClose={() => setShowExtraModal(false)}
+            title="¿Cómo realizar un pedido?"
+            pointerGifSrc={RealizarPedidoGif}
+            notice={{
+              title: 'Completa la Información de tu perfil',
+              description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
+            }}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Agrega productos al carrito</p>
+                <p>Agrega productos al carrito para poder realizar un pedido</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">En el Carrito - Haz click en “Confirmar pedido”</p>
+                <p>En el carrito podrás ver los productos que agregaste al carrito</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Espera confirmación del emprendimiento</p>
+                <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Revisa el estado de tu pedido</p>
+                <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
+              </div>
+            </div>
+          </ModalAnimaciones>
+
         </div>
       </Layout>
     );
@@ -69,7 +115,17 @@ export default function Cart() {
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <ShoppingBag className="w-6 h-6" />
           <span>Carrito de pedidos</span>
+
+          {/* Botón pequeño junto al título */}
+          <button
+            onClick={() => setShowExtraModal(true)}
+            className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Abrir información"
+          >
+            <Info className="w-4 h-4 text-gray-600" />
+          </button>
         </h1>
+
         {groups.map((group) => (
           <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}` } className="mb-8">
             <div className="flex justify-between items-center mb-4">
@@ -103,8 +159,8 @@ export default function Cart() {
 
             <div className="bg-white rounded-lg shadow-sm divide-y ">
               {group.items.map((item) => (
-                <div 
-                  key={item.productId} 
+                <div
+                  key={item.productId}
                   className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/product/${item.productId}`)}
                 >
@@ -215,7 +271,8 @@ export default function Cart() {
           </div>
         ))}
 
-        <Modal
+        {/* Modal existente de recordatorio de perfil (usando ModalAnimaciones) */}
+        <ModalAnimaciones
           isOpen={showProfileReminder}
           onClose={() => setShowProfileReminder(false)}
           title="Información requerida"
@@ -246,7 +303,29 @@ export default function Cart() {
               </button>
             </div>
           </div>
-        </Modal>
+        </ModalAnimaciones>
+
+        {/* Modal extra (info) - reutilizado en la vista con contenido */}
+        <ModalAnimaciones
+          isOpen={showExtraModal}
+          onClose={() => setShowExtraModal(false)}
+          title="Información del carrito"
+          variant="info"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Aquí puedes mostrar detalles importantes, tips de compra o información extra para el usuario.
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowExtraModal(false)}
+                className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </ModalAnimaciones>
 
         <Modal
           isOpen={!!cancelGroupId}
@@ -277,7 +356,6 @@ export default function Cart() {
           </div>
         </Modal>
       </div>
-  </Layout >
-              
+    </Layout>
   );
 }
