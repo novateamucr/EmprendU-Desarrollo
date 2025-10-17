@@ -10,5 +10,17 @@ nixPkgs = [
   "php82Extensions.pdo",
   "php82Extensions.pdo_pgsql",
   "php82Extensions.pgsql",
-  "nodejs-18_x"  # <- Added Node.js 18
+  "nodejs-18_x"
+]
+
+[phases.build]
+commands = [
+  "composer install --no-dev --optimize-autoloader",
+  "npm ci",
+  "npm run build"
+]
+
+[phases.start]
+commands = [
+  "php artisan serve --host 0.0.0.0 --port $PORT"
 ]
