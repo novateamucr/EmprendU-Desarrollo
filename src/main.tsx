@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
+import 'react-toastify/dist/ReactToastify.css'
+import { ToastContainer } from 'react-toastify'
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MSW !== 'true') {
@@ -60,6 +62,7 @@ async function startApp() {
       <StrictMode>
         <BrowserRouter>
           <App />
+          <ToastContainer position="top-right" autoClose={3000} />
         </BrowserRouter>
       </StrictMode>,
     )

@@ -1,58 +1,68 @@
 import { PopupHeader } from './ui/PopupHeader';
+import { Entrepreneurship } from '../services/entrepreneurshipService';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface PopupEmprendimientosProps {
   onClose: () => void;
   onSiguiente: () => void;
+  entrepreneurships?: Entrepreneurship[];
+  selectedId?: number | null;
+  onSelect?: (id: number) => void;
+  loading?: boolean;
 }
 
-export function PopupEmprendimientos({ onClose, onSiguiente }: PopupEmprendimientosProps) {
+export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships = [], selectedId = null, onSelect, loading = false }: PopupEmprendimientosProps) {
+  const [localSelected, setLocalSelected] = useState<number | null>(selectedId ?? null);
+
+  useEffect(() => {
+    setLocalSelected(selectedId ?? null);
+  }, [selectedId]);
+
+  const handleChoose = (id: number) => {
+    setLocalSelected(id);
+    if (onSelect) onSelect(id);
+  };
+
+  
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg">
         <PopupHeader title="Selecciona tu emprendimiento" variant="help" />
 
         <div className="space-y-4">
-          <div>
-            <input type="radio" id="hasu1" name="emprendimiento" value="hasu1" className="hidden peer" />
-            <label htmlFor="hasu1"
-              className="flex items-center p-4 border rounded-xl cursor-pointer transition hover:shadow-md 
-                peer-checked:bg-gray-100 peer-checked:border-black"
-            >
-              <img src="img/Frame 11.jpg" alt="Logo Hasu" className="w-12 h-12 rounded-lg object-cover mr-4" />
-              <div>
-                <h3 className="font-semibold text-gray-900">Hasu</h3>
-                <p className="text-sm text-gray-500">Flores eternas y detalles</p>
-              </div>
-            </label>
-          </div>
+          {loading && (
+            <p className="text-sm text-gray-500">Cargando emprendimientos...</p>
+          )}
 
-          <div>
-            <input type="radio" id="hasu2" name="emprendimiento" value="hasu2" className="hidden peer" />
-            <label htmlFor="hasu2"
-              className="flex items-center p-4 border rounded-xl cursor-pointer transition hover:shadow-md 
-                peer-checked:bg-gray-100 peer-checked:border-black"
-            >
-              <img src="img/Frame 11.jpg" alt="Logo Hasu" className="w-12 h-12 rounded-lg object-cover mr-4" />
-              <div>
-                <h3 className="font-semibold text-gray-900">Hasu</h3>
-                <p className="text-sm text-gray-500">Flores eternas y detalles</p>
-              </div>
-            </label>
-          </div>
+          {!loading && entrepreneurships.length === 0 && (
+            <p className="text-sm text-gray-500">No tienes emprendimientos registrados.</p>
+          )}
 
-          <div>
-            <input type="radio" id="hasu3" name="emprendimiento" value="hasu3" className="hidden peer" />
-            <label htmlFor="hasu3"
-              className="flex items-center p-4 border rounded-xl cursor-pointer transition hover:shadow-md 
+          {!loading && entrepreneurships.map((e) => (
+            <div key={e.id}>
+              <input
+                type="radio"
+                id={`emp-${e.id}`}
+                name="emprendimiento"
+                value={e.id}
+                className="hidden peer"
+                checked={localSelected === e.id}
+                onChange={() => handleChoose(e.id)}
+              />
+              <label htmlFor={`emp-${e.id}`}
+                className="flex items-center p-4 border rounded-xl cursor-pointer transition hover:shadow-md 
                 peer-checked:bg-gray-100 peer-checked:border-black"
-            >
-              <img src="img/Frame 11.jpg" alt="Logo Hasu" className="w-12 h-12 rounded-lg object-cover mr-4" />
-              <div>
-                <h3 className="font-semibold text-gray-900">Hasu</h3>
-                <p className="text-sm text-gray-500">Flores eternas y detalles</p>
-              </div>
-            </label>
-          </div>
+              >
+                <img src={e.image_url || 'img/Frame 11.jpg'} alt={e.name || 'Emprendimiento'} className="w-12 h-12 rounded-lg object-cover mr-4" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">{e.name}</h3>
+                  <p className="text-sm text-gray-500">{e.description}</p>
+                </div>
+              </label>
+            </div>
+          ))}
         </div>
 
         {/* Botones estilo flex-1 como ConfirmationPopup */}
@@ -65,7 +75,13 @@ export function PopupEmprendimientos({ onClose, onSiguiente }: PopupEmprendimien
           </button>
           <button
             className="flex-1 py-2 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition"
-            onClick={onSiguiente}
+            onClick={() => {
+              if (!localSelected) {
+                toast.error('Seleccione un emprendimiento para continuar');
+                return;
+              }
+              onSiguiente();
+            }}
           >
             Siguiente →
           </button>

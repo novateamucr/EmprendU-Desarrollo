@@ -122,7 +122,7 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        entrepreneurship_id: parseInt(businessId, 10)
+        entrepreneurship_id: formData.entrepreneurship_id
       };
       
       // If there's a new image file, upload it first

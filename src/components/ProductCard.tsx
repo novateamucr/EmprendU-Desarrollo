@@ -1,4 +1,6 @@
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import { getProductOptions, getCustomForms } from '../services/productConfigService';
 
 export interface ProductCardProps {
   title: string;
@@ -14,23 +16,46 @@ export interface ProductCardProps {
 
 export function ProductCard(props: ProductCardProps) {
   const { addItem } = useCart();
+  const navigate = useNavigate();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     // Avoid triggering parent Link navigation when button is inside a Link wrapper
     e.preventDefault();
     e.stopPropagation();
-    addItem(
-      props.entrepreneurshipId,
-      props.entrepreneurshipName,
-      {
-        productId: props.productId,
-        name: props.title,
-        price: props.price,
-        imageUrl: props.imgUrl,
-        quantity: 1
+    try {
+      const pid = Number(props.productId);
+      let hasForm = false;
+      try {
+        const [opts, forms] = await Promise.all([
+          getProductOptions(pid).catch(() => []),
+          getCustomForms(pid).catch(() => []),
+        ]);
+        hasForm = (opts && opts.length > 0) || (forms && forms.length > 0);
+      } catch {
+        hasForm = false;
       }
-    );
-    if (props.onBuy) props.onBuy();
+
+      if (hasForm) {
+        navigate(`/product/${props.productId}`);
+        return;
+      }
+
+      addItem(
+        props.entrepreneurshipId,
+        props.entrepreneurshipName,
+        {
+          productId: props.productId,
+          name: props.title,
+          price: props.price,
+          imageUrl: props.imgUrl,
+          quantity: 1
+        }
+      );
+      if (props.onBuy) props.onBuy();
+    } catch {
+      // Si algo falla, fallback a navegar al detalle para asegurar flujo
+      navigate(`/product/${props.productId}`);
+    }
   };
 
   return (

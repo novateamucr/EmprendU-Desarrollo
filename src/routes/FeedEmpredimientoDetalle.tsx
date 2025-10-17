@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
 import { BusinessDetailSkeleton } from '../components/skeletons/BusinessDetailSkeleton';
 import Footer from "@/components/footer/Footer";
+import BusinessChannels from '../components/BusinessChannels';
 
 export function FeedEmpredimientoDetalle() {
   const { id } = useParams();
@@ -174,8 +175,8 @@ export function FeedEmpredimientoDetalle() {
   if (!business) return <div className="text-center py-8 text-gray-500">Emprendimiento no encontrado.</div>;
 
   return (
-    <div className="w-full px-32">
-      <div className="w-full">
+   <div className="w-full px-32 mt-20">
+  <div className="w-full">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-6">
             <img
@@ -230,39 +231,44 @@ export function FeedEmpredimientoDetalle() {
             <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
             <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
             <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (businessIdNum == null) return;
-                const favId = localFavId ?? favMap.get(businessIdNum)?.id ?? null;
-                if (favId) {
-                  setPendingRemove(favId);
-                  setConfirmOpen(true);
-                } else {
-                  // Esperar respuesta del backend antes de reflejar el cambio
-                  setLocalPending(true);
-                  addFav.mutate(businessIdNum, {
-                    onSuccess: (res: any) => {
-                      const createdId = res?.favorite?.id;
-                      if (createdId) setLocalFavId(createdId);
-                    },
-                    onSettled: () => setLocalPending(false)
-                  });
-                }
-              }}
-              className="mt-3 px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors inline-flex items-center gap-2"
-              disabled={localPending}
-              aria-label={displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-            >
-              {displayFav ? (
-                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
-              ) : (
-                <FavoriteBorder sx={{ fontSize: 18 }} />
-              )}
-              {displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-            </button>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (businessIdNum == null) return;
+                  const favId = localFavId ?? favMap.get(businessIdNum)?.id ?? null;
+                  if (favId) {
+                    setPendingRemove(favId);
+                    setConfirmOpen(true);
+                  } else {
+                    // Esperar respuesta del backend antes de reflejar el cambio
+                    setLocalPending(true);
+                    addFav.mutate(businessIdNum, {
+                      onSuccess: (res: any) => {
+                        const createdId = res?.favorite?.id;
+                        if (createdId) setLocalFavId(createdId);
+                      },
+                      onSettled: () => setLocalPending(false)
+                    });
+                  }
+                }}
+                className="px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors inline-flex items-center gap-2"
+                disabled={localPending}
+                aria-label={displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                {displayFav ? (
+                  <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
+                ) : (
+                  <FavoriteBorder sx={{ fontSize: 18 }} />
+                )}
+                {displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              </button>
+
+              {/* Canales del emprendimiento */}
+              {business?.id ? <BusinessChannels entrepreneurshipId={Number(business.id)} /> : null}
+            </div>
           </div>
         </div>
 
@@ -301,7 +307,7 @@ export function FeedEmpredimientoDetalle() {
         </div>
 
         {filteredPrice.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPrice.map((product: any) => (
 
               <Link key={product.id} to={`/product/${product.id}`} className="block">
