@@ -1,11 +1,16 @@
-import { useState, useRef, ChangeEvent } from 'react';
-import { Button } from '../../../../components/Button';
-import Input from '../../../../components/ui/Input';
-import { Textarea } from '../../../../components/ui/Textarea';
-import { createProduct, updateProduct, Product, uploadProductImage } from '../../../../services/productService';
-import { useToast } from '../../../../hooks/useToast';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
-import { cn } from '../../../../lib/utils';
+import { useState, useRef, ChangeEvent } from "react";
+import { Button } from "../../../../components/Button";
+import Input from "../../../../components/ui/Input";
+import { Textarea } from "../../../../components/ui/Textarea";
+import {
+  createProduct,
+  updateProduct,
+  Product,
+  uploadProductImage,
+} from "../../../../services/productService";
+import { useToast } from "../../../../hooks/useToast";
+import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { cn } from "../../../../lib/utils";
 
 type FormData = {
   name: string;
@@ -23,92 +28,111 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-export default function ProductForm({ businessId, initialData, onSuccess, onCancel }: ProductFormProps) {
+export default function ProductForm({
+  businessId,
+  initialData,
+  onSuccess,
+  onCancel,
+}: ProductFormProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<FormData>({
-    name: initialData?.name || '',
-    description: initialData?.description || '',
-    price: initialData?.price?.toString() || '',
-    image_url: initialData?.image_url || '',
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    price: initialData?.price?.toString() || "",
+    image_url: initialData?.image_url || "",
     imageFile: null,
-    entrepreneurship_id: initialData?.entrepreneurship_id || (businessId ? parseInt(businessId, 10) : 0)
+    entrepreneurship_id:
+      initialData?.entrepreneurship_id ||
+      (businessId ? parseInt(businessId, 10) : 0),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast({
-        title: 'Formato no válido',
-        description: 'Por favor sube una imagen válida (JPG, PNG, etc.)',
-        variant: 'destructive',
+        title: "Formato no válido",
+        description: "Por favor sube una imagen válida (JPG, PNG, etc.)",
+        variant: "destructive",
       });
       return;
     }
-    
+
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: 'Archivo muy grande',
-        description: 'La imagen no debe superar los 5MB',
-        variant: 'destructive',
+        title: "Archivo muy grande",
+        description: "La imagen no debe superar los 5MB",
+        variant: "destructive",
       });
       return;
     }
-    
+
     try {
       setIsUploading(true);
       // In a real app, you would upload the file to your server here
       // For now, we'll just create a local object URL for preview
       const imageUrl = URL.createObjectURL(file);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         image_url: imageUrl,
-        imageFile: file
+        imageFile: file,
       }));
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       toast({
-        title: 'Error',
-        description: 'No se pudo cargar la imagen',
-        variant: 'destructive',
+        title: "Error",
+        description: "No se pudo cargar la imagen",
+        variant: "destructive",
       });
     } finally {
       setIsUploading(false);
     }
   };
-  
+
   const removeImage = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      image_url: '',
-      imageFile: null
+      image_url: "",
+      imageFile: null,
     }));
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.price) {
       toast({
         title: "Campos requeridos",
-        description: "Por favor completa los campos obligatorios",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // For new products, image is required
+    if (!initialData?.id && !formData.imageFile) {
+      toast({
+        title: "Imagen requerida",
+        description: "Por favor selecciona una imagen para el producto",
         variant: "destructive",
       });
       return;
@@ -116,44 +140,54 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
 
     try {
       setIsSubmitting(true);
-      
-      // Prepare product data
+
       const productData: any = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        entrepreneurship_id: formData.entrepreneurship_id
+        category_id: 1, // Default category
+        entrepreneurship_id: formData.entrepreneurship_id,
       };
-      
-      // If there's a new image file, upload it first
-      if (formData.imageFile) {
-        const imageUrl = await uploadProductImage(formData.imageFile);
-        productData.image_url = imageUrl;
-      } else if (formData.image_url) {
-        productData.image_url = formData.image_url;
-      }
 
-      // Create or update product
       if (initialData?.id) {
+        // For updates, handle image cases:
+        if (formData.imageFile) {
+          // New image is being uploaded
+          productData.image = formData.imageFile;
+        } else if (!formData.image_url && initialData.image_url) {
+          // Image was removed
+          productData.image = null;
+        } else if (initialData.image_url) {
+          // Keep the existing image
+          productData.image_url = initialData.image_url;
+        }
+        
         await updateProduct(initialData.id, productData);
         toast({
           title: "¡Listo!",
           description: "Producto actualizado correctamente",
         });
       } else {
-        await createProduct(productData);
+        // For new products, we already require an imageFile
+        await createProduct({
+          ...productData,
+          image: formData.imageFile!,
+        });
         toast({
           title: "¡Listo!",
           description: "Producto creado correctamente",
         });
       }
-      
+
       onSuccess();
     } catch (error) {
-      console.error('Error saving product:', error);
+      console.error("Error saving product:", error);
       toast({
         title: "Error",
-        description: "Ocurrió un error al guardar el producto",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocurrió un error al guardar el producto",
         variant: "destructive",
       });
     } finally {
@@ -166,13 +200,15 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
       <div className="bg-white rounded-xl w-full max-w-lg mx-auto my-8 shadow-2xl overflow-hidden">
         <div className="p-6 border-b">
           <h2 className="text-2xl font-semibold text-gray-900">
-            {initialData ? 'Editar Producto' : 'Agregar Producto'}
+            {initialData ? "Editar Producto" : "Agregar Producto"}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            {initialData ? 'Actualiza los detalles del producto' : 'Completa la información del nuevo producto'}
+            {initialData
+              ? "Actualiza los detalles del producto"
+              : "Completa la información del nuevo producto"}
           </p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Image Upload */}
           <div className="space-y-2">
@@ -180,7 +216,7 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
               Imagen del producto
             </label>
             <div className="mt-1 flex items-center">
-              <div 
+              <div
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors",
                   formData.image_url && "border-0 p-0"
@@ -189,9 +225,9 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
               >
                 {formData.image_url ? (
                   <div className="relative group">
-                    <img 
-                      src={formData.image_url} 
-                      alt="Preview" 
+                    <img
+                      src={formData.image_url}
+                      alt="Preview"
                       className="h-40 w-full object-cover rounded-lg"
                     />
                     <button
@@ -209,9 +245,14 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
                   <>
                     <Upload className="h-10 w-10 text-gray-400 mb-2" />
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium text-blue-600 hover:text-blue-500">Sube una imagen</span> o arrástrala aquí
+                      <span className="font-medium text-blue-600 hover:text-blue-500">
+                        Sube una imagen
+                      </span>{" "}
+                      o arrástrala aquí
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF hasta 5MB</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF hasta 5MB
+                    </p>
                   </>
                 )}
                 <input
@@ -227,7 +268,10 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
 
           {/* Name */}
           <div className="space-y-2">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
               Nombre del producto <span className="text-red-500">*</span>
             </label>
             <Input
@@ -243,7 +287,10 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
 
           {/* Description */}
           <div className="space-y-2">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700"
+            >
               Descripción
             </label>
             <Textarea
@@ -259,7 +306,10 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
 
           {/* Price */}
           <div className="space-y-2">
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="price"
+              className="block text-sm font-medium text-gray-700"
+            >
               Precio <span className="text-red-500">*</span>
             </label>
             <div className="relative rounded-md shadow-sm">
@@ -291,23 +341,39 @@ export default function ProductForm({ businessId, initialData, onSuccess, onCanc
             >
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isSubmitting || isUploading}
               className="w-full sm:w-auto"
             >
               {isUploading ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Subiendo...
                 </span>
               ) : isSubmitting ? (
-                'Guardando...'
+                "Guardando..."
               ) : (
-                'Guardar Producto'
+                "Guardar Producto"
               )}
             </Button>
           </div>

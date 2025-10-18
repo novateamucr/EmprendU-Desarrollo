@@ -459,36 +459,42 @@ export default function EditProductPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.price) {
-      toast({ title: 'Campos requeridos', description: 'Completa nombre y precio', variant: 'destructive' });
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      const payload: Partial<Product> = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        entrepreneurship_id: formData.entrepreneurship_id,
-      } as Partial<Product>;
-      if (formData.imageFile) {
-        const result = await uploadProductImage(formData.imageFile);
-        // uploadProductImage returns { url }
-        // Ensure we set image_url string
-        // @ts-ignore
-        payload.image_url = (result?.url as string) || formData.image_url;
-      } else if (formData.image_url) {
-        payload.image_url = formData.image_url as any;
-      }
-      await updateProductMut.mutateAsync(payload);
-    } catch (err) {
-      // error toast handled by mutation onError implicitly by default console, add toast here
-      toast({ title: 'Error', description: 'No se pudo guardar el producto', variant: 'destructive' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  e.preventDefault();
+  if (!formData.name || !formData.price) {
+    toast({ 
+      title: 'Campos requeridos', 
+      description: 'Por favor completa todos los campos obligatorios', 
+      variant: 'destructive' 
+    });
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+    
+    const productData = {
+      name: formData.name,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      image_url: formData.image_url,
+      category_id: 1, // Default category, adjust as needed
+      entrepreneurship_id: formData.entrepreneurship_id,
+      ...(formData.imageFile && { image: formData.imageFile })
+    };
+
+    await updateProductMut.mutateAsync(productData);
+    
+  } catch (err) {
+    console.error('Error saving product:', err);
+    toast({ 
+      title: 'Error', 
+      description: 'No se pudo guardar el producto', 
+      variant: 'destructive' 
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Removed options required check
 

@@ -886,10 +886,10 @@ export default function Home() {
               <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
             </div>
             <div className="flex gap-6">
-              <a href=""><img src={x} alt="x socials" className=" h-7" /></a>
-              <a href=""><img src={insta} alt="instagram" className=" h-8" /></a>
-              <a href=""><img src={youtube} alt="youtube" className=" h-7" /></a>
-              <a href=""><img src={tiktok} alt="" className=" h-7"/></a>
+             <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
+              <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
+              <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="" className=" h-7"/></a>
+          
             </div>    
           </div>
           <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
