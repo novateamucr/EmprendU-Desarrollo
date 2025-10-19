@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import Footer from "@/components/footer/Footer";
+import Footer from "../components/footer/Footer";
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
