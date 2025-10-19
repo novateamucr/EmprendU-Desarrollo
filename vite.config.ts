@@ -1,7 +1,6 @@
-/// <reference types="node" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { fileURLToPath } from 'node:url'
+// Use native URL to resolve path without importing node:url to avoid needing @types/node
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,7 +14,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+  '@': new URL('./src', import.meta.url).pathname
     }
   },
   server: {

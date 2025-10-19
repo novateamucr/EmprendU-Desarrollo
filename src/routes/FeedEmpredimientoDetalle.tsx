@@ -12,7 +12,7 @@ import BusinessFeedbackPopup from "../components/ui/BusinessFeedback";
 import { toast } from "react-toastify";
 import { useAuth } from '../context/AuthContext';
 import { BusinessDetailSkeleton } from '../components/skeletons/BusinessDetailSkeleton';
-import Footer from "@/components/footer/Footer";
+import Footer from "../components/footer/Footer";
 import BusinessChannels from '../components/BusinessChannels';
 
 export function FeedEmpredimientoDetalle() {
