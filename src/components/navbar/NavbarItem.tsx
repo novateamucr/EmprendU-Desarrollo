@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Dropdown } from './Dropdown';
 import { NavbarItemProps } from './types';
 
-export function NavbarItem({ item, isMobile = false }: NavbarItemProps) {
+export function NavbarItem({ item, isMobile = false, onNavigate }: NavbarItemProps) {
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -32,6 +32,7 @@ export function NavbarItem({ item, isMobile = false }: NavbarItemProps) {
           className={`block px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm ${
             isActive ? 'text-primary bg-gray-50' : 'text-secondary'
           }`}
+          onClick={() => { if (onNavigate) onNavigate(); }}
         >
           <div className="flex items-center space-x-2">
             {item.icon}
@@ -64,6 +65,7 @@ export function NavbarItem({ item, isMobile = false }: NavbarItemProps) {
         onToggle={handleDropdownToggle}
         onClose={handleDropdownClose}
         isMobile={isMobile}
+        onNavigate={onNavigate}
       />
     );
   }

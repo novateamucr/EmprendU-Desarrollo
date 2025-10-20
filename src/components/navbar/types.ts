@@ -41,10 +41,12 @@ export interface DropdownProps {
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
+  onNavigate?: () => void;
   isMobile?: boolean;
 }
 
 export interface NavbarItemProps {
   item: NavbarItemConfig;
   isMobile?: boolean;
+  onNavigate?: () => void;
 }
