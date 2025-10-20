@@ -3,7 +3,7 @@ import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Store } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 
 type LayoutProps = {
@@ -31,11 +31,25 @@ export function Layout({ children }: LayoutProps) {
       
       visible: user?.role === 1
     },
-    { 
-      type: 'link' as const, 
-      label: 'Mis Emprendimientos', 
-      to: '/entrepreneur',
-      // Only show to entrepreneurs (role 2)
+    {
+      type: 'dropdown' as const,
+      label: 'Mis Emprendimientos',
+  items: [
+        {
+          type: 'link' as const,
+          label: 'Dashboard',
+          to: '/entrepreneur',
+          icon: <LayoutDashboard size={16} />,
+          visible: user?.role === 2
+        },
+        {
+          type: 'link' as const,
+          label: 'Mis emprendimientos',
+          to: '/entrepreneur/businesses',
+          icon: <Store size={16} />,
+          visible: user?.role === 2
+        }
+  ],
       visible: user?.role === 2
     },
     { 

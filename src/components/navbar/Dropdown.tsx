@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { DropdownProps } from './types';
 
-export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false }: DropdownProps) {
+export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, onNavigate }: DropdownProps) {
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -123,7 +123,7 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false }: 
                         ? 'text-primary bg-white'
                         : 'text-secondary'
                     }`}
-                    onClick={onClose}
+                    onClick={() => { onClose(); if (onNavigate) onNavigate(); }}
                   >
                     <div className="flex items-center space-x-2">
                       {dropdownItem.icon}
@@ -147,7 +147,7 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false }: 
                                 ? 'text-primary bg-white'
                                 : 'text-secondary'
                             }`}
-                            onClick={onClose}
+                            onClick={() => { onClose(); if (onNavigate) onNavigate(); }}
                           >
                             <div className="flex items-center space-x-2">
                               {groupItem.icon}

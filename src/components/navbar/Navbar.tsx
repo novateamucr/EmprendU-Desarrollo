@@ -173,8 +173,8 @@ export function Navbar({
             {/* Mobile Menu Items */}
             <div className="py-4 space-y-1 overflow-y-auto max-h-[calc(100vh-120px)]">
               {visibleItems.map((item, index) => (
-                <div key={index} onClick={closeMobileMenu}>
-                  <NavbarItem item={item} isMobile />
+                <div key={index}>
+                  <NavbarItem item={item} isMobile onNavigate={closeMobileMenu} />
                 </div>
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { entrepreneurshipApi } from '../../services/entrepreneurshipService';
@@ -6,7 +6,6 @@ import {
   Package, 
   ShoppingBag, 
   Users,
-  Pencil,
   AlertTriangle,
   Store,
   Plus,
@@ -37,7 +36,7 @@ type Province = typeof PROVINCES[number];
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { BusinessSelect } from '../../components/ui/BusinessSelect';
-import { Skeleton, SkeletonDashboardStats, SkeletonBusinessCard } from '../../components/ui/Skeleton';
+import { Skeleton, SkeletonDashboardStats } from '../../components/ui/Skeleton';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
@@ -140,15 +139,16 @@ export default function Dashboard() {
   const [selectedProvince, setSelectedProvince] = useState<Province>('Todas');
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
   const [showExtraModal, setShowExtraModal] = useState(false);
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
   
   // Mock customer data
-  const [customers, setCustomers] = useState([
+  const customers = [
     { id: 1, name: 'María Rodríguez', email: 'maria.rodriguez@email.com', province: 'San José', totalPurchases: 3, lastPurchase: '2025-09-28' },
     { id: 2, name: 'Carlos Vargas', email: 'carlos.v@email.com', province: 'Alajuela', totalPurchases: 5, lastPurchase: '2025-10-01' },
     { id: 3, name: 'Ana Martínez', email: 'ana.mtz@email.com', province: 'Heredia', totalPurchases: 2, lastPurchase: '2025-09-25' },
     { id: 4, name: 'Luis González', email: 'luis.g@email.com', province: 'Cartago', totalPurchases: 7, lastPurchase: '2025-10-02' },
     { id: 5, name: 'Sofía Chacón', email: 'sofia.ch@email.com', province: 'San José', totalPurchases: 4, lastPurchase: '2025-09-30' },
-  ]);
+  ];
 
   // Prepare chart data when selected business changes
   useEffect(() => {
@@ -259,6 +259,14 @@ export default function Dashboard() {
       setChartData(null);
     }
   }, [selectedBusiness, businesses]);
+
+  // Track window width to tweak chart options responsively
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   // Fetch user's entrepreneurships from the API
   useEffect(() => {
@@ -761,7 +769,7 @@ export default function Dashboard() {
                 Productos por categoría
               </h4>
             </div>
-            <div className="h-64">
+            <div className="h-56 sm:h-64">
               {chartData?.products ? (
                 <Bar 
                   data={chartData.products} 
@@ -806,7 +814,7 @@ export default function Dashboard() {
                 Ventas mensuales
               </h4>
             </div>
-            <div className="h-64">
+            <div className="h-56 sm:h-64">
               {chartData?.sales ? (
                 <Line 
                   data={chartData.sales}
@@ -886,7 +894,7 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-            <div className="h-64">
+            <div className="h-56 sm:h-64">
               {chartData?.customers ? (
                 <Pie 
                   data={chartData.customers}
@@ -895,7 +903,8 @@ export default function Dashboard() {
                     maintainAspectRatio: false,
                     plugins: {
                       legend: {
-                        position: 'right' as const,
+                        // On small screens place legend below for better fit
+                        position: windowWidth < 640 ? 'bottom' as const : 'right' as const,
                       },
                       tooltip: {
                         callbacks: {
@@ -931,7 +940,8 @@ export default function Dashboard() {
         </div>
         
         <Card>
-          <div className="overflow-x-auto">
+          {/* Desktop / tablet table */}
+          <div className="overflow-x-auto hidden md:block">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -986,6 +996,33 @@ export default function Dashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile list view */}
+          <div className="space-y-3 md:hidden">
+            {customers.map((customer) => (
+              <div key={customer.id} className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                   onClick={() => alert(`Mostrar detalles del cliente: ${customer.name}`)}>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-medium">
+                        {customer.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                      <div className="text-sm text-gray-500">{customer.email}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-500 text-right">
+                    <div className="mb-1"><span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{customer.province}</span></div>
+                    <div className="text-sm">{customer.totalPurchases} compras</div>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-400 mt-2">Última compra: {new Date(customer.lastPurchase).toLocaleDateString('es-CR')}</div>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
