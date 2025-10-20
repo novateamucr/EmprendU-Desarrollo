@@ -1,16 +1,14 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { 
   Delete as DeleteIcon, 
   Edit as EditIcon, 
   Search as SearchIcon, 
-  FilterList as FilterListIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   UnfoldMore as UnfoldMoreIcon,
-  Check as CheckIcon,
   Inventory2 as PackageIcon
 } from '@mui/icons-material';
-import { Menu, MenuItem, TextField, InputAdornment, IconButton } from '@mui/material';
+import { TextField, InputAdornment, IconButton } from '@mui/material';
 import { deleteProduct, Product } from '../../../../services/productService';
 import { useToast } from '../../../../hooks/useToast';
 import {
@@ -103,7 +101,9 @@ export const ProductList: React.FC<ProductListProps> = ({
       </div>
 
       <div className="rounded-md border">
-        <Table>
+        {/* Desktop table (md and up) */}
+        <div className="hidden md:block">
+          <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead 
@@ -184,12 +184,12 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <div className="flex justify-center">
                     <span 
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                        product.stock_quantity > 0 
+                        Number(product.stock_quantity || 0) > 0 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {product.stock_quantity > 0 ? 'En stock' : 'Agotado'}
+                      {Number(product.stock_quantity || 0) > 0 ? 'En stock' : 'Agotado'}
                     </span>
                   </div>
                 </TableCell>
@@ -226,7 +226,56 @@ export const ProductList: React.FC<ProductListProps> = ({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden space-y-3 p-3">
+          {products.map((product) => (
+            <div key={product.id} className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} className="h-16 w-16 rounded-md object-cover" />
+                  ) : (
+                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center">
+                      <PackageIcon className="h-6 w-6 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-sm">{product.name}</div>
+                      <div className="text-xs text-gray-500">ID: {product.id}</div>
+                    </div>
+                    <div className="text-sm font-medium">${Number(product.price).toFixed(2)}</div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600">
+                    {product.description || <span className="text-gray-400">Sin descripción</span>}
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <div>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        Number(product.stock_quantity || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>{Number(product.stock_quantity || 0) > 0 ? 'En stock' : 'Agotado'}</span>
+                      <div className="text-xs text-gray-400 mt-1">{product.created_at ? new Date(product.created_at).toLocaleDateString('es-ES') : 'N/A'}</div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <IconButton size="small" onClick={() => onEdit(product)} className="text-blue-600 hover:bg-blue-50" title="Editar">
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleDelete(product.id)} className="text-red-600 hover:bg-red-50" disabled={isLoading} title="Eliminar">
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       
       {products.length > 0 && (
