@@ -70,7 +70,7 @@ export default function GestorEmprendimientos() {
   const handleConfirmDelete = async () => {
     if (!entrepreneurshipToDelete) return;
     try {
-      const apiUrl = "http://emprendu-backend.test";
+      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
       const response = await fetch(`${apiUrl}/api/entrepreneurships/${entrepreneurshipToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Error al eliminar emprendimiento');
       setEntrepreneurships(prev => prev.filter(e => e.id !== entrepreneurshipToDelete.id));

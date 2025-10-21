@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api').replace(/\/+$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api').replace(/\/+$/, '');
 const API_URL = `${API_BASE_URL}`;
 
 export type OptionType = 'select'|'multiselect'|'text'|'number'|'boolean'|'file';

@@ -21,7 +21,7 @@ export default defineConfig({
         open: true,
         proxy: {
             '/api': {
-                target: 'http://emprendu-backend.test',
+                target: 'https://emprendu-desarrollo-production.up.railway.app',
                 changeOrigin: true
             }
         }

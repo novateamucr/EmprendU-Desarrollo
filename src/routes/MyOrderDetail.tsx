@@ -201,7 +201,7 @@ export default function MyOrderDetail() {
                 if (!order) return;
                 setSubmitting(true);
                 try {
-                  const res = await fetch('http://emprendu-backend.test/api/reviews', {
+                  const res = await fetch('https://emprendu-desarrollo-production.up.railway.app/api/reviews', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',

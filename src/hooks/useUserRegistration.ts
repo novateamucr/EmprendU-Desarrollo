@@ -41,7 +41,7 @@ export function useUserRegistration() {
     setSuccess(false);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
       
       const response = await fetch(`${apiUrl}/users`, {
         method: 'POST',
@@ -77,7 +77,7 @@ export function useUserRegistration() {
     setSuccess(false);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
 
       const response = await fetch(`${apiUrl}/users/${userId}`, {
         method: 'PUT',

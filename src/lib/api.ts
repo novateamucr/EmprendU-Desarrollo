@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get the base URL from environment variables or use the default
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
 
 // Create axios instance with base configuration
 export const api = axios.create({

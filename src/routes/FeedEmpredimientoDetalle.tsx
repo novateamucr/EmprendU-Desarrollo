@@ -70,7 +70,7 @@ export function FeedEmpredimientoDetalle() {
     setLoading(true);
     try {
 
-      const response = await fetch("http://emprendu-backend.test/api/reviews", {
+      const response = await fetch("https://emprendu-desarrollo-production.up.railway.app/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +110,7 @@ export function FeedEmpredimientoDetalle() {
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const res = await fetch(
-        `http://emprendu-backend.test/api/reviews?entrepreneurship_id=${id}`,
+        `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${id}`,
         { headers }
       );
 

@@ -74,7 +74,7 @@ const useUsers = ({ page = 1 }: UseUsersOptions = {}) => {
       const params = new URLSearchParams({
         page: page.toString(),
       });
-      const apiUrl = "http://emprendu-backend.test";
+      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
       
       const response = await fetch(`${apiUrl}/api/users?${params.toString()}`);
       

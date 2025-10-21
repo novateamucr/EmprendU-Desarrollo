@@ -35,7 +35,7 @@ interface BusinessSetupProps {
 }
 
 // API base URL
-const API_URL = 'http://emprendu-backend.test/api';
+const API_URL = 'https://emprendu-desarrollo-production.up.railway.app/api';
 
 // Categories will be loaded from the API
 
@@ -170,7 +170,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       let result;
       if (isEditMode && id) {
         // For update, use a direct fetch call to ensure data is sent correctly
-        const response = await fetch(`http://emprendu-backend.test/api/entrepreneurships/${id}`, {
+        const response = await fetch(`https://emprendu-desarrollo-production.up.railway.app/api/entrepreneurships/${id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         });
       } else {
         // For create, use a direct fetch call
-        const response = await fetch('http://emprendu-backend.test/api/entrepreneurships', {
+        const response = await fetch('https://emprendu-desarrollo-production.up.railway.app/api/entrepreneurships', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

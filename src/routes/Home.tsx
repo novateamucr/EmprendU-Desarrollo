@@ -38,7 +38,7 @@ export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: num
     const fetchReviews = async () => {
       try {
         const res = await fetch(
-          `http://emprendu-backend.test/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+          `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

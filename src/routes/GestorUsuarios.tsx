@@ -82,7 +82,7 @@ export default function GestorUsuarios() {
     }
     try {
       let response;
-      const apiUrl = "http://emprendu-backend.test";
+      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
 
       switch (option) {
         case 'Habilitar':
@@ -120,7 +120,7 @@ export default function GestorUsuarios() {
   const handleConfirmDelete = async () => {
     if (!userToDelete) return;
     try {
-      const apiUrl = "http://emprendu-backend.test";
+      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
       const response = await fetch(`${apiUrl}/api/users/${userToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Error al eliminar usuario');
       setUsuarios(prev => prev.filter(u => u.id !== userToDelete.id));
