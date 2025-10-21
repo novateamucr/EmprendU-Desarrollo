@@ -29,14 +29,13 @@ interface BusinessFormData {
 
 interface BusinessSetupProps {
   initialData?: Partial<BusinessFormData> | null;
-  onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 
 // Categories will be loaded from the API
 
-export default function BusinessSetup({ initialData, onSuccess, onCancel }: BusinessSetupProps) {
+export default function BusinessSetup({ initialData, onCancel }: BusinessSetupProps) {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
   const navigate = useNavigate();

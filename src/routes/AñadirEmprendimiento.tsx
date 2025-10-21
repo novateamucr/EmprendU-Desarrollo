@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Save, Loader2} from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Save, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
 import ChannelsEditor from './entrepreneur/components/ChannelsEditor';
-import { entrepreneurshipApi } from '../services/entrepreneurshipService';
 import { userApi, User } from '../services/userService';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -44,10 +43,8 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   const { id } = useParams<{ id?: string }>();
   const isEditMode = Boolean(id) || Boolean(initialData?.id);
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   
@@ -87,7 +84,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         console.error('Error fetching categories:', error);
         toast.error('No se pudieron cargar las categorías');
       } finally {
-        setIsLoadingCategories(false);
+        // Categories loaded
       }
     };
 
@@ -100,12 +97,13 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       const fetchBusiness = async () => {
         try {
           setIsLoading(true);
-          const business = await entrepreneurshipApi.getById(id);
+          const response = await axios.get(`${API_URL}/businesses/${id}`);
+          const business = response.data;
           setFormData({
             id: business.id,
             name: business.name,
             description: business.description || '',
-            category: business.category,
+            category: business.category_id,
             user_id: business.user_id,
             image_url: business.image_url || null
           });

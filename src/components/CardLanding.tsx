@@ -1,4 +1,3 @@
-import vision from "../assets/vision_8440711.png";
 
 interface CardLandingProps {
   title: string;

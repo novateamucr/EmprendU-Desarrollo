@@ -9,7 +9,6 @@ import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
-import x from "../assets/x.svg";
 import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";

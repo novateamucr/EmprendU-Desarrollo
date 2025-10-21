@@ -66,11 +66,6 @@ export default function InventoryPage() {
     setSortConfig({ key, direction });
   };
   
-  const getSortIndicator = (key: keyof Product) => {
-    if (!sortConfig || sortConfig.key !== key) return '↕️';
-    return sortConfig.direction === 'ascending' ? '⬆️' : '⬇️';
-  };
-
   const loadProducts = useCallback(async () => {
     if (!businessId) return;
     

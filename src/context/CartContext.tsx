@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from './AuthContext';
 
 // Types
 export type CartItem = {
@@ -45,7 +44,6 @@ const CART_PLACED_IDS_KEY = 'app_cart_placed_ids';
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
   const [groups, setGroups] = useState<CartGroup[]>(() => {
     // Load cart from localStorage on initial render
     if (typeof window !== 'undefined') {

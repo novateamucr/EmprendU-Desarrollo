@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { mapAxiosError } from '../domain/errors';
 
 // Get the base URL from environment variables or use the default
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://emprendu-backend.test/api';

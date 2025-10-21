@@ -26,7 +26,6 @@ import { Modal } from '../components/Modal';
 } from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
 import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
-import x from "../assets/x.svg";
 import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
@@ -34,7 +33,6 @@ import tiktok from "../assets/tiktok_icon.svg";
 export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
   const { token } = useAuth();
   const [averageRating, setAverageRating] = useState<number | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -48,14 +46,8 @@ export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: num
         if (!res.ok) throw new Error("Error al obtener reviews");
 
         const data = await res.json();
-        setReviews(data);
-
-        if (data.length > 0) {
-          const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
-          setAverageRating(avg);
-        } else {
-          setAverageRating(null);
-        }
+        const avg = data.average_rating ? parseFloat(data.average_rating) : null;
+        setAverageRating(avg);
       } catch (err) {
         console.error("Error cargando reviews:", err);
         setAverageRating(null);
@@ -306,8 +298,7 @@ export default function Home() {
       staleTime: 5 * 60 * 1000,
     });
 
-    // Combine loading states for all data dependencies
-    const isLoading = loadingCategories || loadingProducts;
+    // Loading states are handled individually for better control
 
     // Build counts depending on view: products per category or entrepreneurships per category
     const counts = useMemo(() => {

@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 export default function BusinessFeedbackTestPage() {
   const { token, user } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Función para enviar la review al backend
   const submitReview = async (rating: number, comments: string) => {

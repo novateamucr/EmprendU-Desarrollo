@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 function loadGoogleMaps(apiKey: string): Promise<any> {
   if (typeof window !== 'undefined' && (window as any).google?.maps) {
     return Promise.resolve((window as any).google as any);
@@ -40,38 +46,39 @@ type Props = {
 
 const MapsPicker: React.FC<Props> = ({ initialLat, initialLng, initialAddress, height = 220, onConfirm, className }) => {
   const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const [googleObj, setGoogleObj] = useState<any>(null);
-  const [marker, setMarker] = useState<any>(null);
-  const [map, setMap] = useState<any>(null);
-  const [geocoder, setGeocoder] = useState<any>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [googleMaps, setGoogleMaps] = useState<any>(null);
+  const markerRef = useRef<any>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const geocoderRef = useRef<any>(null);
   const [lat, setLat] = useState<number>(initialLat ?? 9.9281); // San José, CR default
   const [lng, setLng] = useState<number>(initialLng ?? -84.0907);
   const [address, setAddress] = useState<string>(initialAddress || '');
-  const [loadingAddr, setLoadingAddr] = useState(false);
 
   useEffect(() => {
     loadGoogleMaps(apiKey).then((g) => {
-      setGoogleObj(g);
-      const center = new g.maps.LatLng(lat, lng);
-      const m = new g.maps.Map(mapRef.current!, {
-        center,
-        zoom: 15,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      });
-      setMap(m);
+      if (!g) return;
+      
+      const googleMapsInstance = g.maps;
+      setGoogleMaps(googleMapsInstance);
 
-      const mk = new g.maps.Marker({
-        position: center,
-        map: m,
+      if (!mapContainerRef.current) return;
+      
+      const mapInstance = new googleMapsInstance.Map(mapContainerRef.current, {
+        center: { lat, lng },
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+
+      mapInstanceRef.current = mapInstance;
+      geocoderRef.current = new googleMapsInstance.Geocoder();
+
+      markerRef.current = new googleMapsInstance.Marker({
+        position: { lat, lng },
+        map: mapInstance,
         draggable: true,
       });
-      setMarker(mk);
-
-      const gc = new g.maps.Geocoder();
-      setGeocoder(gc);
 
       const updateFromPos = (pos: any) => {
         const ll = pos.latLng || pos;
@@ -79,31 +86,30 @@ const MapsPicker: React.FC<Props> = ({ initialLat, initialLng, initialAddress, h
         const newLng = typeof ll.lng === 'function' ? ll.lng() : ll.lng;
         setLat(newLat);
         setLng(newLng);
-        if (!gc) return;
-        setLoadingAddr(true);
-        gc.geocode({ location: { lat: newLat, lng: newLng } }, (results: any, status: any) => {
-          if (status === 'OK' && results?.length) {
-            setAddress(results[0].formatted_address || '');
+        if (!geocoderRef.current) return;
+        geocoderRef.current.geocode({ location: { lat: newLat, lng: newLng } }, (results: any, status: string) => {
+          if (status === 'OK' && results[0]) {
+            setAddress(results[0].formatted_address);
           }
-          setLoadingAddr(false);
         });
       };
 
-      mk.addListener('dragend', (ev: any) => updateFromPos(ev));
-      m.addListener('click', (ev: any) => {
+      markerRef.current.addListener('dragend', (ev: any) => updateFromPos(ev));
+      mapInstance.addListener('click', (ev: any) => {
         const ll = ev.latLng;
-        mk.setPosition(ll);
+        markerRef.current.setPosition(ll);
         updateFromPos(ev);
       });
 
       // initial reverse geocode if we have no address
-      if (!initialAddress && gc) {
-        setLoadingAddr(true);
-        gc.geocode({ location: { lat, lng } }, (results: any, status: any) => {
-          if (status === 'OK' && results?.length) {
-            setAddress(results[0].formatted_address || '');
+      if (googleMaps && mapInstanceRef.current && markerRef.current && geocoderRef.current) {
+        mapInstanceRef.current.panTo({ lat, lng });
+        markerRef.current.setPosition({ lat, lng });
+
+        geocoderRef.current.geocode({ location: { lat, lng } }, (results: any, status: string) => {
+          if (status === 'OK' && results[0]) {
+            setAddress(results[0].formatted_address);
           }
-          setLoadingAddr(false);
         });
       }
     }).catch(() => {
@@ -114,10 +120,10 @@ const MapsPicker: React.FC<Props> = ({ initialLat, initialLng, initialAddress, h
 
   return (
     <div className={className}>
-      <div ref={mapRef} style={{ width: '100%', height }} className="rounded-md overflow-hidden border" />
+      <div ref={mapContainerRef} style={{ width: '100%', height: `${height}px` }} className="rounded-md overflow-hidden border" />
       <div className="mt-2 flex items-center justify-between gap-2">
         <div className="text-sm text-gray-600 truncate" title={address}>
-          {loadingAddr ? 'Obteniendo dirección…' : (address || 'Selecciona una ubicación en el mapa')}
+          {address || 'Selecciona una ubicación en el mapa'}
         </div>
         <button
           type="button"

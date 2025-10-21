@@ -119,21 +119,6 @@ const getSessionUser = async () => {
   return Array.isArray(response.data) ? response.data[0] : response.data;
 };
 
-// Helper function to map role ID to role name
-const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): string => {
-  if (roleRelation?.nombre) {
-    const role = roleRelation.nombre.toLowerCase();
-    if (role === 'emprendedor' || role === 'administrador') {
-      return role;
-    }
-    return 'cliente';
-  }
-  // Mapeo de ID de rol a nombre de rol (3: Admin, 2: Emprendedor, 1: Cliente)
-  if (roleId === 3) return 'administrador';
-  if (roleId === 2) return 'emprendedor';
-  return 'cliente';
-};
-
 // Funciones reales (migradas a endpoints Laravel 10)
 const real_getProfile = async (): Promise<ProfileDTO> => {
   const sessionUser = await getSessionUser();

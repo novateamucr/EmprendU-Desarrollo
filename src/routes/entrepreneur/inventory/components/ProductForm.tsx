@@ -6,10 +6,9 @@ import {
   createProduct,
   updateProduct,
   Product,
-  uploadProductImage,
 } from "../../../../services/productService";
 import { useToast } from "../../../../hooks/useToast";
-import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { X, Upload } from "lucide-react";
 import { cn } from "../../../../lib/utils";
 
 type FormData = {

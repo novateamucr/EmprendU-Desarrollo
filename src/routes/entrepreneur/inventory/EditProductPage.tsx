@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getProduct, updateProduct, uploadProductImage, type Product } from '../../../services/productService';
+import { getProduct, updateProduct, type Product } from '../../../services/productService';
 // Removed configurable options/custom forms imports
 import { Button } from '../../../components/Button';
 import Input from '../../../components/ui/Input';
@@ -299,29 +299,6 @@ export default function EditProductPage() {
     },
   });
 
-  const createOptMut = useMutation({
-    mutationFn: (payload: Omit<ProductOption,'id'|'product_id'>) => createProductOption(pid, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-options', pid] });
-      toast({ title: 'Pregunta creada' });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) {
-        setFormForbidden(true);
-        toast({ title: 'Sin permisos', description: 'No puedes modificar el formulario de este producto.', variant: 'destructive' });
-      }
-    },
-  });
-
-  const updateOptMut = useMutation({
-    mutationFn: ({ optionId, payload }: { optionId: number; payload: Partial<Omit<ProductOption,'id'|'product_id'>> }) => updateProductOption(pid, optionId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-options', pid] });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) setFormForbidden(true);
-    },
-  });
 
   const deleteOptMut = useMutation({
     mutationFn: (optionId: number) => deleteProductOption(pid, optionId),
@@ -334,25 +311,7 @@ export default function EditProductPage() {
     },
   });
 
-  const createValMut = useMutation({
-    mutationFn: ({ optionId, payload }: { optionId: number; payload: Omit<ProductOptionValue,'id'|'product_option_id'> }) => createOptionValue(pid, optionId, payload),
-    onSuccess: () => {
-      if (expandedOptionId) queryClient.invalidateQueries({ queryKey: ['product-option-values', pid, expandedOptionId] });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) setFormForbidden(true);
-    },
-  });
 
-  const updateValMut = useMutation({
-    mutationFn: ({ optionId, valueId, payload }: { optionId: number; valueId: number; payload: Partial<Omit<ProductOptionValue,'id'|'product_option_id'>> }) => updateOptionValue(pid, optionId, valueId, payload),
-    onSuccess: () => {
-      if (expandedOptionId) queryClient.invalidateQueries({ queryKey: ['product-option-values', pid, expandedOptionId] });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) setFormForbidden(true);
-    },
-  });
 
   const deleteValMut = useMutation({
     mutationFn: ({ optionId, valueId }: { optionId: number; valueId: number }) => deleteOptionValue(pid, optionId, valueId),
@@ -364,29 +323,6 @@ export default function EditProductPage() {
     },
   });
 
-  const createFormMut = useMutation({
-    mutationFn: (payload: Omit<ProductCustomForm,'id'|'product_id'>) => createCustomForm(pid, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-custom-forms', pid] });
-      toast({ title: 'Pregunta creada' });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) {
-        setFormForbidden(true);
-        toast({ title: 'Sin permisos', description: 'No puedes modificar el formulario de este producto.', variant: 'destructive' });
-      }
-    },
-  });
-
-  const updateFormMut = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Partial<Omit<ProductCustomForm,'id'|'product_id'>> }) => updateCustomForm(pid, id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-custom-forms', pid] });
-    },
-    onError: (err: any) => {
-      if (err?.response?.status === 403) setFormForbidden(true);
-    },
-  });
 
   const deleteFormMut = useMutation({
     mutationFn: (id: number) => deleteCustomForm(pid, id),
@@ -682,9 +618,6 @@ export default function EditProductPage() {
               }
             };
 
-            const debounced = (_key: string, fn: () => void) => {
-              fn();
-            };
 
             return (
               <div className="space-y-3">

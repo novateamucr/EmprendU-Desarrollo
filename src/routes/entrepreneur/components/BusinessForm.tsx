@@ -89,15 +89,44 @@ export default function BusinessForm() {
     try {
       setIsSubmitting(true);
 
+      if (!user) {
+        throw new Error('User must be logged in to create a business');
+      }
+
+      const selectedCategory = categories.find(cat => cat.id === parseInt(formData.category));
+      if (!selectedCategory) {
+        throw new Error('Selected category not found');
+      }
+
       const businessData = {
         name: formData.name,
         description: formData.description,
         category: parseInt(formData.category),
         image_url: formData.image_url || '',
-        user_id: user?.id,
+        user_id: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        category_relation: categories.find(cat => cat.id === parseInt(formData.category)) || null,
+        owner: {
+          id: user.id,
+          name: user.name || '',
+          email: user.email || '',
+          role: 2, // Default role for business owner
+          phone: user.phone || null,
+          province: user.province || null,
+          canton: user.canton || null,
+          district: user.district || null,
+          address: user.address || null,
+          avatar_url: user.avatar_url || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          // Required fields with default values
+          email_verified_at: null,
+          password: '', // This will be ignored by the backend
+          username: user.email?.split('@')[0] || 'user' + user.id,
+          banned: false,
+          remember_token: null
+        },
+        category_relation: selectedCategory,
         products: []
       };
 

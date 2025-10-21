@@ -13,7 +13,7 @@ const BusinessContext = createContext<BusinessContextType | undefined>(undefined
 
 export function BusinessProvider({ children }: { children: ReactNode }) {
   const [selectedBusiness, setSelectedBusiness] = useState<Entrepreneurship | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // Business loading logic has been moved to the component level
