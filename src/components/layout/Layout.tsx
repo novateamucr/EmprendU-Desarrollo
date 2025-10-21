@@ -61,15 +61,22 @@ export function Layout({ children }: LayoutProps) {
     },
     { 
       type: 'link' as const, 
-      label: 'Gestor de Usuarios', 
+      label: 'CRUD Usuarios', 
       to: '/admin/usuarios',
       // Only show to admins (role 3)
       visible: user?.role === 3
     },
     { 
       type: 'link' as const, 
-      label: 'Gestor de Emprendimientos', 
+      label: 'CRUD Emprendimientos', 
       to: '/admin/emprendimientos',
+      // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
+    { 
+      type: 'link' as const, 
+      label: 'CRUD Emprendimientos', 
+      to: '/admin/productos',
       // Only show to admins (role 3)
       visible: user?.role === 3
     },

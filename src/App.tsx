@@ -20,9 +20,7 @@ import PwReset from './routes/pwReset';
 import NewPw from './routes/NewPw';
 import FeriasPage from './routes/Ferias';
 import FeriasActividades from './routes/FeriasAvtividades';
-import GestorUsuarios from './routes/GestorUsuarios';
-import { AñadirUsuario } from './routes/AñadirUsuario';
-import AñadirEmprendimiento from './routes/AñadirEmprendimiento';
+
 import { CartProvider } from './context/CartContext';
 import Cart from './routes/Cart';
 import CartDetail from './routes/CartDetail';
@@ -32,6 +30,14 @@ import MyOrderDetail from './routes/MyOrderDetail';
 import AdminDashB from './routes/AdminDashB';
 import FAQs from './routes/FAQs';
 import ContactUs from './routes/ContactUs';
+
+//Admin
+import GestorUsuarios from './routes/GestorUsuarios';
+import AñadirUsuario from './routes/AñadirUsuario';
+import GestorEmprendimientos from './routes/GestorEmprendimientos';
+import AñadirEmprendimiento from './routes/AñadirEmprendimiento';
+import GestorProductos from './routes/GestorProductos';
+import AñadirProductos from './routes/AñadirProducto';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -44,7 +50,7 @@ import EditProductPage from './routes/entrepreneur/inventory/EditProductPage';
 const queryClient = new QueryClient();
 
 import './App.css';
-import GestorEmprendimientos from './routes/GestorEmprendimientos';
+
 
 function RootRoute() {
   const { isAuthenticated } = useAuth();
@@ -109,6 +115,9 @@ function App() {
                     <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />
                     <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
                     <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
+                    <Route path="/admin/productos" element={<GestorProductos />} />
+                    <Route path="/admin/Añadirproductos" element={<AñadirProductos />} />
+                    <Route path="/admin/Añadirproductos/:id" element={<AñadirProductos />} />
                     <Route path="/admin/dashboard" element={<AdminDashB />} />
                     <Route path="/profile/edit/:id" element={<EditarPerfil />} />
                   </Route>

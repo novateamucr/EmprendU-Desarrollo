@@ -12,7 +12,7 @@ const navItems: import("../components/navbar/types").NavbarItemConfig[] = [
   { type: 'link' as const, label: 'Emprendimientos', to: '/feed/emprendimiento' }
 ];
 
-export function AñadirUsuario() {
+export default function AñadirUsuario() {
   // Estado para mensajes de modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
