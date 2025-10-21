@@ -16,104 +16,138 @@ export function SkeletonProductList({ count = 5 }: { count?: number }) {
       </div>
 
       <div className="rounded-md border">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                {['Producto', 'Descripción', 'Precio', 'Estado', 'Fecha', 'Acciones'].map((header) => (
-                  <th 
-                    key={header}
-                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {Array.from({ length: count }).map((_, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
+        {/* Desktop / Table skeleton */}
+        <div className="hidden md:block">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  {['Producto', 'Descripción', 'Precio', 'Estado', 'Fecha', 'Acciones'].map((header) => (
+                    <th 
+                      key={header}
+                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {Array.from({ length: count }).map((_, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Skeleton 
+                          variant="circular" 
+                          width={40} 
+                          height={40} 
+                          className="mr-3"
+                          sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                        />
+                        <div className="text-sm">
+                          <Skeleton 
+                            variant="text" 
+                            width={100} 
+                            height={20} 
+                            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                          />
+                          <Skeleton 
+                            variant="text" 
+                            width={60} 
+                            height={16} 
+                            className="mt-1"
+                            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <Skeleton 
-                        variant="circular" 
-                        width={40} 
-                        height={40} 
-                        className="mr-3"
+                        variant="text" 
+                        width={150} 
+                        height={20}
                         sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
                       />
-                      <div className="text-sm">
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Skeleton 
+                        variant="text" 
+                        width={60} 
+                        height={20}
+                        className="mx-auto"
+                        sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Skeleton 
+                        variant="rectangular" 
+                        width={80} 
+                        height={24}
+                        className="mx-auto rounded-full"
+                        sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Skeleton 
+                        variant="text" 
+                        width={80} 
+                        height={20}
+                        className="mx-auto"
+                        sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-center space-x-2">
                         <Skeleton 
-                          variant="text" 
-                          width={100} 
-                          height={20} 
+                          variant="circular" 
+                          width={32} 
+                          height={32}
                           sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
                         />
                         <Skeleton 
-                          variant="text" 
-                          width={60} 
-                          height={16} 
-                          className="mt-1"
+                          variant="circular" 
+                          width={32} 
+                          height={32}
                           sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
                         />
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile card skeletons */}
+        <div className="md:hidden space-y-3 p-3">
+          {Array.from({ length: count }).map((_, i) => (
+            <div key={i} className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+              <div className="flex items-start gap-3">
+                <Skeleton variant="rectangular" width={64} height={64} className="rounded-md flex-shrink-0" sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <Skeleton variant="text" width="60%" height={18} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                      <Skeleton variant="text" width="30%" height={14} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Skeleton 
-                      variant="text" 
-                      width={150} 
-                      height={20}
-                      sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Skeleton 
-                      variant="text" 
-                      width={60} 
-                      height={20}
-                      className="mx-auto"
-                      sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Skeleton 
-                      variant="rectangular" 
-                      width={80} 
-                      height={24}
-                      className="mx-auto rounded-full"
-                      sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Skeleton 
-                      variant="text" 
-                      width={80} 
-                      height={20}
-                      className="mx-auto"
-                      sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-center space-x-2">
-                      <Skeleton 
-                        variant="circular" 
-                        width={32} 
-                        height={32}
-                        sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                      />
-                      <Skeleton 
-                        variant="circular" 
-                        width={32} 
-                        height={32}
-                        sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
-                      />
+                    <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                  </div>
+                  <div className="mt-2">
+                    <Skeleton variant="text" width="100%" height={14} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                    <Skeleton variant="text" width="80%" height={14} className="mt-1" sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <Skeleton variant="rectangular" width={96} height={28} className="rounded-full" sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                    <div className="flex space-x-2">
+                      <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
+                      <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }} />
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

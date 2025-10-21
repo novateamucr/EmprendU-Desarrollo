@@ -29,8 +29,10 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  stock_quantity?: number;
   image_url: string;
   entrepreneurship_id: number;
+  long_description?: string;
   created_at?: string;
   updated_at?: string;
   entrepreneurship?: {
