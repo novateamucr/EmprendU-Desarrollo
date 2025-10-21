@@ -7,7 +7,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import RealizarPedidoGif from '../assets/RealizarPedido.gif';
-
+import {Modal} from '../components/Modal';
 export default function Cart() {
   const { groups, placeOrder, isPlaced, removeItem, clearCart, updateQty, cancelOrder } = useCart();
   const navigate = useNavigate();
