@@ -2,10 +2,12 @@ import { Skeleton } from '../ui/Skeleton';
 
 export function BusinessDetailSkeleton() {
   return (
-    <div className="pt-24 pb-8 px-4 max-w-6xl mx-auto">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="pt-24 pb-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Image Skeleton */}
-        <Skeleton variant="rounded" width="100%" height="300px" className="rounded-2xl" />
+        <div className="w-full h-44 sm:h-56 md:h-72 rounded-2xl overflow-hidden">
+          <Skeleton variant="rounded" width="100%" height={'100%'} className="rounded-2xl" />
+        </div>
         
         {/* Category Skeleton */}
         <div className="flex justify-center">
