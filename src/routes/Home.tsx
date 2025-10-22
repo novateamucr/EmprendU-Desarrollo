@@ -367,7 +367,7 @@ export default function Home() {
     return (
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
-        <div className="relative overflow-hidden">
+  <div className="relative overflow-hidden">
           {showLeftArrow && (
             <button
               onClick={() => scrollCategories("left")}
@@ -385,9 +385,9 @@ export default function Home() {
             {loadingCategories ? (
               <div className="flex gap-3 w-full">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={`skeleton-category-${i}`} className="flex-shrink-0 w-32 flex flex-col items-center px-4 py-2">
-                    <Skeleton variant="circular" width={24} height={24} className="mb-2" />
-                    <Skeleton variant="text" width={80} height={20} className="rounded-md" />
+                  <div key={`skeleton-category-${i}`} className="flex-shrink-0 w-28 sm:w-32 flex flex-col items-center px-3 py-2">
+                    <Skeleton variant="circular" width={20} height={20} className="mb-2" />
+                    <Skeleton variant="text" width={64} height={18} className="rounded-md" />
                   </div>
                 ))}
               </div>
@@ -408,7 +408,7 @@ export default function Home() {
                     alt={category.name}
                     className="w-4 h-4"
                   />
-                  <span className="font-medium">{category.name}</span>
+                  <span className="font-medium text-sm truncate max-w-[100px] sm:max-w-[140px]">{category.name}</span>
                   <span className="text-xs opacity-75">({category.count})</span>
                 </button>
               );
@@ -531,11 +531,11 @@ export default function Home() {
   return (
     <>
       {/* Main Content */}
-      <div className="pt-24 flex flex-col min-h-full">
-        <div className="w-full px-32">
+      <div className="pt-20 md:pt-24 flex flex-col min-h-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <AnimatedContainer className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
             ¡Hola! ¿Qué te gustaría descubrir hoy?
           </h1>
           <p className="text-secondary">
@@ -545,7 +545,7 @@ export default function Home() {
 
         {/* Filter Toggle */}
         <AnimatedContainer className="mb-6">
-          <div className="flex bg-brand/5 rounded-lg p-1 max-w-md">
+          <div className="flex bg-brand/5 rounded-lg p-1 max-w-full md:max-w-md">
             <SoftButton
               onClick={() => {
                 setViewMode('emprendimientos');
@@ -598,32 +598,34 @@ export default function Home() {
                     className="block"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                   >
-                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-6 border border-border">
-                      <div className="flex flex-col md:flex-row gap-4">
-                        <div className="md:w-32 md:h-32 w-full h-48 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
-                          <img 
-                            src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"} 
+                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
+                      <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                        <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"}
                             alt={featured?.name || "Emprendimiento"}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-semibold text-primary">{featured?.name || "Emprendimiento"}</h3>
-                            <div className="flex items-center gap-1">
-                              <BusinessStars entrepreneurshipId={Number(featured.id)} />
+                        <div className="flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <h3 className="text-base sm:text-lg font-semibold text-primary line-clamp-2">{featured?.name || "Emprendimiento"}</h3>
+                              <div className="flex items-center gap-1">
+                                <BusinessStars entrepreneurshipId={Number(featured.id)} />
+                              </div>
                             </div>
+                            <p className="text-secondary text-sm mb-3 line-clamp-3">
+                              {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
+                            </p>
                           </div>
-                          <p className="text-secondary text-sm mb-3">
-                            {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
-                          </p>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mt-2">
                             <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
                               <Palette sx={{ fontSize: 12 }} />
                               {featured?.category_relation?.nombre || "General"}
                             </span>
                             <span className="text-brand hover:text-brandDark text-sm font-medium">
-                              Ver emprendimiento →
+                              Detalles →
                             </span>
                           </div>
                         </div>
@@ -652,7 +654,7 @@ export default function Home() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                      className="w-full pl-12 pr-4 py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
+                      className="w-full pl-12 pr-4 py-3 md:py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
                     />
                     {/* Search Suggestions */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
@@ -679,7 +681,7 @@ export default function Home() {
                     <select
                       value={selectedProvince || 'Todos'}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (
@@ -698,7 +700,7 @@ export default function Home() {
                     <select
                       value={selectedZone}
                       onChange={(e) => setSelectedZone(e.target.value)}
-                      className="w-full px-4 py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
                     >
                       <option value="Todas">Todos los cantones</option>
                       {zones.map((z) => (
@@ -732,13 +734,13 @@ export default function Home() {
               </div>
 
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, index) => (
                     <SkeletonEntrepreneurCard key={`skeleton-entrepreneur-${index}`} />
                   ))}
                 </div>
               ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBusinesses.map((business: any) => (
                   (() => {
                     
@@ -862,30 +864,26 @@ export default function Home() {
           </>
         )}
         {/* Bottom spacer to separate last content from footer */}
-        <div className="h-4 md:h-6" />
+  <div className="h-4 md:h-6" />
         </div>
         {/* Footer */}
-        <footer
-        id="contacto"
-        className="bg-brand text-white py-6 rounded-t-2xl"
-      >
-        <div className="items-center flex flex-col gap-4">
-          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12 border-b border-white pb-4  w-full">
-            <div className="flex align-middle items-center gap-6">
-              <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
-              <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
-              <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+        <footer id="contacto" className="bg-brand text-white py-6 rounded-t-2xl w-full">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 border-b border-white pb-4 w-full">
+              <div className="flex align-middle items-center gap-4 md:gap-6">
+                <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+                <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
+                <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+              </div>
+              <div className="flex gap-4 md:gap-6">
+                <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
+                <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
+                <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
+              </div>
             </div>
-            <div className="flex gap-6">
-             <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
-              <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
-              <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="" className=" h-7"/></a>
-          
-            </div>    
+            <p className="text-sm text-center md:text-left mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
           </div>
-          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+        </footer>
       </div>
       {/* Confirm remove favorite (Home) */}
       <Modal
