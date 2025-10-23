@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable; // 👈 AGREGA HasApiTokens
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -22,13 +22,16 @@ class User extends Authenticatable
         'district',
         'address',
         'banned',
-        'avatar_url'
+        'avatar_url',
+        'isConfirmed', // ✅ agregamos el campo de confirmación
     ];
 
     protected $casts = [
         'banned' => 'boolean',
+        'isConfirmed' => 'boolean', // ✅ casteo a boolean
     ];
 
+    // Relaciones existentes
     public function roleRelation()
     {
         return $this->belongsTo(UserRole::class, 'role');
@@ -52,5 +55,11 @@ class User extends Authenticatable
     public function fairs()
     {
         return $this->hasMany(Fair::class);
+    }
+
+    // Helper opcional para verificar si el usuario está confirmado
+    public function isConfirmed(): bool
+    {
+        return $this->isConfirmed;
     }
 }
