@@ -96,20 +96,23 @@ export default function AdminDashB() {
 	return (
 		<div className="p-4 md:p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
             
-			{/* Usuarios Card */}
-			<div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center">
-				<h2 className="text-lg font-semibold mb-4 text-blue-700">Usuarios creados por mes</h2>
-				<div className="w-full h-64">
-					<Line data={usersChartData} options={chartOptions} />
-				</div>
-			</div>
-			{/* Emprendimientos Card */}
-			<div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center">
-				<h2 className="text-lg font-semibold mb-4 text-green-700">Emprendimientos creados por mes</h2>
-				<div className="w-full h-64">
-					<Line data={entreChartData} options={chartOptions} />
-				</div>
-			</div>
+			<div className="p-4 md:p-8 max-w-5xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+  {/* Usuarios Card */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto">
+    <h2 className="text-lg font-semibold mb-4 text-blue-700 text-center">Usuarios creados por mes</h2>
+    <div className="w-full h-64 min-w-[300px] md:min-w-0">
+      <Line data={usersChartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+    </div>
+  </div>
+
+  {/* Emprendimientos Card */}
+  <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto">
+    <h2 className="text-lg font-semibold mb-4 text-green-700 text-center">Emprendimientos creados por mes</h2>
+    <div className="w-full h-64 min-w-[300px] md:min-w-0">
+      <Line data={entreChartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+    </div>
+  </div>
+</div>
 		</div>
 	);
 }
