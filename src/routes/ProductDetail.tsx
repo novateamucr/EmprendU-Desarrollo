@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
-import { Facebook, WhatsApp, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
+import { Facebook, WhatsApp, Twitter, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 import {
   getProductOptions,
@@ -186,26 +186,35 @@ export default function ProductDetail() {
   };
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const frontendProductUrl = product?.id
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/product/${product.id}`
+    : currentUrl;
 
   const shareToFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(frontendProductUrl)}`;
     window.open(url, '_blank', 'noopener');
   };
 
   const shareToWhatsApp = () => {
-    const text = `Mira este producto: ${product?.name} - ${currentUrl}`;
+    const text = `Mira este producto: ${product?.name} - ${frontendProductUrl}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToTwitter = () => {
+    const text = `Mira este producto: ${product?.name}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(frontendProductUrl)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
   };
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(currentUrl);
+      await navigator.clipboard.writeText(frontendProductUrl);
       alert('Link copiado al portapapeles');
     } catch {
       // fallback
       const textArea = document.createElement('textarea');
-      textArea.value = currentUrl;
+      textArea.value = frontendProductUrl;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -213,6 +222,36 @@ export default function ProductDetail() {
       alert('Link copiado al portapapeles');
     }
   };
+
+  useEffect(() => {
+    if (!product) return;
+    const title = product.name || '';
+    const genericDescBase = product.entrepreneurship?.name
+      ? `Mira esto de ${product.entrepreneurship.name}`
+      : '¡Mira esto!';
+    const description = genericDescBase;
+    const image = product.image_url || '';
+    const url = frontendProductUrl;
+
+    if (title) document.title = title;
+
+    const setOg = (prop: string, content: string) => {
+      if (!content) return;
+      let tag = document.querySelector(`meta[property="${prop}"]`) as HTMLMetaElement | null;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', prop);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    setOg('og:title', title);
+    setOg('og:description', description);
+    setOg('og:image', image);
+    setOg('og:url', url);
+    setOg('og:type', 'product');
+  }, [product, frontendProductUrl]);
 
   if (loading) return <ProductDetailSkeleton />;
   if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
@@ -417,6 +456,14 @@ export default function ProductDetail() {
                       title="Compartir en Facebook"
                     >
                       <Facebook sx={{ fontSize: 18 }} />
+                    </button>
+                    <button
+                      onClick={shareToTwitter}
+                      aria-label="Compartir en Twitter"
+                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                      title="Compartir en Twitter"
+                    >
+                      <Twitter sx={{ fontSize: 18 }} />
                     </button>
                     <button
                       onClick={shareToWhatsApp}

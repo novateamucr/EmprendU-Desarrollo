@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { logout, user } = useAuth();
+  const { logout, user, isEntrepreneur, isRegularUser } = useAuth();
   const navigate = useNavigate();
 
   // Close dropdown when clicking outside
@@ -72,15 +72,17 @@ export function UserProfile() {
             <User size={16} className="mr-2" />
             Perfil
           </button>
-          <button
-            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-            onClick={() => { setIsOpen(false); navigate('/orders'); }}
-            aria-label="Ir a mis pedidos"
-            role="menuitem"
-          >
-            <Package size={16} className="mr-2" />
-            Mis pedidos
-          </button>
+          {(isEntrepreneur || isRegularUser) && (
+            <button
+              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
+              onClick={() => { setIsOpen(false); navigate('/orders'); }}
+              aria-label="Ir a mis pedidos"
+              role="menuitem"
+            >
+              <Package size={16} className="mr-2" />
+              Mis pedidos
+            </button>
+          )}
           <button
             onClick={() => {
               setIsOpen(false);
