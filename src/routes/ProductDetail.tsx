@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
 
-import { Facebook, WhatsApp, Twitter, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
+import { Facebook, WhatsApp, Twitter, Link as LinkIcon, ArrowBack, Remove, Add } from '@mui/icons-material';
 
 import { useCart } from '../context/CartContext';
 import {
@@ -465,30 +465,12 @@ export default function ProductDetail() {
                     </button>
                     <span className="w-10 text-center font-medium text-gray-800">{quantity}</span>
                     <button
-
                       onClick={(e) => {
                         e.stopPropagation();
                         handleQuantityChange(1);
                       }}
                       className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
                       aria-label="Aumentar cantidad"
-
-                     
-                    >
-                          <button
-                       onClick={shareToTwitter}
-                      aria-label="Compartir en Twitter"
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
-                      title="Compartir en Twitter"
-                        >
-                      <Twitter sx={{ fontSize: 18 }} />
-                    </button>
-                    <button
-                      onClick={shareToWhatsApp}
-                      aria-label="Compartir en WhatsApp"
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
-                      title="Compartir en WhatsApp"
-
                     >
                       <Add className="w-5 h-5" />
                     </button>
@@ -502,7 +484,7 @@ export default function ProductDetail() {
                     <span>Añadir {quantity} al carrito</span>
                     {quantity > 1 && (
                       <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                        ₡{(product.price * quantity).toLocaleString()}
+                        {`₡${(product.price * quantity).toLocaleString()}`}
                       </span>
                     )}
                   </button>

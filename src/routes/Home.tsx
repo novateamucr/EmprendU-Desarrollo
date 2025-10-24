@@ -282,7 +282,7 @@ export default function Home() {
   });
   const categoryNameById = useMemo(() => {
     const map = new Map<number, string>();
-    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.nombre); });
+    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.name || c.nombre); });
     return map;
   }, [allCategories]);
 
@@ -290,7 +290,7 @@ export default function Home() {
   const bizCategoryByEntreId = useMemo(() => {
     const m = new Map<number, string>();
     entrepreneurships.forEach((b: any) => {
-      m.set(b.id, b?.category_relation?.nombre || 'General');
+      m.set(b.id, b?.category_relation?.name || b?.category_relation?.nombre || 'General');
     });
     return m;
   }, [entrepreneurships]);
@@ -360,7 +360,7 @@ export default function Home() {
         });
       } else {
         entrepreneurships.forEach((b: any) => {
-          const name = b?.category_relation?.nombre || 'General';
+          const name = b?.category_relation?.name || b?.category_relation?.nombre || 'General';
           map.set(name, (map.get(name) || 0) + 1);
         });
       }
@@ -384,7 +384,7 @@ export default function Home() {
           ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
           : []
       ),
-      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre, icon: Palette, count: counts.get(c.nombre) || 0 })))
+      ...((categoriesData || []).map((c: Category) => ({ name: c.name || c.nombre, icon: Palette, count: counts.get(c.name || c.nombre) || 0 })))
     ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
     const scrollCategories = (direction: "left" | "right") => {
       if (!categoryScrollRef.current) return;
