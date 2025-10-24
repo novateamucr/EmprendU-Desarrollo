@@ -78,20 +78,20 @@ export default function Cart() {
 
   return (
     <Layout>
-      <div className="w-full max-w-4xl mx-auto p-6 mt-10">
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <ShoppingBag className="w-6 h-6" />
-          <span>Carrito de pedidos</span>
-
-          {/* Botón pequeño junto al título */}
+      <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-6 mt-4 sm:mt-6 md:mt-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span>Carrito de pedidos</span>
+          </h1>
           <button
             onClick={() => setShowExtraModal(true)}
-            className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 sm:p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Abrir información"
           >
             <Info className="w-4 h-4 text-gray-600" />
           </button>
-        </h1>
+        </div>
 
         {groups.map((group) => (
           <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}` } className="mb-8">
@@ -131,72 +131,69 @@ export default function Cart() {
                   className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/product/${item.productId}`)}
                 >
-                  <div className="flex w-full justify-between items-center">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex w-full justify-between items-start sm:items-center flex-col sm:flex-row gap-2 sm:gap-0">
+                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
                       <img
                         src={item.imageUrl || 'https://placehold.co/100x100?text=Producto'}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded"
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
                       />
-                      <div>
-                        <h3 className="font-medium hover:underline">{item.name}</h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium hover:underline text-sm sm:text-base line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
                         {item.selectionSummary && item.selectionSummary.length > 0 && (
-                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4">
-                            {item.selectionSummary.slice(0, 3).map((s, idx) => (
-                              <li key={idx}>{s}</li>
+                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4 space-y-0.5">
+                            {item.selectionSummary.slice(0, 2).map((s, idx) => (
+                              <li key={idx} className="truncate">{s}</li>
                             ))}
                           </ul>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                  </div>
+                  <div className="flex items-center space-x-1 sm:space-x-2 mt-2 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
                       {group.status !== 'requested' && (
-                        <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.quantity > 1) {
+                              updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                            } else {
+                              removeItem(group.entrepreneurshipId, item.productId);
+                            }
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                          aria-label="Disminuir cantidad"
+                        >
                           {item.quantity > 1 ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
+                            <Minus className="w-3.5 h-3.5" />
                           ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeItem(group.entrepreneurshipId, item.productId);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
                           )}
-                        </>
+                        </button>
                       )}
-                      <span className="w-8 text-center">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm sm:text-base">{item.quantity}</span>
                       {group.status !== 'requested' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
                           }}
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                          aria-label="Aumentar cantidad"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       )}
-                      <div className="w-20 text-right font-medium">
-                        ₡{(item.price * item.quantity).toLocaleString()}
-                      </div>
+                    </div>
+                    <div className="w-16 sm:w-20 text-right font-medium text-sm sm:text-base">
+                      ₡{(item.price * item.quantity).toLocaleString()}
                     </div>
                   </div>
                 </div>
               ))}
-
-              <div className="p-4 flex justify-between items-center border-t ">
+              <div className="p-4 flex justify-between items-center border-t">
                 <div className="text-sm text-gray-600">
                   {group.items.length} {group.items.length === 1 ? 'producto' : 'productos'} • Total:
                   <span className="font-semibold ml-1">

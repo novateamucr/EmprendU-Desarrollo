@@ -113,7 +113,13 @@ export function Layout({ children }: LayoutProps) {
   );
 
   const logo = (
+    <Link 
+      to={user?.role === 3 ? '/admin/dashboard' : '/home'} 
+      className="flex items-center"
+      aria-label={user?.role === 3 ? 'Ir al panel de administración' : 'Ir al inicio'}
+    >
       <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+    </Link>
   );
 
   return (
