@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productApi, Product, categoryApi, type Category } from '../services/entrepreneurshipService';
+
 import { Facebook, WhatsApp, Twitter, Link as LinkIcon, ArrowBack } from '@mui/icons-material';
+
 import { useCart } from '../context/CartContext';
 import {
   getProductOptions,
@@ -84,6 +86,11 @@ export default function ProductDetail() {
   }, []);
 
   const { addItem } = useCart();
+  const [quantity, setQuantity] = useState(1);
+
+  const handleQuantityChange = (increment: number) => {
+    setQuantity(prev => Math.max(1, prev + increment));
+  };
 
   // Load configurable form data (hooks must be declared before any return)
   const [optList, setOptList] = useState<ProductOption[]>([]);
@@ -154,34 +161,39 @@ export default function ProductDetail() {
       }
     });
 
-    addItem(
-      product.entrepreneurship.id.toString(),
-      product.entrepreneurship.name,
-      {
-        productId: product.id.toString(),
-        name: product.name,
-        price: product.price,
-        ...(product.image_url && { imageUrl: product.image_url }), // Only include imageUrl if it exists
-        quantity: 1,
-        selections: {
-          options: optList.map(o => ({
-            optionId: o.id,
-            optionName: o.name,
-            valueIds: selectedByOption[o.id] || [],
-            valueLabels: (valuesByOpt[o.id] || [])
-              .filter(v => (selectedByOption[o.id] || []).includes(v.id))
-              .map(v => v.value),
-          }))
-            .filter(e => (e.valueIds?.length || 0) > 0),
-          customs: formList.map(f => ({ formId: f.id, formLabel: f.label, value: customValues[f.id] }))
-            .filter(e => e.value !== undefined && e.value !== null && String(e.value).trim() !== ''),
-        },
-        selectionSummary: summary,
-      }
-    );
-    // Reset form selections
+    // Add the selected quantity to the cart
+    for (let i = 0; i < quantity; i++) {
+      addItem(
+        product.entrepreneurship.id.toString(),
+        product.entrepreneurship.name,
+        {
+          productId: product.id.toString(),
+          name: product.name,
+          price: product.price,
+          ...(product.image_url && { imageUrl: product.image_url }),
+          quantity: 1,
+          selections: {
+            options: optList.map(o => ({
+              optionId: o.id,
+              optionName: o.name,
+              valueIds: selectedByOption[o.id] || [],
+              valueLabels: (valuesByOpt[o.id] || [])
+                .filter(v => (selectedByOption[o.id] || []).includes(v.id))
+                .map(v => v.value),
+            }))
+              .filter(e => (e.valueIds?.length || 0) > 0),
+            customs: formList.map(f => ({ formId: f.id, formLabel: f.label, value: customValues[f.id] }))
+              .filter(e => e.value !== undefined && e.value !== null && String(e.value).trim() !== ''),
+          },
+          selectionSummary: summary,
+        }
+      );
+    }
+    
+    // Reset form selections and quantity
     setSelectedByOption({});
     setCustomValues({});
+    setQuantity(1);
     // No redirection; Layout will show a transient notification
   };
 
@@ -437,32 +449,38 @@ export default function ProductDetail() {
             )}
 
             <div className="mt-auto">
-              <p className="text-2xl font-semibold text-primary mt-6">₡{product.price.toLocaleString()}</p>
-              <div className="flex flex-col gap-3 mt-4">
-                <button
-                  onClick={handleOrder}
-                  className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors"
-                >
-                  Hacer pedido
-                </button>
-                {/* Share caption and icon buttons (tighter spacing) */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-secondary">¡Comparte!</span>
-                  <div className="flex items-center gap-3">
+              <div className="mt-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-semibold text-primary">₡{product.price.toLocaleString()}</p>
+                  <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
                     <button
-                      onClick={shareToFacebook}
-                      aria-label="Compartir en Facebook"
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
-                      title="Compartir en Facebook"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleQuantityChange(-1);
+                      }}
+                      className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+                      aria-label="Disminuir cantidad"
                     >
-                      <Facebook sx={{ fontSize: 18 }} />
+                      <Remove className="w-5 h-5" />
                     </button>
+                    <span className="w-10 text-center font-medium text-gray-800">{quantity}</span>
                     <button
-                      onClick={shareToTwitter}
+
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleQuantityChange(1);
+                      }}
+                      className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+                      aria-label="Aumentar cantidad"
+
+                     
+                    >
+                          <button
+                       onClick={shareToTwitter}
                       aria-label="Compartir en Twitter"
                       className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
                       title="Compartir en Twitter"
-                    >
+                        >
                       <Twitter sx={{ fontSize: 18 }} />
                     </button>
                     <button
@@ -470,22 +488,57 @@ export default function ProductDetail() {
                       aria-label="Compartir en WhatsApp"
                       className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
                       title="Compartir en WhatsApp"
+
                     >
-                      <WhatsApp sx={{ fontSize: 18 }} />
+                      <Add className="w-5 h-5" />
                     </button>
-                    <button
-                      onClick={copyLink}
-                      aria-label="Copiar link"
-                      className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
-                      title="Copiar link"
-                    >
-                      <LinkIcon sx={{ fontSize: 18 }} />
-                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleOrder}
+                    className="px-4 py-2.5 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>Añadir {quantity} al carrito</span>
+                    {quantity > 1 && (
+                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                        ₡{(product.price * quantity).toLocaleString()}
+                      </span>
+                    )}
+                  </button>
+                  {/* Share caption and icon buttons (tighter spacing) */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-secondary">¡Comparte!</span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={shareToFacebook}
+                        aria-label="Compartir en Facebook"
+                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        title="Compartir en Facebook"
+                      >
+                        <Facebook sx={{ fontSize: 18 }} />
+                      </button>
+                      <button
+                        onClick={shareToWhatsApp}
+                        aria-label="Compartir en WhatsApp"
+                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        title="Compartir en WhatsApp"
+                      >
+                        <WhatsApp sx={{ fontSize: 18 }} />
+                      </button>
+                      <button
+                        onClick={copyLink}
+                        aria-label="Copiar link"
+                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        title="Copiar link"
+                      >
+                        <LinkIcon sx={{ fontSize: 18 }} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>

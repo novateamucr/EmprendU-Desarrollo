@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { cartApi } from '../services/cartService';
+import { useAuth } from './AuthContext';
 
 // Types
 export type CartItem = {
@@ -22,6 +24,7 @@ export type CartGroup = {
   status: 'draft' | 'requested';
   orderId?: number;
   items: CartItem[];
+  notes?: string;
 };
 
 type CartContextValue = {
@@ -29,13 +32,15 @@ type CartContextValue = {
   addItem: (entrepreneurshipId: string, entrepreneurshipName: string, item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   updateQty: (entrepreneurshipId: string, productId: string, quantity: number) => void;
   removeItem: (entrepreneurshipId: string, productId: string) => void;
-  placeOrder: (entrepreneurshipId: string, userId: number) => Promise<void>;
+  placeOrder: (entrepreneurshipId: string) => Promise<{ success: boolean; orderId?: number; error?: string }>;
   isPlaced: (entrepreneurshipId: string) => boolean;
   clearCart: () => void;
   getItemCount: () => number;
   getGroupItemCount: (entrepreneurshipId: string) => number;
   showJustAdded: boolean;
   cancelOrder: (groupId: string) => Promise<void>;
+  isPlacingOrder: boolean;
+  orderError: string | null;
 };
 
 const CART_STORAGE_KEY = 'app_cart';
@@ -44,6 +49,9 @@ const CART_PLACED_IDS_KEY = 'app_cart_placed_ids';
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [groups, setGroups] = useState<CartGroup[]>(() => {
     // Load cart from localStorage on initial render
     if (typeof window !== 'undefined') {
@@ -193,26 +201,82 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }).filter(g => g.items.length > 0));
   };
 
-  const placeOrder = async (entrepreneurshipId: string) => {
-    const groupIndex = groups.findIndex(g => g.entrepreneurshipId === entrepreneurshipId);
-    if (groupIndex === -1) return;
+  const placeOrder = useCallback(async (entrepreneurshipId: string) => {
+    if (!user) {
+      setOrderError('Debes iniciar sesión para realizar un pedido');
+      return { success: false, error: 'Debes iniciar sesión para realizar un pedido' };
+    }
 
-    const group = groups[groupIndex];
-    if (group.status === 'requested') return;
+    const group = groups.find(g => g.entrepreneurshipId === entrepreneurshipId);
+    if (!group || group.items.length === 0) {
+      setOrderError('No hay productos en el carrito');
+      return { success: false, error: 'No hay productos en el carrito' };
+    }
 
-    // Update local state only
-    setGroups(prev => {
-      const updated = [...prev];
-      updated[groupIndex] = {
-        ...updated[groupIndex],
-        status: 'requested',
-      };
-      return updated;
-    });
+    setIsPlacingOrder(true);
+    setOrderError(null);
 
-    // Add to placed IDs
-    setPlacedIds(prev => [...prev, group.groupId]);
-  };
+    try {
+      // Step 1: Create draft order
+      const phone = user.phone?.replace(/\D/g, '').slice(-8) || '00000000';
+      
+      const order = await cartApi.createDraftOrder({
+        entrepreneurship_id: parseInt(entrepreneurshipId, 10),
+        customer_name: user.name || 'Cliente',
+        customer_phone_8: phone,
+        customer_email: user.email || '',
+        notes: group.notes
+      });
+
+      // Validate order ID
+      if (!order?.id) {
+        throw new Error('No se pudo crear la orden: ID de orden no recibido');
+      }
+      const orderId = order.id;
+      console.log('Created order with ID:', orderId);
+
+      // Skip adding items for now
+      console.log('Skipping item addition as requested');
+
+      // Step 3: Update order status to 'requested'
+      console.log('Updating order status to requested for order ID:', orderId);
+      const updatedOrder = await cartApi.updateOrderStatus(orderId, 'requested');
+      
+      if (!updatedOrder?.id) {
+        throw new Error('No se pudo actualizar el estado de la orden');
+      }
+      
+      // Update the group with the order ID and status
+      setGroups(groups.map(g => 
+        g.entrepreneurshipId === entrepreneurshipId 
+          ? { ...g, status: 'requested', orderId: updatedOrder.id } 
+          : g
+      ));
+      
+      // Add to placed IDs
+      setPlacedIds([...placedIds, group.groupId]);
+      
+      return { success: true, orderId: updatedOrder.id };
+    } catch (error: any) {
+      console.error('Error placing order:', error);
+      const errorData = error.response?.data;
+      let errorMessage = 'Error al procesar el pedido. Por favor, inténtalo de nuevo.';
+      
+      if (errorData?.errors) {
+        // Format validation errors
+        errorMessage = Object.entries(errorData.errors)
+          .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+          .join('\n');
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+      
+      setOrderError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  }, [groups, user, placedIds]);
 
   const isPlaced: CartContextValue['isPlaced'] = (id) => {
     // Derive from current groups to avoid stale per-entrepreneurship flags
@@ -272,6 +336,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     getGroupItemCount,
     showJustAdded,
     cancelOrder,
+    isPlacingOrder,
+    orderError,
   }), [groups, showJustAdded]);
 
   return (

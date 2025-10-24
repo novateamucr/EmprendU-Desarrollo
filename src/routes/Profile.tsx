@@ -48,10 +48,45 @@ export function Perfil() {
   // Cache local de detalles de emprendimientos para favoritos
   const [favDetailMap, setFavDetailMap] = useState<Record<number, { name: string; image_url: string }>>({});
   // Categories from backend for interests picker
-  const { data: categories, isLoading: loadingCategories } = useQuery<Category[]>({
+  interface ICategory {
+    id: number;
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    created_at: string;
+    updated_at: string;
+  }
+
+  const { data: categoriesData, isLoading: loadingCategories, error: categoriesError } = useQuery<ICategory[]>({
     queryKey: ['categories', 'profile'],
-    queryFn: () => categoryApi.getAll(),
+    queryFn: async (): Promise<ICategory[]> => {
+      try {
+        const response = await categoryApi.getAll();
+        console.log('Categories API Response:', response);
+        
+        // Handle different response formats
+        if (Array.isArray(response)) {
+          return response as ICategory[];
+        } else if (response && typeof response === 'object' && 'data' in response) {
+          return Array.isArray(response.data) ? response.data as ICategory[] : [];
+        }
+        return [];
+      } catch (error: any) {
+        console.error('Error fetching categories:', error);
+        if (error.response?.status === 429) {
+          // If rate limited, show a user-friendly message
+          setError(new Error('Estamos experimentando mucho tráfico. Por favor intente de nuevo en un momento.'));
+        }
+        throw error; // Let React Query handle retries
+      }
+    },
+    retry: 2, // Retry up to 2 times on failure
+    retryDelay: 1000, // Wait 1 second between retries
+    staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
+  
+  const categories = categoriesData || [];
   const [showConfetti, setShowConfetti] = useState(false);
   // Carga y reintentos por sección
   const [interestsLoaded, setInterestsLoaded] = useState(false);
@@ -156,7 +191,7 @@ export function Perfil() {
       try {
         const res = await api.get('/interests', { params: { user_id: authUser.id } });
         const rows = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
-        const byId = new Map<number, string>(categories.map(c => [c.id, c.nombre]));
+        const byId = new Map<number, string>(categories.map(c => [c.id, c.name]));
         const names = rows
           .map((r: any) => byId.get(typeof r.category_id === 'string' ? parseInt(r.category_id, 10) : r.category_id))
           .filter(Boolean) as string[];
@@ -260,9 +295,9 @@ export function Perfil() {
   };
 
   // Helper function to map role
-  const mapRoleFromBackend = (roleId: number, roleRelation?: { nombre: string }): 'comprador' | 'emprendedor' | 'administrador' => {
-    if (roleRelation?.nombre) {
-      const role = roleRelation.nombre.toLowerCase();
+  const mapRoleFromBackend = (roleId: number, roleRelation?: { name: string }): 'comprador' | 'emprendedor' | 'administrador' => {
+    if (roleRelation?.name) {
+      const role = roleRelation.name.toLowerCase();
       if (role === 'emprendedor') return 'emprendedor';
       if (role === 'administrador') return 'administrador';
       return 'comprador';
@@ -275,41 +310,88 @@ export function Perfil() {
   // Use centralized icon utility to ensure consistent icons with fallback
   const iconUrlForCategory = (name: string) => categoryIconUrl(name);
 
+  // State to track loading interests
+  const [loadingInterests, setLoadingInterests] = useState<Record<string, boolean>>({});
+
   // Add interest by category (user_interests)
-  const addInterestByCategory = async (category: Category) => {
+  const addInterestByCategory = async (category: { id: number; name: string }) => {
     if (!authUser || !user) return;
+    
+    // Optimistically update UI
+    const categoryName = category.name;
+    setUser(prev => prev ? { 
+      ...prev, 
+      interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
+    } : prev);
+    
+    // Set loading state
+    setLoadingInterests(prev => ({ ...prev, [categoryName]: true }));
+    
     try {
       await api.post('/interests', { user_id: authUser.id, category_id: category.id });
-      // Update UI with category name
-      setUser(prev => prev ? { ...prev, interests: Array.from(new Set([...(prev.interests || []), category.nombre])) } : prev);
-      // Invalidate caches so Home reflejos intereses actualizados
+      // Invalidate caches so Home reflects updated interests
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
     } catch (err: any) {
+      // Revert UI on error
+      setUser(prev => prev ? { 
+        ...prev, 
+        interests: (prev.interests || []).filter(i => i !== categoryName) 
+      } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo agregar el interés'));
+    } finally {
+      // Clear loading state
+      setLoadingInterests(prev => ({ ...prev, [categoryName]: false }));
     }
   };
 
   // Remove interest by category name: find record by category_id then delete
   const removeInterestByName = async (categoryName: string) => {
     if (!authUser || !user) return;
+    
+    // Find category_id by name
+    const cat = (categories || []).find(c => (c.name || '').toLowerCase() === categoryName.toLowerCase());
+    if (!cat) {
+      setError(new Error('Categoría no encontrada'));
+      return;
+    }
+    
+    // Optimistically update UI
+    setUser(prev => prev ? { 
+      ...prev, 
+      interests: (prev.interests || []).filter(i => i !== categoryName) 
+    } : prev);
+    
+    // Set loading state
+    setLoadingInterests(prev => ({ ...prev, [categoryName]: true }));
+    
     try {
-      // Find category_id by name
-      const cat = (categories || []).find(c => (c.nombre || '').toLowerCase() === categoryName.toLowerCase());
-      if (!cat) throw new Error('Categoría no encontrada');
       // Find the interest record by querying with user_id and category_id
-      const res = await api.get('/interests', { params: { user_id: authUser.id, category_id: cat.id } });
-      const records = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+      const res = await api.get('/interests', { 
+        params: { user_id: authUser.id, category_id: cat.id } 
+      });
+      
+      const records = Array.isArray(res.data?.data) ? res.data.data : 
+                     (Array.isArray(res.data) ? res.data : []);
+      
       const target = records[0];
       if (target?.id) {
         await api.delete(`/interests/${target.id}`);
       }
-      setUser(prev => prev ? { ...prev, interests: (prev.interests || []).filter(i => i !== categoryName) } : prev);
-      // Invalidate caches so Home reflejos intereses actualizados
+      
+      // Invalidate caches so Home reflects updated interests
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
     } catch (err: any) {
+      // Revert UI on error
+      setUser(prev => prev ? { 
+        ...prev, 
+        interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
+      } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo eliminar el interés'));
+    } finally {
+      // Clear loading state
+      setLoadingInterests(prev => ({ ...prev, [categoryName]: false }));
     }
   };
 
@@ -614,16 +696,24 @@ export function Perfil() {
             Selecciona los temas que más te interesan para personalizar tu experiencia.
           </p>
           {loadingCategories ? (
-            <div className="text-secondary">Cargando categorías...</div>
-          ) : (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+            </div>
+          ) : categoriesData && categoriesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(categories || []).map((cat) => {
-                const isSelected = (user?.interests || []).some((i) => (i || '').toLowerCase() === (cat.nombre || '').toLowerCase());
+              {categoriesData.map((cat) => {
+                if (!cat || !cat.name) return null;
+                
+                const categoryName = cat.name.trim();
+                const isSelected = (user?.interests || []).some(
+                  (i: string) => i && i.toLowerCase() === categoryName.toLowerCase()
+                );
+                
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => (isSelected ? removeInterestByName(cat.nombre) : addInterestByCategory(cat))}
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg border text-left transition-colors ${
+                    onClick={() => (isSelected ? removeInterestByName(categoryName) : addInterestByCategory(cat))}
+                    className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-left transition-colors ${
                       isSelected
                         ? 'border-brand bg-brand/10'
                         : 'border-border hover:border-brand/50 hover:bg-brand/5'
@@ -631,12 +721,31 @@ export function Perfil() {
                     aria-pressed={isSelected}
                   >
                     <span className="flex items-center gap-3">
-                      <img src={iconUrlForCategory(cat.nombre)} alt={cat.nombre} className="w-6 h-6" />
-                      <span className="text-sm text-primary">{cat.nombre}</span>
+                      <img 
+                        src={iconUrlForCategory(categoryName)} 
+                        alt={categoryName} 
+                        className="w-6 h-6 object-contain flex-shrink-0"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/default-category-icon.png';
+                        }}
+                      />
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {categoryName}
+                      </span>
                     </span>
+                    {isSelected && (
+                      <svg className="w-5 h-5 text-brand flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
                   </button>
                 );
               })}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              No se encontraron categorías disponibles.
             </div>
           )}
         </div>

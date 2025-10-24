@@ -1,15 +1,76 @@
 import { useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, Plus, Minus, Info } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, Info, CheckCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import RealizarPedidoGif from '../assets/RealizarPedido.gif';
+import { toast } from 'react-toastify';
 export default function Cart() {
-  const { groups, removeItem, updateQty } = useCart();
+  const { 
+    groups, 
+    removeItem, 
+    updateQty, 
+    placeOrder, 
+    isPlacingOrder, 
+    orderError,
+    isPlaced
+  } = useCart();
   const navigate = useNavigate();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [showExtraModal, setShowExtraModal] = useState(false);
+  const [currentOrderingGroup, setCurrentOrderingGroup] = useState<string | null>(null);
+
+  const handlePlaceOrder = useCallback(async (entrepreneurshipId: string) => {
+    setCurrentOrderingGroup(entrepreneurshipId);
+    try {
+      const result = await placeOrder(entrepreneurshipId);
+      if (result.success) {
+        toast.success('¡Pedido realizado con éxito!', {
+          icon: <CheckCircle className="text-green-500 w-6 h-6" />,
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          className: 'bg-green-50 text-green-800',
+          bodyClassName: 'flex items-center',
+          progressClassName: 'bg-green-500',
+        });
+        
+        // Scroll to the top to see the success message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Optionally navigate to order confirmation
+        // navigate(`/orders/${result.orderId}`);
+      } else if (result.error) {
+        toast.error(result.error, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          className: 'bg-red-50 text-red-800',
+        });
+      }
+    } catch (error) {
+      console.error('Order placement error:', error);
+      toast.error('Error al procesar el pedido. Por favor, inténtalo de nuevo.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        className: 'bg-red-50 text-red-800',
+      });
+    } finally {
+      setCurrentOrderingGroup(null);
+    }
+  }, [placeOrder]);
 
   if (!groups.length) {
     return (
@@ -78,125 +139,130 @@ export default function Cart() {
 
   return (
     <Layout>
-      <div className="w-full max-w-4xl mx-auto p-6 mt-10">
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <ShoppingBag className="w-6 h-6" />
-          <span>Carrito de pedidos</span>
-
-          {/* Botón pequeño junto al título */}
+      <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-6 mt-4 sm:mt-6 md:mt-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span>Carrito de pedidos</span>
+          </h1>
           <button
             onClick={() => setShowExtraModal(true)}
-            className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 sm:p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Abrir información"
           >
             <Info className="w-4 h-4 text-gray-600" />
           </button>
-        </h1>
+        </div>
 
         {groups.map((group) => (
-          <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}` } className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={() => navigate(`/business/${group.entrepreneurshipId}`)}
-                className="text-lg font-semibold hover:underline text-left"
-              >
-                {group.entrepreneurshipName}
-              </button>
-              {group.status !== 'requested' && (
+          <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}`} className="mb-8 bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    group.items.forEach(item => {
-                      removeItem(group.entrepreneurshipId, item.productId);
-                    });
-                  }}
-                  className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
+                  onClick={() => navigate(`/business/${group.entrepreneurshipId}`)}
+                  className="text-lg font-semibold text-gray-900 hover:text-brand transition-colors flex items-center gap-2"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Eliminar todo</span>
+                  {group.entrepreneurshipName}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
+                {group.status === 'requested' ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Pedido realizado
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
+                    disabled={isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId}
+                    className={`px-4 py-2 rounded-md font-medium text-sm ${
+                      isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
+                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                        : 'bg-brand text-white hover:bg-brandDark'
+                    } transition-colors`}
+                  >
+                    {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
+                      'Procesando...'
+                    ) : (
+                      'Realizar Pedido'
+                    )}
+                  </button>
+                )}
+              </div>
+              {orderError && group.entrepreneurshipId === currentOrderingGroup && (
+                <div className="mt-2 text-sm text-red-600">{orderError}</div>
               )}
             </div>
-
-            {group.status === 'requested' && (
-              <div className="mx-4 mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2">
-                El emprendedor ya sabe de tu pedido, espera a que lo acepte o se contacte con usted.
-              </div>
-            )}
-
-            <div className="bg-white rounded-lg shadow-sm divide-y ">
+            <div className="divide-y">
               {group.items.map((item) => (
                 <div
                   key={item.productId}
                   className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/product/${item.productId}`)}
                 >
-                  <div className="flex w-full justify-between items-center">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex w-full justify-between items-start sm:items-center flex-col sm:flex-row gap-2 sm:gap-0">
+                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
                       <img
                         src={item.imageUrl || 'https://placehold.co/100x100?text=Producto'}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded"
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
                       />
-                      <div>
-                        <h3 className="font-medium hover:underline">{item.name}</h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium hover:underline text-sm sm:text-base line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
                         {item.selectionSummary && item.selectionSummary.length > 0 && (
-                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4">
-                            {item.selectionSummary.slice(0, 3).map((s, idx) => (
-                              <li key={idx}>{s}</li>
+                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4 space-y-0.5">
+                            {item.selectionSummary.slice(0, 2).map((s, idx) => (
+                              <li key={idx} className="truncate">{s}</li>
                             ))}
                           </ul>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                  </div>
+                  <div className="flex items-center space-x-1 sm:space-x-2 mt-2 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
                       {group.status !== 'requested' && (
-                        <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.quantity > 1) {
+                              updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                            } else {
+                              removeItem(group.entrepreneurshipId, item.productId);
+                            }
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                          aria-label="Disminuir cantidad"
+                        >
                           {item.quantity > 1 ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
+                            <Minus className="w-3.5 h-3.5" />
                           ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeItem(group.entrepreneurshipId, item.productId);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-50 rounded-full"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
                           )}
-                        </>
+                        </button>
                       )}
-                      <span className="w-8 text-center">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm sm:text-base">{item.quantity}</span>
                       {group.status !== 'requested' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
                           }}
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                          aria-label="Aumentar cantidad"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       )}
-                      <div className="w-20 text-right font-medium">
-                        ₡{(item.price * item.quantity).toLocaleString()}
-                      </div>
+                    </div>
+                    <div className="w-16 sm:w-20 text-right font-medium text-sm sm:text-base">
+                      ₡{(item.price * item.quantity).toLocaleString()}
                     </div>
                   </div>
                 </div>
               ))}
-
-              <div className="p-4 flex justify-between items-center border-t ">
+              <div className="p-4 flex justify-between items-center border-t">
                 <div className="text-sm text-gray-600">
                   {group.items.length} {group.items.length === 1 ? 'producto' : 'productos'} • Total:
                   <span className="font-semibold ml-1">
@@ -204,6 +270,35 @@ export default function Cart() {
                   </span>
                 </div>
               </div>
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-600">Subtotal:</span>
+                <span>₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center font-semibold text-lg">
+                <span>Total:</span>
+                <span className="text-brand">
+                  ₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
+                </span>
+              </div>
+              {group.status !== 'requested' && (
+                <button
+                  onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
+                  disabled={isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId}
+                  className={`mt-4 w-full py-3 rounded-md font-medium text-sm ${
+                    isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
+                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                      : 'bg-brand text-white hover:bg-brandDark'
+                  } transition-colors`}
+                >
+                  {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
+                    'Procesando tu pedido...'
+                  ) : (
+                    'Confirmar Pedido'
+                  )}
+                </button>
+              )}
             </div>
           </div>
         ))}
