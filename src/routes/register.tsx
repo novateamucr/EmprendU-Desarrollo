@@ -23,6 +23,9 @@ export default function RouteComponent() {
 
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string | null>(null);
+  
+  // ✅ Nuevo estado para mostrar mensaje de confirmación
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -38,54 +41,53 @@ export default function RouteComponent() {
   };
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setFormValues((prev) => ({ ...prev, [key]: value }));
+    const value = e.target.value;
+    setFormValues((prev) => ({ ...prev, [key]: value }));
 
-  if (key === "password") {
-    if (!value) {
-      setPasswordMessage(null);
-      setConfirmMessage(null);
-      return;
+    if (key === "password") {
+      if (!value) {
+        setPasswordMessage(null);
+        setConfirmMessage(null);
+        return;
+      }
+
+      const validation = validatePassword(value);
+      if (validation === "valid") {
+        setPasswordMessage("La contraseña es válida");
+      } else {
+        setPasswordMessage(validation);
+      }
+
+      if (formValues.confirm) {
+        setConfirmMessage(
+          value === formValues.confirm
+            ? "Las contraseñas coinciden"
+            : "Las contraseñas no coinciden"
+        );
+      } else {
+        setConfirmMessage(null);
+      }
     }
 
-    const validation = validatePassword(value);
-    if (validation === "valid") {
-      setPasswordMessage("La contraseña es válida");
-    } else {
-      setPasswordMessage(validation);
-    }
+    if (key === "confirm") {
+      if (!value) {
+        setConfirmMessage(null);
+        return;
+      }
 
-    if (formValues.confirm) {
       setConfirmMessage(
-        value === formValues.confirm
+        value === formValues.password
           ? "Las contraseñas coinciden"
           : "Las contraseñas no coinciden"
       );
-    } else {
-      setConfirmMessage(null);
     }
-  }
-
-  if (key === "confirm") {
-    if (!value) {
-      setConfirmMessage(null);
-      return;
-    }
-
-    setConfirmMessage(
-      value === formValues.password
-        ? "Las contraseñas coinciden"
-        : "Las contraseñas no coinciden"
-    );
-  }
-};
+  };
 
   const handleSubmit = async () => {
     if (passwordMessage !== "La contraseña es válida") {
-  toast.error("La contraseña no cumple los requisitos", { position: "bottom-center" });
-  return;
-}
-
+      toast.error("La contraseña no cumple los requisitos", { position: "bottom-center" });
+      return;
+    }
 
     const roleId = formValues.tipoCuenta === "Soy emprendedor" ? 2 : 1;
 
@@ -99,8 +101,9 @@ export default function RouteComponent() {
     try {
       const result = await registerUser(userData);
       if (result) {
-        toast.success("¡Cuenta creada con éxito! Por favor, inicia sesión.");
-        navigate('/login');
+        // ✅ Cambiado para mostrar mensaje de confirmación en lugar de ir directo al login
+        setConfirmationSent(true);
+        toast.success("¡Cuenta creada! Revisa tu correo para confirmar tu cuenta.");
       }
     } catch (err: any) {
       console.error('Registration failed:', err);
@@ -203,25 +206,41 @@ export default function RouteComponent() {
             toggle={toggleComponent}
             button={[
               <button
-  key="register"
-  type="button"
-  onClick={handleSubmit}
-  className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
-  disabled={
-    loading ||
-    passwordMessage !== "La contraseña es válida" ||
-    confirmMessage !== "Las contraseñas coinciden"
-  }
->
-  {loading ? 'Creando cuenta...' : 'Registrarme'}
-</button>
+                key="register"
+                type="button"
+                onClick={handleSubmit}
+                className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
+                disabled={
+                  loading ||
+                  passwordMessage !== "La contraseña es válida" ||
+                  confirmMessage !== "Las contraseñas coinciden"
+                }
+              >
+                {loading ? 'Creando cuenta...' : 'Registrarme'}
+              </button>
             ]}
           />
+
+          {/* ✅ Mensaje de confirmación de correo */}
+          {confirmationSent && (
+            <div className="text-center p-6 bg-green-100 rounded-md mt-4">
+              <h2 className="text-lg font-semibold mb-2">¡Registro exitoso!</h2>
+              <p>Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.</p>
+              <button
+                onClick={() => navigate('/login')}
+                className="mt-4 bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg"
+              >
+                Ir a Login
+              </button>
+            </div>
+          )}
+
           {error && (
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
             </div>
           )}
+
           <div className="block md:hidden mt-6 text-center text-sm text-gray-600">
             ¿Ya tienes cuenta?{" "}
             <a

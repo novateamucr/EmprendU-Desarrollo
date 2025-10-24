@@ -154,9 +154,9 @@ export default function Ferias() {
   }, [authUser]);
 
   return (
-    <div className="w-full px-6 sm:px-12 md:px-20 lg:px-32 mt-16 md:mt-20">
+    <div className="w-full px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
       <div className="w-full">
-        <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
 
@@ -192,11 +192,11 @@ export default function Ferias() {
           </section>
         )}
 
-        <h2 className="text-lg font-semibold text-primary mb-2">Ferias abiertas</h2>
-        <p className="text-secondary mb-8">Aquí aparecerán las ferias en las que puedes inscribirte</p>
+  <h2 className="text-lg font-semibold text-primary mb-2">Ferias abiertas</h2>
+  <p className="text-secondary mb-8">Aquí aparecerán las ferias en las que puedes inscribirte</p>
 
         {/* 🔍 Buscador + filtros (provincia y cantón) */}
-        <div className="flex flex-col lg:flex-row flex-wrap items-center justify-between gap-4 mb-8">
+  <div className="flex flex-col lg:flex-row flex-wrap items-center justify-between gap-4 mb-8">
           <div className="relative flex-grow lg:flex-[2] min-w-[250px]">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
             <input
@@ -239,7 +239,7 @@ export default function Ferias() {
         </div>
 
         {/* 🧩 Lista de ferias */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {openFairs.length > 0 ? (
             openFairs.map((fair: Fair) => (
               <FeriaCard

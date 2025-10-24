@@ -175,9 +175,9 @@ export function FeedEmpredimientoDetalle() {
   if (!business) return <div className="text-center py-8 text-gray-500">Emprendimiento no encontrado.</div>;
 
   return (
-   <div className="w-full px-32 mt-20">
-  <div className="w-full">
-        <div className="max-w-3xl mx-auto">
+   <div className="w-full px-4 sm:px-6 lg:px-8 mt-16">
+    <div className="w-full">
+      <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6">
             <img
               src={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
@@ -189,11 +189,11 @@ export function FeedEmpredimientoDetalle() {
                 {business.category_relation?.nombre || 'General'}
               </span>
             </div>
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-wrap justify-center gap-6">
               {[1, 2, 3, 4, 5].map((star) => (
                 <div key={star} className="relative group">
                   <span
-                    className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+                    className={`text-4xl sm:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
                   >
                     ★
                   </span>
@@ -348,11 +348,11 @@ export function FeedEmpredimientoDetalle() {
       </div>
     ))}
     {averageRating && (
-      <p className="text-2xl  mt-1 flex items-center gap-2">
-        {averageRating.toFixed(1)}{" "}
-        <p className='text-xs text-gray-500'>
+      <p className="text-2xl mt-1 flex items-center gap-2">
+        {averageRating.toFixed(1)}&nbsp;
+        <span className='text-xs text-gray-500'>
           {reviews.length} calificaciones - {commentCount} comentarios
-        </p>
+        </span>
       </p>
     )}
   </div>

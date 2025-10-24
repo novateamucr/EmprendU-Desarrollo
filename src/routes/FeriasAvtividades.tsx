@@ -43,10 +43,10 @@ export default function FeriasPage() {
   };
 
   return (
-    <div className="w-full px-6 sm:px-12 md:px-20 lg:px-32 mt-16 md:mt-20">
+    <div className="w-full px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
       <div className="w-full">
         {/* Título */}
-        <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
         <p className="text-secondary mb-8 text-center md:text-left">
