@@ -55,11 +55,11 @@ class UserController extends Controller
         ]);
 
         // Enviar correo de confirmación directamente con Mail::raw
-        $confirmLink = url("/api/confirm?token={$token}");
+       /* $confirmLink = url("/api/confirm?token={$token}");
         Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
             $message->to($user->email)
                     ->subject('Confirma tu correo');
-        });
+        });*/
 
         return response()->json([
             'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
