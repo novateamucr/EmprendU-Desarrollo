@@ -23,6 +23,13 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+
+        public function show(User $user)
+    {
+        return response()->json($user);
+    }
+
+
     // store (registro)
     public function store(Request $request)
     {
