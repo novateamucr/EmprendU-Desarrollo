@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 
-import emprendu from "../assets/emprendu.svg";
+//import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
 import insta from "../assets/instagram_icon.svg";
