@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+use DB;
 
 class UserController extends Controller
 {
@@ -19,7 +23,7 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    // store
+    // store (registro)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -37,59 +41,53 @@ class UserController extends Controller
         ]);
 
         $data['password'] = Hash::make($data['password']);
+        $data['isConfirmed'] = false; // usuario no confirmado al crear
 
         $user = User::create($data);
 
-        // Generate Sanctum token for the new user
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Generar token de confirmación
+        $token = Str::random(60);
+        DB::table('email_tokens')->insert([
+            'user_id' => $user->id,
+            'token' => $token,
+            'created_at' => now(),
+            'expires_at' => Carbon::now()->addDay(), // token válido 24h
+        ]);
+
+        // Enviar correo de confirmación directamente con Mail::raw
+        $confirmLink = url("/api/confirm?token={$token}");
+        Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('Confirma tu correo');
+        });
 
         return response()->json([
-            'message' => 'User registered successfully',
+            'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
             'user' => $user->load('roleRelation'),
-            'token' => $token,
-            'token_type' => 'Bearer'
         ], 201);
     }
 
-    // show
-    public function show(User $user)
+    // confirm email
+    public function confirm(Request $request)
     {
-        return response()->json($user->load(['roleRelation','interests','entrepreneurships']));
-    }
+        $token = $request->query('token');
 
-    // update
-    public function update(Request $request, User $user)
-    {
-        $data = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => ['sometimes','required','email','max:255', Rule::unique('users','email')->ignore($user->id)],
-            'password' => 'sometimes|nullable|string|min:6',
-            'role' => 'sometimes|required|integer|exists:user_roles,id',
-            'phone' => 'nullable|string|max:20',
-            'province' => 'nullable|string|max:100',
-            'canton' => 'nullable|string|max:100',
-            'district' => 'nullable|string|max:100',
-            'address' => 'nullable|string',
-            'banned' => 'nullable|boolean',
-            'avatar_url' => 'nullable|url|max:500',
-        ]);
+        $record = DB::table('email_tokens')
+            ->where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
 
-        if (isset($data['password']) && $data['password']) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'Token inválido o expirado'], 400);
         }
 
-        $user->update($data);
+        // Confirmar usuario
+        User::where('id', $record->user_id)->update(['isConfirmed' => true]);
 
-        return response()->json($user->fresh()->load('roleRelation'));
-    }
+        // Eliminar token
+        DB::table('email_tokens')->where('token', $token)->delete();
 
-    // destroy
-    public function destroy(User $user)
-    {
-        $user->delete();
-        return response()->json(['message' => 'User deleted'], 200);
+        return response()->json(['success' => true, 'message' => 'Correo confirmado correctamente']);
     }
 
     // login
@@ -100,16 +98,18 @@ class UserController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Attempt to authenticate the user
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            
-            // Generate Sanctum token
+
+            // Bloquear login si el usuario no ha confirmado su correo
+            if (!$user->isConfirmed) {
+                Auth::logout();
+                return response()->json(['message' => 'Debes confirmar tu correo antes de iniciar sesión'], 403);
+            }
+
             $token = $user->createToken('auth-token')->plainTextToken;
-            
-            // Load user relationships
             $user->load(['roleRelation', 'interests', 'entrepreneurships']);
-            
+
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
@@ -118,29 +118,6 @@ class UserController extends Controller
             ], 200);
         }
 
-        return response()->json([
-            'message' => 'Invalid credentials'
-        ], 401);
-    }
-
-    /**
-     * Update the user's password securely.
-     * Expects: current_password, password, password_confirmation
-     */
-    public function updatePassword(Request $request, User $user)
-    {
-        $data = $request->validate([
-            'current_password' => ['required', 'string', 'min:6'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
-
-        if (!Hash::check($data['current_password'], $user->password)) {
-            return response()->json(['message' => 'La contraseña actual es incorrecta.'], 422);
-        }
-
-        $user->password = Hash::make($data['password']);
-        $user->save();
-
-        return response()->json(['message' => 'Contraseña actualizada correctamente.'], 200);
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
 }
