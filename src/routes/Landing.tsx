@@ -29,7 +29,7 @@ const slideInRight = keyframes`
 
 const logo = (
     <Link to="/" className="flex items-center">
-      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
 
