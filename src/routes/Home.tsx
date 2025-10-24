@@ -282,7 +282,7 @@ export default function Home() {
   });
   const categoryNameById = useMemo(() => {
     const map = new Map<number, string>();
-    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.name || c.nombre); });
+    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.nombre || c.nombre); });
     return map;
   }, [allCategories]);
 
@@ -384,7 +384,7 @@ export default function Home() {
           ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
           : []
       ),
-      ...((categoriesData || []).map((c: Category) => ({ name: c.name || c.nombre, icon: Palette, count: counts.get(c.name || c.nombre) || 0 })))
+      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre || c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
     ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
     const scrollCategories = (direction: "left" | "right") => {
       if (!categoryScrollRef.current) return;
