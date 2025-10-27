@@ -30,34 +30,82 @@ import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
 
-export  function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
+// Custom hook to fetch all reviews at once
+const useAllReviews = () => {
   const { token } = useAuth();
+  
+  return useQuery({
+    queryKey: ['allReviews'],
+    queryFn: async () => {
+      try {
+        const res = await fetch(
+          'https://emprendu-desarrollo-production.up.railway.app/api/reviews',
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        );
+        
+        if (!res.ok) {
+          if (res.status === 429) {
+            console.warn('Rate limited when fetching reviews, will retry later');
+            throw new Error('rate_limited');
+          }
+          throw new Error('Error al obtener reviews');
+        }
+
+        return await res.json();
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+        throw error;
+      }
+    },
+    retry: (failureCount, error) => {
+      // Don't retry on rate limit, wait for the next refetch
+      if (error.message === 'rate_limited') return false;
+      return failureCount < 2; // Retry up to 2 times for other errors
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false
+  });
+};
+
+export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
+  const { data: reviewsData } = useAllReviews();
   const [averageRating, setAverageRating] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const res = await fetch(
-          `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (!res.ok) throw new Error("Error al obtener reviews");
-
-        const data = await res.json();
-        const avg = data.average_rating ? parseFloat(data.average_rating) : null;
-        setAverageRating(avg);
-      } catch (err) {
-        console.error("Error cargando reviews:", err);
-        setAverageRating(null);
-      }
-    };
-
-    if (entrepreneurshipId) {
-      fetchReviews();
+    if (!reviewsData || !entrepreneurshipId) {
+      setAverageRating(null);
+      return;
     }
-  }, [entrepreneurshipId, token]);
+
+    try {
+      // Find the average rating for this specific entrepreneurship
+      const entrepreneurshipReviews = reviewsData.filter(
+        (review: any) => review.entrepreneurship_id === entrepreneurshipId
+      );
+      
+      if (entrepreneurshipReviews.length === 0) {
+        setAverageRating(null);
+        return;
+      }
+      
+      const sum = entrepreneurshipReviews.reduce(
+        (acc: number, review: any) => acc + (parseFloat(review.rating) || 0), 
+        0
+      );
+      const avg = sum / entrepreneurshipReviews.length;
+      setAverageRating(avg);
+    } catch (error) {
+      console.error('Error calculating average rating:', error);
+      setAverageRating(null);
+    }
+  }, [reviewsData, entrepreneurshipId]);
 
   return (
     <>
@@ -234,7 +282,7 @@ export default function Home() {
   });
   const categoryNameById = useMemo(() => {
     const map = new Map<number, string>();
-    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.nombre); });
+    (allCategories || []).forEach((c) => { if (c?.id != null) map.set(c.id, c.nombre || c.nombre); });
     return map;
   }, [allCategories]);
 
@@ -242,7 +290,7 @@ export default function Home() {
   const bizCategoryByEntreId = useMemo(() => {
     const m = new Map<number, string>();
     entrepreneurships.forEach((b: any) => {
-      m.set(b.id, b?.category_relation?.nombre || 'General');
+      m.set(b.id, b?.category_relation?.name || b?.category_relation?.nombre || 'General');
     });
     return m;
   }, [entrepreneurships]);
@@ -312,7 +360,7 @@ export default function Home() {
         });
       } else {
         entrepreneurships.forEach((b: any) => {
-          const name = b?.category_relation?.nombre || 'General';
+          const name = b?.category_relation?.name || b?.category_relation?.nombre || 'General';
           map.set(name, (map.get(name) || 0) + 1);
         });
       }
@@ -336,7 +384,7 @@ export default function Home() {
           ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
           : []
       ),
-      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre, icon: Palette, count: counts.get(c.nombre) || 0 })))
+      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre || c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
     ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
     const scrollCategories = (direction: "left" | "right") => {
       if (!categoryScrollRef.current) return;

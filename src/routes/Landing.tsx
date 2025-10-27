@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 
-import emprendu from "../assets/emprendu.svg";
+//import emprendu from "../assets/emprendu.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
 import insta from "../assets/instagram_icon.svg";
@@ -29,7 +29,7 @@ const slideInRight = keyframes`
 
 const logo = (
     <Link to="/" className="flex items-center">
-      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
 
@@ -178,18 +178,18 @@ export default function Landing() {
       )}
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12">
+      <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12 mt-20 px-6 sm:py-20 sm:mt-20">
         <div>
-          <img src={emprendu} alt="EmprendU Logo" className="w-28 mb-6" />
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
+          <h2 className="text-xl md:text-2xl font-bold leading-tight mb-6 text-center md:text-left">
             Haz que tu idea llegue más lejos. Comparte, conecta y haz crecer tu
             emprendimiento con EmprendU.
-          </h1>
-          <p className="text-gray-600 mb-6">
+          </h2>
+          <p className="text-gray-600 mb-6 text-center md:text-left">
             EmprendU es una plataforma para la comunidad donde podés registrar,
             gestionar y dar visibilidad a los proyectos emprendedores.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-center md:justify-start">
             <Link to="/register">
               <button className="px-6 py-3 border bg-brand text-white rounded-full hover:bg-brandDark transition-colors">
                 Registrarse gratis
@@ -199,7 +199,7 @@ export default function Landing() {
         </div>
 
         {/* Imagen con íconos */}
-        <div className="relative flex justify-center">
+        <div className="relative justify-center hidden md:flex">
           <img src={hero} alt="Hero" className="w-72 md:w-90 relative z-10 animate-float" />
           <img src={hero} alt="icono" className="absolute w-16 top-0 right-20 animate-float " />
           <img src={hero} alt="icono" className="absolute w-14 top-10 left-12 animate-float-slow" />

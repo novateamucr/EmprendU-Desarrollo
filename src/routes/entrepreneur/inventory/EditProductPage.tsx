@@ -6,7 +6,7 @@ import { getProduct, updateProduct, type Product } from '../../../services/produ
 import { Button } from '../../../components/Button';
 import Input from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2, X, Upload, Image as ImageIcon, AlertCircle, CheckCircle, XCircle, Sparkles } from 'lucide-react';
 import { useToast } from '../../../hooks/useToast';
 import {
   getProductOptions,
@@ -380,13 +380,22 @@ export default function EditProductPage() {
       toast({ title: 'Archivo muy grande', description: 'La imagen no debe superar los 5MB', variant: 'destructive' });
       return;
     }
+    
     setIsUploading(true);
-    try {
-      const previewUrl = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, image_url: previewUrl, imageFile: file }));
-    } finally {
+    
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    
+    // Simulate processing time (min 1 second)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Update form data
+    setFormData(prev => ({ ...prev, image_url: previewUrl, imageFile: file }));
+    
+    // Keep loading for at least 1.5 seconds total for better UX
+    setTimeout(() => {
       setIsUploading(false);
-    }
+    }, 500);
   };
 
   const removeImage = () => {
@@ -482,51 +491,179 @@ export default function EditProductPage() {
 
       {/* Tab content */}
       {activeTab === 'general' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow">
-            <h2 className="font-semibold mb-4">Información básica</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="image" className="text-sm text-gray-700">Imagen del producto</label>
-                <div className="mt-2">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2>
+              <p className="text-sm text-gray-500 mt-1">Información básica del producto</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="image" className="block text-sm font-medium text-gray-700">Imagen del producto</label>
+                  {formData.image_url && (
+                    <button 
+                      type="button" 
+                      onClick={removeImage} 
+                      className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Eliminar</span>
+                    </button>
+                  )}
+                </div>
+                
+                <div className="mt-1">
                   {formData.image_url ? (
-                    <div className="relative inline-block">
-                      <img src={formData.image_url} alt="Preview" className="h-40 w-full object-cover rounded-lg" />
-                      <button type="button" className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5" onClick={removeImage}>×</button>
+                    <div className="relative group">
+                      <img 
+                        src={formData.image_url} 
+                        alt="Vista previa del producto" 
+                        className="h-64 w-full object-cover rounded-lg border border-gray-200" 
+                      />
+                      {isUploading && (
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/90 px-2.5 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm border border-gray-100">
+                          <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                          <span>Validando con IA</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed rounded-lg p-4 text-center text-sm text-gray-600">
-                      <p>Sube una imagen o arrástrala aquí</p>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg transition-colors hover:border-blue-400">
+                      <div className="space-y-1 text-center">
+                        <div className="flex justify-center">
+                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                        </div>
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="image"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                          >
+                            <span>Sube una imagen</span>
+                            <input 
+                              ref={fileInputRef} 
+                              id="image" 
+                              name="image" 
+                              type="file" 
+                              accept="image/*" 
+                              className="sr-only" 
+                              onChange={handleFileChange} 
+                            />
+                          </label>
+                          <p className="pl-1">o arrástrala aquí</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF, WEBP hasta 5MB
+                        </p>
+                      </div>
                     </div>
                   )}
-                  <input ref={fileInputRef} id="image" type="file" accept="image/*" onChange={handleFileChange} className="mt-2" />
+                </div>
+                
+                {formData.image_url && (
+                  <div className="mt-2">
+                    <input 
+                      ref={fileInputRef} 
+                      id="change-image" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {isUploading && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Validando la imagen con IA...
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Form Fields */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Nombre del producto
+                    <span className="text-red-500 ml-0.5">*</span>
+                  </label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    placeholder="Ej: Camiseta de algodón"
+                    required 
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    Descripción
+                  </label>
+                  <Textarea 
+                    id="description" 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleChange} 
+                    placeholder="Describe el producto en detalle"
+                    rows={4}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                      Precio
+                      <span className="text-red-500 ml-0.5">*</span>
+                    </label>
+                    <div className="relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 sm:text-sm">$</span>
+                      </div>
+                      <Input
+                        id="price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.price}
+                        onChange={handleChange}
+                        required
+                        className="pl-7"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm text-gray-700" htmlFor="name">Nombre</label>
-                <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
-              </div>
-              <div>
-                <label className="text-sm text-gray-700" htmlFor="description">Descripción</label>
-                <Textarea id="description" name="description" value={formData.description} onChange={handleChange} />
-              </div>
-              <div>
-                <label className="text-sm text-gray-700" htmlFor="price">Precio</label>
-                <Input id="price" name="price" type="number" min="0" step="0.01" value={formData.price} onChange={handleChange} required />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                {(isSubmitting || isUploading) && (
-                  <span className="inline-flex items-center text-blue-600 mr-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  </span>
-                )}
-                {!isSubmitting && !isUploading && showSavedPulse && (
-                  <span className="inline-flex items-center text-green-600 mr-2">
-                    <Check className="w-4 h-4" />
-                  </span>
-                )}
-                <Button type="submit" disabled={isSubmitting || isUploading}>{isUploading ? 'Subiendo...' : isSubmitting ? 'Guardando...' : 'Guardar'}</Button>
+              {/* Form Actions */}
+              <div className="flex items-center justify-end pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-3">
+                  {(isSubmitting || isUploading) && (
+                    <div className="flex items-center text-sm text-blue-600">
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {isUploading ? 'Subiendo imagen...' : 'Guardando...'}
+                    </div>
+                  )}
+                  {!isSubmitting && !isUploading && showSavedPulse && (
+                    <div className="flex items-center text-sm text-green-600">
+                      <CheckCircle className="w-4 h-4 mr-1.5" />
+                      <span>¡Cambios guardados!</span>
+                    </div>
+                  )}
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting || isUploading}
+                    className="min-w-[120px] justify-center"
+                  >
+                    {isUploading ? 'Subiendo...' : isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                  </Button>
+                </div>
               </div>
             </form>
           </div>

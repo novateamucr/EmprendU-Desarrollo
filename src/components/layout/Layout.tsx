@@ -113,7 +113,13 @@ export function Layout({ children }: LayoutProps) {
   );
 
   const logo = (
-      <img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />
+    <Link 
+      to={user?.role === 3 ? '/admin/dashboard' : '/home'} 
+      className="flex items-center"
+      aria-label={user?.role === 3 ? 'Ir al panel de administración' : 'Ir al inicio'}
+    >
+      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
+    </Link>
   );
 
   return (

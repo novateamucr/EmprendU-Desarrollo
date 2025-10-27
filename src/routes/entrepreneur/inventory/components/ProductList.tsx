@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { 
   Delete as DeleteIcon, 
   Edit as EditIcon, 
@@ -6,11 +6,13 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   UnfoldMore as UnfoldMoreIcon,
-  Inventory2 as PackageIcon
+  Inventory2 as PackageIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
-import { TextField, InputAdornment, IconButton } from '@mui/material';
+import { TextField, InputAdornment, IconButton, Button } from '@mui/material';
 import { deleteProduct, Product } from '../../../../services/productService';
 import { useToast } from '../../../../hooks/useToast';
+import { ModalAnimaciones } from '../../../../components/ui/ModalAnimaciones';
 import {
   Table,
   TableBody,
@@ -46,24 +48,44 @@ export const ProductList: React.FC<ProductListProps> = ({
 }) => {
   const { toast } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{id: number, name: string} | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      try {
-        await deleteProduct(id);
-        onDelete(id);
-        toast({
-          title: '✅ Producto eliminado',
-          description: 'El producto ha sido eliminado correctamente',
-        });
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        toast({
-          title: '❌ Error',
-          description: 'No se pudo eliminar el producto',
-          variant: 'destructive',
-        });
-      }
+  const handleDeleteClick = (id: number, name: string) => {
+    setProductToDelete({ id, name });
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteProduct(productToDelete.id);
+      onDelete(productToDelete.id);
+      toast({
+        title: '✅ Producto eliminado',
+        description: 'El producto ha sido eliminado correctamente',
+      });
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: '❌ Error',
+        description: 'No se pudo eliminar el producto',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (!isDeleting) {
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
     }
   };
 
@@ -214,7 +236,10 @@ export const ProductList: React.FC<ProductListProps> = ({
                     </IconButton>
                     <IconButton 
                       size="small" 
-                      onClick={() => handleDelete(product.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(product.id, product.name);
+                      }}
                       className="text-red-600 hover:bg-red-50"
                       disabled={isLoading}
                       title="Eliminar"
@@ -266,7 +291,16 @@ export const ProductList: React.FC<ProductListProps> = ({
                       <IconButton size="small" onClick={() => onEdit(product)} className="text-blue-600 hover:bg-blue-50" title="Editar">
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" onClick={() => handleDelete(product.id)} className="text-red-600 hover:bg-red-50" disabled={isLoading} title="Eliminar">
+                      <IconButton 
+                        size="small" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(product.id, product.name);
+                        }} 
+                        className="text-red-600 hover:bg-red-50" 
+                        disabled={isLoading} 
+                        title="Eliminar"
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </div>
@@ -285,6 +319,47 @@ export const ProductList: React.FC<ProductListProps> = ({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ModalAnimaciones
+        isOpen={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        title="Confirmar eliminación"
+        variant="warning"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 pt-0.5">
+              <WarningIcon className="h-5 w-5 text-yellow-500" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-gray-900">¿Eliminar producto?</h3>
+              <div className="mt-2 text-sm text-gray-600">
+                <p>¿Estás seguro de que deseas eliminar "{productToDelete?.name || 'este producto'}"? Esta acción no se puede deshacer.</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-3 pt-2">
+            <Button
+              onClick={handleCloseDeleteModal}
+              disabled={isDeleting}
+              variant="outlined"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              variant="contained"
+              className="bg-red-600 text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+              startIcon={<DeleteIcon />}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </div>
+      </ModalAnimaciones>
     </div>
   );
 }
