@@ -3,6 +3,7 @@ import { Trash2, ShoppingBag, Plus, Minus, Info, CheckCircle } from 'lucide-reac
 import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
+import useScrollTop from '../hooks/useScrollTop';
 import { useState, useCallback } from 'react';
 import RealizarPedidoGif from '../assets/RealizarPedido.gif';
 import { toast } from 'react-toastify';
@@ -71,6 +72,9 @@ export default function Cart() {
       setCurrentOrderingGroup(null);
     }
   }, [placeOrder]);
+
+  // Ensure the cart view always loads scrolled to the top
+  useScrollTop('auto');
 
   if (!groups.length) {
     return (

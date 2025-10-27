@@ -32,7 +32,7 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
   const isAdminRole = rr?.id === 3 || String(displayedRole).toLowerCase() === 'administrador';
 
   return (
-    <div className="bg-white rounded-card shadow-soft border border-border p-6 sticky top-20 relative">
+    <div className="bg-white rounded-card shadow-soft border border-border p-6 top-20 relative">
     {!hideEdit && (
       <button
         onClick={() => navigate('/profile/edit')}
@@ -73,7 +73,9 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-primary">Información de contacto</h3>
           <button
-            onClick={onContactInfoClick}
+            onMouseEnter={onContactInfoClick}
+            onFocus={onContactInfoClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onContactInfoClick(); }}
             className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre contacto"
           >
@@ -98,7 +100,9 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-primary">Ubicación</h3>
           <button
-            onClick={onLocationInfoClick}
+            onMouseEnter={onLocationInfoClick}
+            onFocus={onLocationInfoClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onLocationInfoClick(); }}
             className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre ubicación"
           >

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useScrollTop from '../hooks/useScrollTop';
 import { Plus } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -169,9 +170,7 @@ export function Perfil() {
   }, [authUser, fetchUserData, initialLoad]);
 
   // Scroll to top on page load
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, []);
+  useScrollTop('auto');
 
   // Trigger confetti if coming from Editar Perfil (celebration flag)
   useEffect(() => {
@@ -593,51 +592,64 @@ export function Perfil() {
               <div className="bg-white rounded-card shadow-soft border border-border p-6">
                 <h2 className="text-xl font-semibold text-primary mb-1">Favoritos</h2>
                 <h2 className="text-xs text-brand/100 mb-6">Mis emprendimientos favoritos</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(user.favorites || []).map((favorito: any) => {
-                    const entreId = Number(favorito?.entrepreneurship_id);
-                    const detail = Number.isFinite(entreId) ? favDetailMap[entreId] : undefined;
-                    const title = favorito?.name || detail?.name || favorito?.entrepreneurship?.name || 'Emprendimiento';
-                    const imgUrl = favorito?.imageUrl || favorito?.image_url || detail?.image_url || favorito?.entrepreneurship?.image_url || 'https://placehold.co/600x600?text=Sin+imagen';
-                    return (
-                      <Link
-                        key={favorito.id ?? `${title}-${imgUrl}`}
-                        to={`/business/${entreId || ''}`}
-                        className="block"
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                      >
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
-                          <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                            <img
-                              src={imgUrl}
-                              alt={title}
-                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                            />
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!favorito?.id) return;
-                                setFavToRemove(favorito.id);
-                                setShowFavRemoveModal(true);
-                              }}
-                              disabled={!!favPendingById[favorito.id]}
-                              className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white text-[#0A5B7A] border border-border shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] hover:border-[#0A5B7A]"
-                              aria-label="Quitar de favoritos"
-                              title="Quitar de favoritos"
-                            >
-                              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] group-hover:text-white" />
-                            </button>
+                {/* Mostrar botón para ir al inicio cuando no hay favoritos */}
+                {(!(user.favorites || []) || (user.favorites || []).length === 0) ? (
+                  <div className="py-6 flex flex-col items-center justify-center">
+                    <p className="text-sm text-secondary mb-4">No tienes favoritos seleccionados todavía.</p>
+                    <button
+                      onClick={() => navigate('/')}
+                      className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark transition-colors"
+                    >
+                      Ir al inicio
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {(user.favorites || []).map((favorito: any) => {
+                      const entreId = Number(favorito?.entrepreneurship_id);
+                      const detail = Number.isFinite(entreId) ? favDetailMap[entreId] : undefined;
+                      const title = favorito?.name || detail?.name || favorito?.entrepreneurship?.name || 'Emprendimiento';
+                      const imgUrl = favorito?.imageUrl || favorito?.image_url || detail?.image_url || favorito?.entrepreneurship?.image_url || 'https://placehold.co/600x600?text=Sin+imagen';
+                      return (
+                        <Link
+                          key={favorito.id ?? `${title}-${imgUrl}`}
+                          to={`/business/${entreId || ''}`}
+                          className="block"
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                        >
+                          <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                            <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                              <img
+                                src={imgUrl}
+                                alt={title}
+                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (!favorito?.id) return;
+                                  setFavToRemove(favorito.id);
+                                  setShowFavRemoveModal(true);
+                                }}
+                                disabled={!!favPendingById[favorito.id]}
+                                className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white text-[#0A5B7A] border border-border shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] hover:border-[#0A5B7A]"
+                                aria-label="Quitar de favoritos"
+                                title="Quitar de favoritos"
+                              >
+                                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] group-hover:text-white" />
+                              </button>
+                            </div>
+                            <div className="p-4 flex-1 flex flex-col">
+                              <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{title}</h3>
+                            </div>
                           </div>
-                          <div className="p-4 flex-1 flex flex-col">
-                            <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{title}</h3>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
           </>
         </div>
