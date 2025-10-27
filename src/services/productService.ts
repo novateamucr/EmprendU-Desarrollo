@@ -82,7 +82,9 @@ export const getProduct = async (id: number): Promise<Product> => {
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
       }
     });
-    return response.data.data;
+    
+    console.debug('getProduct response shape:', response.data);
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
     throw error;

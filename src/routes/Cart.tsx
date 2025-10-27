@@ -4,12 +4,16 @@ import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
 import { useState } from 'react';
+import useScrollTop from '../hooks/useScrollTop';
 import RealizarPedidoGif from '../assets/RealizarPedido.gif';
 export default function Cart() {
   const { groups, removeItem, updateQty } = useCart();
   const navigate = useNavigate();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [showExtraModal, setShowExtraModal] = useState(false);
+
+  // Ensure the cart view always loads scrolled to the top
+  useScrollTop('auto');
 
   if (!groups.length) {
     return (

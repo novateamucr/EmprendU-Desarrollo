@@ -75,7 +75,7 @@ export function Layout({ children }: LayoutProps) {
     },
     { 
       type: 'link' as const, 
-      label: 'CRUD Emprendimientos', 
+      label: 'CRUD Productos', 
       to: '/admin/productos',
       // Only show to admins (role 3)
       visible: user?.role === 3
