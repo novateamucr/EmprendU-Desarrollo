@@ -5,7 +5,7 @@ import { Layout } from '../components/layout/Layout';
 import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
 import useScrollTop from '../hooks/useScrollTop';
 import { useState, useCallback } from 'react';
-import RealizarPedidoGif from '../assets/RealizarPedido.gif';
+import RealizarPedidoGif from '../assets/animaciones/AnimacionRealizarPedido.gif';
 import { toast } from 'react-toastify';
 export default function Cart() {
   const { 
@@ -103,38 +103,7 @@ export default function Cart() {
             </button>
           </div>
 
-          <ModalAnimaciones
-            isOpen={showExtraModal}
-            onClose={() => setShowExtraModal(false)}
-            title="¿Cómo realizar un pedido?"
-            pointerGifSrc={RealizarPedidoGif}
-            notice={{
-              title: 'Completa la Información de tu perfil',
-              description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
-            }}
-          >
-            <div className="space-y-4 text-gray-700 text-sm">
-              <div>
-                <p className="font-semibold">Agrega productos al carrito</p>
-                <p>Agrega productos al carrito para poder realizar un pedido</p>
-              </div>
 
-              <div>
-                <p className="font-semibold">En el Carrito - Haz click en “Confirmar pedido”</p>
-                <p>En el carrito podrás ver los productos que agregaste al carrito</p>
-              </div>
-
-              <div>
-                <p className="font-semibold">Espera confirmación del emprendimiento</p>
-                <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
-              </div>
-
-              <div>
-                <p className="font-semibold">Revisa el estado de tu pedido</p>
-                <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
-              </div>
-            </div>
-          </ModalAnimaciones>
 
         </div>
       </Layout>
@@ -144,17 +113,16 @@ export default function Cart() {
   return (
     <Layout>
       <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-6 mt-4 sm:mt-6 md:mt-10">
-        <div className="flex items-center justify-between mb-6">
+        <div className="items-center justify-between mb-6">
           <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
             <span>Carrito de pedidos</span>
           </h1>
           <button
             onClick={() => setShowExtraModal(true)}
-            className="p-1.5 sm:p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 sm:p-1 hover:bg-gray-100 hover:underline transition-colors text-gray-600"
             aria-label="Abrir información"
-          >
-            <Info className="w-4 h-4 text-gray-600" />
+          >¿Cómo realizar un pedido?
           </button>
         </div>
 
@@ -343,25 +311,37 @@ export default function Cart() {
 
         {/* Modal extra (info) - reutilizado en la vista con contenido */}
         <ModalAnimaciones
-          isOpen={showExtraModal}
-          onClose={() => setShowExtraModal(false)}
-          title="Información del carrito"
-          variant="info"
-        >
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Aquí puedes mostrar detalles importantes, tips de compra o información extra para el usuario.
-            </p>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowExtraModal(false)}
-                className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark"
-              >
-                Cerrar
-              </button>
+            isOpen={showExtraModal}
+            onClose={() => setShowExtraModal(false)}
+            title="¿Cómo realizar un pedido?"
+            pointerGifSrc={RealizarPedidoGif}
+            notice={{
+              title: 'Completa la Información de tu perfil',
+              description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
+            }}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Agrega productos al carrito</p>
+                <p>Agrega productos al carrito para poder realizar un pedido</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">En el Carrito - Haz click en “Confirmar pedido”</p>
+                <p>En el carrito podrás ver los productos que agregaste al carrito</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Espera confirmación del emprendimiento</p>
+                <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Revisa el estado de tu pedido</p>
+                <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
+              </div>
             </div>
-          </div>
-        </ModalAnimaciones>
+          </ModalAnimaciones>
       </div>
     </Layout>
 

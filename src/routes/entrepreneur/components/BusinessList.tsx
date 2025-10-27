@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye, Info } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
@@ -11,7 +11,8 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 
 import { ModalAnimaciones } from '../../../components/ui/ModalAnimaciones';
-import RealizarPedidoGif from '../../../assets/AddProduct2.gif';
+import agregarProductoGif from '../../../assets/animaciones/AgregarProducto.gif';
+import crearEmprendimientoGif from '../../../assets/animaciones/agregarEmprendimiento.gif';
 
 // Enhanced Business type with all relationships
 type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
@@ -52,6 +53,7 @@ export default function BusinessList() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showExtraModal, setShowExtraModal] = useState(false);
+  const [showCrearEmp, setShowCrearEmp] = useState(false);
 
   const loadBusinesses = async () => {
     try {
@@ -164,6 +166,15 @@ export default function BusinessList() {
         <div>
           <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
+          {businesses.length > 0 && (
+            <button
+            onClick={() => setShowExtraModal(true)}
+            className="  hover:text-blue-500 transition-colors text-gray-400 text-sm text-decoration-line: underline mt-2"
+            aria-label="Abrir información"
+            >
+            ¿Cómo le agrego productos a mi emprendimiento?
+            </button>
+            )}
         </div>
         <Button asChild className="bg-black hover:bg-black/90 text-white">
           <Link to="/entrepreneur/business/setup">
@@ -171,38 +182,32 @@ export default function BusinessList() {
             Nuevo Emprendimiento
           </Link>
         </Button>
-         <button
-              onClick={() => setShowExtraModal(true)}
-              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Abrir información"
-            >
-              <Info className="w-4 h-4 text-gray-600" />
-            </button>
+
       </div>
       <ModalAnimaciones
-            isOpen={showExtraModal}
-            onClose={() => setShowExtraModal(false)}
-            title="¿Cómo agrego productos?"
-            pointerGifSrc={RealizarPedidoGif}
-          >
-            <div className="space-y-4 text-gray-700 text-sm">
-              <div>
-                <p className="font-semibold">Ingresa al Mis emprendimientos</p>
-                <p>Dirígete a Mis emprendimientos en la barra de navegación lateral</p>
-              </div>
+        isOpen={showExtraModal}
+        onClose={() => setShowExtraModal(false)}
+        title="¿Cómo agrego productos?"
+        pointerGifSrc={agregarProductoGif}
+      >
+        <div className="space-y-4 text-gray-700 text-sm">
+          <div>
+            <p className="font-semibold">Ingresa al Mis emprendimientos</p>
+            <p>Dirígete a Mis emprendimientos en la barra de navegación lateral</p>
+          </div>
 
-              <div>
-                <p className="font-semibold">Selecciona el ícono de ver productos </p>
-                <p>En el emprendimiento al que quieras agregarle productos, ingresa al ícono de Ver productos</p>
-              </div>
+          <div>
+            <p className="font-semibold">Selecciona el ícono de ver productos </p>
+            <p>En el emprendimiento al que quieras agregarle productos, ingresa al ícono de Ver productos</p>
+          </div>
 
-              <div>
-                <p className="font-semibold">Agregar Productos</p>
-                <p>En el Inventario, haz click en Agregar Producto, y completa la información solicitada; la imagen del producto, su nombre, descripción y el precio, y luego guarda</p>
-              </div>
-            </div>
-          </ModalAnimaciones>
-          
+          <div>
+            <p className="font-semibold">Agregar Productos</p>
+            <p>En el Inventario, haz click en Agregar Producto, y completa la información solicitada; la imagen del producto, su nombre, descripción y el precio, y luego guarda</p>
+          </div>
+        </div>
+      </ModalAnimaciones>
+
       {businesses.length === 0 ? (
         <div className="container mx-auto px-4 py-12">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center max-w-3xl mx-auto">
@@ -228,7 +233,8 @@ export default function BusinessList() {
               </Button>
             </div>
             <div className="mt-10 pt-8 border-t border-gray-100">
-              <h3 className="text-sm font-medium text-gray-500 mb-4">¿Necesitas ayuda para comenzar?</h3>
+              <button className="text-sm text-decoration-line: underline font-medium text-gray-500 mb-4 hover:text-blue-600"
+                onClick={() => setShowCrearEmp(true)}>¿Necesitas ayuda para comenzar?</button>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">1</div>
@@ -245,6 +251,34 @@ export default function BusinessList() {
               </div>
             </div>
           </div>
+          <ModalAnimaciones
+            isOpen={showCrearEmp}
+            onClose={() => setShowCrearEmp(false)}
+            title="¿Cómo agrego un emprendimiento?"
+            pointerGifSrc={crearEmprendimientoGif}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Dirigete a Mis Emprendimientos</p>
+                <p>Dirígete a la pestaña de Mis emprendimientos en la barra de navegación</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Ingresa al la pestaña de Mis emprendimientos</p>
+                <p>Dirígete al Dashboard en la barra de navegación lateral</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Haz click en Crear mi primer emprendimiento</p>
+                <p>Presiona el botón de Crear Mi primer emprendimiento</p>
+              </div>
+
+              <div>
+                <p className="font-semibold">Agregar los datos de tu emprendimiento</p>
+                <p>Completa los datos solicitados, con el nombre de tu emprendimiento, la categoría de los productos que vendes, y una descripción del emprendimiento</p>
+              </div>
+            </div>
+          </ModalAnimaciones>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -310,9 +344,9 @@ export default function BusinessList() {
                         <Pencil className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
+                    <Button
+                      variant="secondary"
+                      size="icon"
                       className="h-10 w-10"
                       onClick={() => navigate(`/entrepreneur/inventory?businessId=${business.id}`)}
                       title="Ver productos"
