@@ -65,8 +65,26 @@ export function FeedEmpredimientoDetalle() {
       return 0;
     });
 
+  const ownerId = useMemo(() => {
+    if (!business) return null;
+      const raw =
+        (business as any)?.user_id ??
+        (business as any)?.owner_id ??
+        (business as any)?.user?.id ??
+      null;
+        return raw != null ? Number(raw) : null;
+  }, [business]);
+
+  const isOwner =
+    ownerId != null &&
+    user?.id != null &&
+    Number(user.id) === ownerId;
 
   const submitReview = async (rating: number, comments: string) => {
+    if (isOwner) {
+      toast.error("No puedes calificar tu propio emprendimiento.");
+      return;
+      }
     setLoading(true);
     try {
 
@@ -213,7 +231,13 @@ export function FeedEmpredimientoDetalle() {
               style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
               key="abrirPopup"
               text="¡Califica este emprendimiento!"
-              onClick={() => setShowPopup(true)}
+              onClick={() => {
+                if (isOwner) {
+                  toast.error("No puedes calificar tu propio emprendimiento.");
+                    return;
+                  }
+                  setShowPopup(true);
+                }}
             />
 
             {showPopup && (
