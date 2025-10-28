@@ -152,9 +152,11 @@ export default function BusinessList() {
     return (
       <div className="space-y-6 p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Skeleton variant="text" width="200px" height={32} />
-          <Skeleton variant="rectangular" width={150} height={40} className="rounded-md" />
+          <Skeleton variant="text" width="250px" height={32} />
+          <Skeleton variant="rectangular" width={250} height={45} className="rounded-md" />
         </div>
+        <Skeleton variant="text" width="350px" height={20} />
+        <Skeleton variant="text" width="400px" height={15} />
         <SkeletonBusinessList count={3} />
       </div>
     );

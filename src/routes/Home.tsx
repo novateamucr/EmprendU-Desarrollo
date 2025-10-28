@@ -428,14 +428,13 @@ export default function Home() {
 
           <div
             ref={categoryScrollRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll"
+            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll w-full"
           >
             {loadingCategories ? (
               <div className="flex gap-3 w-full">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={`skeleton-category-${i}`} className="flex-shrink-0 w-28 sm:w-32 flex flex-col items-center px-3 py-2">
-                    <Skeleton variant="circular" width={20} height={20} className="mb-2" />
-                    <Skeleton variant="text" width={64} height={18} className="rounded-md" />
+                  <div key={`skeleton-category-${i}`} className=" w-28 sm:w-40 flex flex-col items-center px-3 py-2">                    
+                    <Skeleton variant="text" width="100%" height={60} className="rounded-md" />
                   </div>
                 ))}
               </div>

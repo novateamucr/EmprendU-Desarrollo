@@ -128,16 +128,16 @@ export function SkeletonFeaturedEntrepreneur() {
 
 export function SkeletonDashboardStats() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {[1, 2, 3, 4].map((i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {[1, 2, 3].map((i) => (
         <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-2">
-            <Skeleton variant="text" width="60%" height={20} />
-            <Skeleton variant="circular" width={40} height={40} />
+            <Skeleton variant="text" width="25%" height={20} />
+            <Skeleton variant="rectangular" width={50} height={50} />
           </div>
-          <Skeleton variant="text" width="40%" height={24} className="mb-2" />
+          <Skeleton variant="text" width="20%" height={24} className="mb-2" />
           <div className="flex items-center">
-            <Skeleton variant="text" width={80} height={16} />
+            <Skeleton variant="text" width="70%" height={16} />
           </div>
         </div>
       ))}
