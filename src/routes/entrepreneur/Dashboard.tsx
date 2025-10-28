@@ -385,11 +385,18 @@ export default function Dashboard() {
       <div className="space-y-6 pt-12 px-4 sm:px-6">
         <div className="mb-6">
           <Skeleton variant="text" width="200px" height={32} className="mb-4" />
-          <Skeleton variant="rectangular" width="100%" height={56} className="rounded-lg mb-6" />
+          <Skeleton variant="rectangular" width={600} height={56} className="rounded-lg mb-6" />
         </div>
         
         <SkeletonDashboardStats />
-        
+
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <Skeleton variant="text" width="180px" height={24} className="mb-4" />
+            <div className="flex items-center justify-center">
+              <Skeleton variant="rectangular" width="100%" height={100} className="rounded-lg" />
+            </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
             <Skeleton variant="text" width="180px" height={24} className="mb-4" />
@@ -401,7 +408,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
             <Skeleton variant="text" width="180px" height={24} className="mb-4" />
             <div className="h-64 flex items-center justify-center">
-              <Skeleton variant="circular" width={200} height={200} />
+              <Skeleton variant="rectangular" width="100%" height={240} />
             </div>
           </div>
         </div>
