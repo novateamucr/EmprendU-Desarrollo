@@ -140,26 +140,14 @@ export default function Cart() {
                   </svg>
                 </button>
                 {group.status === 'requested' ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Pedido realizado
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
-                    disabled={isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId}
-                    className={`px-4 py-2 rounded-md font-medium text-sm ${
-                      isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
-                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                        : 'bg-brand text-white hover:bg-brandDark'
-                    } transition-colors`}
-                  >
-                    {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
-                      'Procesando...'
-                    ) : (
-                      'Realizar Pedido'
-                    )}
-                  </button>
-                )}
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Pedido realizado
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Pedido en carrito
+                    </span>
+                  )}
               </div>
               {orderError && group.entrepreneurshipId === currentOrderingGroup && (
                 <div className="mt-2 text-sm text-red-600">{orderError}</div>
@@ -267,7 +255,7 @@ export default function Cart() {
                   {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
                     'Procesando tu pedido...'
                   ) : (
-                    'Confirmar Pedido'
+                    'Realizar Pedido'
                   )}
                 </button>
               )}
