@@ -383,7 +383,32 @@ export function FeedEmpredimientoDetalle() {
 )}
           
         </div>
-          <h1 className="text-2xl font-bold pb-8 border-b-2">Comentarios</h1>
+          <h1 className="text-2xl font-bold ">Comentarios</h1>
+          <Btn
+              style="text-gray-400 text-s mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
+              key="abrirPopup"
+              text="Agregar una reseña"
+              onClick={() => {
+                if (isOwner) {
+                  toast.error("No puedes calificar tu propio emprendimiento.");
+                    return;
+                  }
+                  setShowPopup(true);
+                }}
+            />
+
+            {showPopup && (
+              <BusinessFeedbackPopup
+                show={showPopup}
+                title="¡Califica tu experiencia!"
+                entrepreneurshipName={business.name}
+                imageUrl={business.image_url || 'https://placehold.co/600x300?text=Sin+imagen'}
+                onSubmit={(rating: number, comments: string) => {
+                  submitReview(rating, comments);
+                }}
+                onCancel={() => setShowPopup(false)}
+              />
+            )}
 
         <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500">Todavía no hay comentarios.</p>)}
           {commentedReviews.map(r => (
