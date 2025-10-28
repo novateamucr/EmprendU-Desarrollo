@@ -32,10 +32,10 @@ export default function BusinessFeedback({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-500">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-500 p-4">
       {/*contenedor blanco principal */}
-      <div className={`bg-white rounded-xl w-1/2 relative overflow-hidden transition-all duration-500
-          ${submitted ? "pb-6 h-[80%]" : "pb-8 max-h-[80%]"}`}>
+      <div className={`bg-white rounded-xl w-full md:w-1/3 relative overflow-y-auto transition-all duration-500 category-scroll
+          ${submitted ? "pb-6 h-[80vh]" : "pb-8 max-h-[80vh]"}`}>
 
         {/* Parte gris*/}
         <div className={`bg-radial from-blue-400 from-40% to-white w-full flex flex-col items-center justify-center gap-2 rounded-t-xl pt-3
