@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 
-//import emprendu from "../assets/emprendu.svg";
+import emprendu from "../assets/logo.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
 import insta from "../assets/instagram_icon.svg";
@@ -29,7 +29,7 @@ const slideInRight = keyframes`
 
 const logo = (
     <Link to="/" className="flex items-center">
-      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src={emprendu} alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
 
@@ -293,26 +293,23 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer
-        id="contacto"
-        className="bg-brand text-white py-6 rounded-t-2xl"
-      >
-        <div className="items-center flex flex-col gap-4">
-          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12 border-b border-white pb-4  w-full">
-            <div className="flex align-middle items-center gap-6">
-              <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
-              <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
-              <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+      <footer id="contacto" className="bg-brand text-white py-6 rounded-t-2xl w-full">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 border-b border-white pb-4 w-full">
+              <div className="flex align-middle items-center gap-4 md:gap-6">
+                <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+                <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
+                <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+              </div>
+              <div className="flex gap-4 md:gap-6">
+                <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
+                <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
+                <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
+              </div>
             </div>
-            <div className="flex gap-6">
-              <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
-              <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
-              <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="" className=" h-7"/></a>
-            </div>    
+            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
           </div>
-          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+        </footer>
     </div>
   );
 }

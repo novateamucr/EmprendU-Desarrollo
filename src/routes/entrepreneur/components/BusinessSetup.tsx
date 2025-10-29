@@ -225,9 +225,6 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
               : 'Completa la información básica para crear un nuevo emprendimiento.'}
           </p>
         </div>
-        <Button type="button" onClick={() => navigate('/entrepreneur/businesses')}>
-          Listo
-        </Button>
       </div>
 
       <Card className="p-6">

@@ -307,9 +307,7 @@ export default function Home() {
     setSelectedCategory: (category: string) => void;
   }
   const Categories: React.FC<CategoriesProps> = ({ selectedCategory, setSelectedCategory }) => {
-    const categoryScrollRef = useRef<HTMLDivElement | null>(null);
-    const [showLeftArrow, setShowLeftArrow] = useState(false);
-    const [showRightArrow, setShowRightArrow] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement | null>(null);
     
     // Fetch categories from backend
     const { data: categoriesData, isLoading: loadingCategories } = useQuery<Category[]>({
@@ -318,7 +316,7 @@ export default function Home() {
       select: (d) => d ?? [],
       staleTime: 5 * 60 * 1000,
     });
-
+    console.log("estas son las categorias",categoriesData);
     // Loading states are handled individually for better control
 
     // Build counts depending on view: products per category or entrepreneurships per category
@@ -357,48 +355,13 @@ export default function Home() {
           ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
           : []
       ),
-      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre || c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
+      ...((categoriesData || []).map((c: Category) => ({ name: c.name || c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
     ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
-    const scrollCategories = (direction: "left" | "right") => {
-      if (!categoryScrollRef.current) return;
-      const scrollAmount = 220;
-      categoryScrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    };
-    const checkScroll = () => {
-      if (!categoryScrollRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
-      setShowLeftArrow(scrollLeft > 0);
-      setShowRightArrow(scrollLeft + clientWidth < scrollWidth);
-    };
-
-    useEffect(() => {
-      checkScroll();
-      const ref = categoryScrollRef.current;
-      ref?.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-      return () => {
-        ref?.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      };
-    }, []);
 
     return (
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
   <div className="relative overflow-hidden">
-          {showLeftArrow && (
-            <button
-              onClick={() => scrollCategories("left")}
-              aria-label="Anterior categorías"
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
-            >
-              <ChevronLeft sx={{ fontSize: 20 }} />
-            </button>
-          )}
-
           <div
             ref={categoryScrollRef}
             className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll w-full"
@@ -436,15 +399,7 @@ export default function Home() {
           </div>
 
 
-          {showRightArrow && (
-            <button
-              onClick={() => scrollCategories("right")}
-              aria-label="Siguiente categorías"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow z-20 hover:bg-brand/10 transition-colors focus-brand"
-            >
-              <ChevronRight sx={{ fontSize: 20 }} />
-            </button>
-          )}
+          
         </div>
       </div>
     );
@@ -850,7 +805,7 @@ export default function Home() {
                 <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
               </div>
             </div>
-            <p className="text-sm text-center md:text-left mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
+            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
           </div>
         </footer>
       </div>

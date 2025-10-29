@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, LayoutDashboard, Store } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import emprendULogo from '../../assets/logo.svg';
 
 type LayoutProps = {
   children: ReactNode;
@@ -34,7 +35,7 @@ export function Layout({ children }: LayoutProps) {
     {
       type: 'dropdown' as const,
       label: 'Mis Emprendimientos',
-  items: [
+      items: [
         {
           type: 'link' as const,
           label: 'Dashboard',
@@ -49,7 +50,7 @@ export function Layout({ children }: LayoutProps) {
           icon: <Store size={16} />,
           visible: user?.role === 2
         }
-  ],
+      ],
       visible: user?.role === 2
     },
     { 
@@ -59,32 +60,40 @@ export function Layout({ children }: LayoutProps) {
       // Only show to entrepreneurs (role 2)
       visible: user?.role === 2
     },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Usuarios', 
-      to: '/admin/usuarios',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Emprendimientos', 
-      to: '/admin/emprendimientos',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Productos', 
-      to: '/admin/productos',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
+    
     { 
       type: 'link' as const, 
       label: 'Dashboard', 
       to: '/admin/dashboard',
       // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
+    {
+      type: 'dropdown' as const,
+      label: 'Gestión',
+      items: [
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Usuarios', 
+          to: '/admin/usuarios',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Emprendimientos', 
+          to: '/admin/emprendimientos',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Productos', 
+          to: '/admin/productos',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+    ],
       visible: user?.role === 3
     },
   ];
@@ -118,7 +127,7 @@ export function Layout({ children }: LayoutProps) {
       className="flex items-center"
       aria-label={user?.role === 3 ? 'Ir al panel de administración' : 'Ir al inicio'}
     >
-      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src={emprendULogo} alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
 
