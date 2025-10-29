@@ -20,8 +20,6 @@ import FeaturedEntrepreneurOfDay from '../components/FeaturedEntrepreneurOfDay';
     Star, 
     Apps,
     Palette,
-    ChevronLeft,
-    ChevronRight,
     Favorite,
     FavoriteBorder
 } from '@mui/icons-material';
