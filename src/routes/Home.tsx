@@ -32,100 +32,69 @@ import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
 
 // Custom hook to fetch all reviews at once
-const useAllReviews = () => {
+const useReviews = (entrepreneurshipId: string | number) => {
   const { token } = useAuth();
-  
-  return useQuery({
-    queryKey: ['allReviews'],
-    queryFn: async () => {
-      try {
-        const res = await fetch(
-          'https://emprendu-desarrollo-production.up.railway.app/api/reviews',
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-          }
-        );
-        
-        if (!res.ok) {
-          if (res.status === 429) {
-            console.warn('Rate limited when fetching reviews, will retry later');
-            throw new Error('rate_limited');
-          }
-          throw new Error('Error al obtener reviews');
-        }
 
-        return await res.json();
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-        throw error;
-      }
+  return useQuery({
+    queryKey: ['reviews', entrepreneurshipId],
+    queryFn: async () => {
+      if (!entrepreneurshipId) return [];
+      const res = await fetch(
+        `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+      if (!res.ok) throw new Error('Error al obtener reviews');
+      return res.json();
     },
-    retry: (failureCount, error) => {
-      // Don't retry on rate limit, wait for the next refetch
-      if (error.message === 'rate_limited') return false;
-      return failureCount < 2; // Retry up to 2 times for other errors
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false
+    enabled: !!entrepreneurshipId, // solo activar si hay id
   });
 };
 
-export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
-  const { data: reviewsData } = useAllReviews();
+export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number | string }) {
+  const { data: reviewsData } = useReviews(entrepreneurshipId);
   const [averageRating, setAverageRating] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!reviewsData || !entrepreneurshipId) {
+    if (!reviewsData || reviewsData.length === 0) {
       setAverageRating(null);
       return;
     }
 
     try {
-      // Find the average rating for this specific entrepreneurship
-      const entrepreneurshipReviews = reviewsData.filter(
-        (review: any) => review.entrepreneurship_id === entrepreneurshipId
-      );
-      
-      if (entrepreneurshipReviews.length === 0) {
-        setAverageRating(null);
-        return;
-      }
-      
-      const sum = entrepreneurshipReviews.reduce(
+
+      const sum = reviewsData.reduce(
         (acc: number, review: any) => acc + (parseFloat(review.rating) || 0), 
         0
       );
-      const avg = sum / entrepreneurshipReviews.length;
+      const avg = sum / reviewsData.length;
       setAverageRating(avg);
     } catch (error) {
       console.error('Error calculating average rating:', error);
       setAverageRating(null);
     }
-  }, [reviewsData, entrepreneurshipId]);
+  }, [reviewsData]);
 
   return (
-    <>
-      <div className="flex flex-wrap justify-center gap-2">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <div key={star} className="relative group">
-            <span
-              className={`text-sm ${
-                averageRating && star <= Math.round(averageRating)
-                  ? "text-yellow-500"
-                  : "text-gray-300"
-              }`}
-            >
-              ★
-            </span>
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="flex flex-wrap justify-center gap-2">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <div key={star} className="relative group">
+          <span
+            className={`text-sm ${
+              averageRating && star <= Math.round(averageRating)
+                ? "text-yellow-500"
+                : "text-gray-300"
+            }`}
+          >
+            ★
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -316,7 +285,6 @@ export default function Home() {
       select: (d) => d ?? [],
       staleTime: 5 * 60 * 1000,
     });
-    console.log("estas son las categorias",categoriesData);
     // Loading states are handled individually for better control
 
     // Build counts depending on view: products per category or entrepreneurships per category
