@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Importar la fuente Heebo desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;700&display=swap');
+
 .category-scroll::-webkit-scrollbar {
   display: none;
 }
@@ -12,6 +15,9 @@
 
 /* Brand-wide minimal, lively accents */
 @layer base {
+  html, body {
+  font-family: 'Montserrat', sans-serif;
+}
   /* Text selection brand highlight */
   ::selection {
     background-color: rgba(118, 176, 205, 0.25); /* brand/25 */

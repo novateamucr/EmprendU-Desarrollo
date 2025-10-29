@@ -94,7 +94,7 @@ export default function Landing() {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-white text-gray-900 font-sans ">
       {/* Navbar arriba */}
       <AnimatedNav className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-3xl w-full px-4 z-40">
         <div className="bg-white rounded-[16px] shadow-soft border border-border px-6 py-3 h-14 flex items-center">
