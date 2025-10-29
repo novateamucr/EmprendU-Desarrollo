@@ -34,7 +34,7 @@ export function Layout({ children }: LayoutProps) {
     {
       type: 'dropdown' as const,
       label: 'Mis Emprendimientos',
-  items: [
+      items: [
         {
           type: 'link' as const,
           label: 'Dashboard',
@@ -49,7 +49,7 @@ export function Layout({ children }: LayoutProps) {
           icon: <Store size={16} />,
           visible: user?.role === 2
         }
-  ],
+      ],
       visible: user?.role === 2
     },
     { 
@@ -59,32 +59,40 @@ export function Layout({ children }: LayoutProps) {
       // Only show to entrepreneurs (role 2)
       visible: user?.role === 2
     },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Usuarios', 
-      to: '/admin/usuarios',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Emprendimientos', 
-      to: '/admin/emprendimientos',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
-    { 
-      type: 'link' as const, 
-      label: 'CRUD Productos', 
-      to: '/admin/productos',
-      // Only show to admins (role 3)
-      visible: user?.role === 3
-    },
+    
     { 
       type: 'link' as const, 
       label: 'Dashboard', 
       to: '/admin/dashboard',
       // Only show to admins (role 3)
+      visible: user?.role === 3
+    },
+    {
+      type: 'dropdown' as const,
+      label: 'Gestión',
+      items: [
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Usuarios', 
+          to: '/admin/usuarios',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Emprendimientos', 
+          to: '/admin/emprendimientos',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Productos', 
+          to: '/admin/productos',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
+    ],
       visible: user?.role === 3
     },
   ];
