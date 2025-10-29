@@ -361,11 +361,11 @@ export function FeedEmpredimientoDetalle() {
         )}
 
        {averageRating !== null && (
-  <div className=" mt-20 pb-4 flex flex-wrap justify-center gap-8 items-center">
+  <div className="mt-4 sm:mt-8 md:my-10 pb-5 sm:pb-4 flex flex-wrap justify-center gap-4 md:gap-8 items-center">
     {[1, 2, 3, 4, 5].map((star) => (
       <div key={star} className="relative group">
         <span
-          className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+          className={`text-4xl sm:text-5xl md:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
         >
           ★
         </span>
@@ -383,9 +383,9 @@ export function FeedEmpredimientoDetalle() {
 )}
           
         </div>
-          <h1 className="text-2xl font-bold ">Comentarios</h1>
+          <h1 className="md:text-2xl text-lg font-bold ">Comentarios</h1>
           <Btn
-              style="text-gray-400 text-s mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
+              style="text-gray-400 md:text-lg text-sm mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
               key="abrirPopup"
               text="Agregar una reseña"
               onClick={() => {
@@ -413,20 +413,20 @@ export function FeedEmpredimientoDetalle() {
         <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500">Todavía no hay comentarios.</p>)}
           {commentedReviews.map(r => (
             <div key={r.id} className="border-b pb-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{r.user?.name}</span>
-                  <div className="flex text-yellow-400">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <div className="flex items-center min-w-0 gap-2">
+                  <span className="font-semibold truncate max-w-[110px] xs:max-w-[140px] sm:max-w-[280px]">{r.user?.name}</span>
+                  <div className="flex text-yellow-400 text-sm">
                     {'★'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                     {'☆'.repeat(5 - Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 ml-1 mt-1 sm:mt-0 shrink-0">
                   {new Date(r.created_at).toLocaleString()}
                 </span>
 
               </div>
-              <p className="text-sm text-gray-700 mt-2">{r.review}</p>
+              <p className="text-sm text-gray-700 mt-2 break-words">{r.review}</p>
             </div>
           ))}
 
