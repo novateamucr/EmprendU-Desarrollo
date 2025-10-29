@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ProductOptionValueController;
 use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
+use App\Http\Controllers\FeaturedBusinessController;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
@@ -33,6 +34,8 @@ Route::apiResource('interests', InterestController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('reviews', ReviewController::class);
 Route::get('/fairs', [FairController::class, 'index']);
+Route::get('/featured-business/today', [FeaturedBusinessController::class, 'today']);
+Route::get('/featured-business/history', [FeaturedBusinessController::class, 'history']);
 
 // Secure password update route (expects current_password, password, password_confirmation)
 Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
