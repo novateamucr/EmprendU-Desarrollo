@@ -13,17 +13,20 @@ import type { UserProfile } from '../domain/profile/types';
 import { useAuth } from '../context/AuthContext';
 import { categoryIconUrl } from '../utils/categoryIcons';
 import { Modal } from '../components/Modal';
+import FeaturedEntrepreneurOfDay from '../components/FeaturedEntrepreneurOfDay';
+
   import { 
     Search, 
     Star, 
     Apps,
     Palette,
-    Diamond,
+    ChevronLeft,
+    ChevronRight,
     Favorite,
     FavoriteBorder
 } from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
-import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
+import { SkeletonEntrepreneurCard, SkeletonProductCard } from '../components/ui/Skeleton';
 import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
@@ -159,11 +162,7 @@ const float = keyframes`
 `;
 
 // Subtle glow animation for featured cards
-const glow = keyframes`
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-`;
+
 
 // Styled components with softer animations
 const AnimatedContainer = styled.div`
@@ -183,31 +182,7 @@ const AnimatedCard = styled.div`
 `;
 
 // Glowing card used for the "Emprendimiento del Día" section
-const GlowingCard = styled.div`
-  position: relative;
-  border-radius: 0.5rem;
-  animation: ${scaleIn} 0.25s ease-out;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-  will-change: transform, box-shadow;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    background: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.18), transparent 60%),
-                radial-gradient(120% 120% at 100% 100%, rgba(59, 130, 246, 0.18), transparent 60%);
-    filter: blur(10px);
-    z-index: -1;
-    pointer-events: none;
-    animation: ${glow} 4s ease-in-out infinite;
-  }
-`;
 
 const FloatingElement = styled.div`
   animation: ${float} 3s ease-in-out infinite;
@@ -580,62 +555,11 @@ export default function Home() {
         {viewMode === 'emprendimientos' ? (
           <>
             {/* Emprendimiento del Día */}
-            <AnimatedContainer className="mb-8">
-              <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
-                <FloatingElement>
-                  <Diamond sx={{ fontSize: 20 }} />
-                </FloatingElement>
-                Emprendimiento del Día
-              </h2>
-              {loading ? (
-                <SkeletonFeaturedEntrepreneur />
-              ) : (() => {
-                const featured = entrepreneurships.find((b: any) => b?.id === 1) || filteredBusinesses[0] || entrepreneurships[0];
-                const featuredId = featured?.id ?? '';
-                return (
-                  <Link
-                    to={`/business/${featuredId}`}
-                    className="block"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                  >
-                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
-                      <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                        <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"}
-                            alt={featured?.name || "Emprendimiento"}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-primary line-clamp-2">{featured?.name || "Emprendimiento"}</h3>
-                              <div className="flex items-center gap-1">
-                                <BusinessStars entrepreneurshipId={Number(featured.id)} />
-                              </div>
-                            </div>
-                            <p className="text-secondary text-sm mb-3 line-clamp-3">
-                              {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
-                              <Palette sx={{ fontSize: 12 }} />
-                              {featured?.category_relation?.nombre || "General"}
-                            </span>
-                            <span className="text-brand hover:text-brandDark text-sm font-medium">
-                              Detalles →
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </GlowingCard>
-                  </Link>
-                );
-              })()}
-            </AnimatedContainer>
-
+            {viewMode === 'emprendimientos' && (
+  <AnimatedContainer className="mb-8">
+    <FeaturedEntrepreneurOfDay entrepreneurships={entrepreneurships} loading={loading} />
+  </AnimatedContainer>
+)}
               {/* Search Bar + Zone Selector */}
               <div className="mb-8 rounded-lg">
                 <h2 className="text-base font-semibold text-primary mb-2">Buscar emprendimientos</h2>
