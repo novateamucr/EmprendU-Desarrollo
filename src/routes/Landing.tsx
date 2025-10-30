@@ -180,8 +180,8 @@ export default function Landing() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12 mt-20 px-6 sm:py-20 sm:mt-20">
         <div>
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
-          <h2 className="text-xl md:text-2xl font-bold leading-tight mb-6 text-center md:text-left">
+          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
+          <h2 className="text-xl md:text-2xl font-semibold leading-tight mb-6 text-center md:text-left">
             Haz que tu idea llegue más lejos. Comparte, conecta y haz crecer tu
             emprendimiento con EmprendU.
           </h2>
@@ -210,7 +210,7 @@ export default function Landing() {
 
       {/* ¿Por qué usar EmprendU? */}
       <section id="porque" className="py-16">
-        <h2 className="text-2xl font-bold text-center mb-12">
+        <h2 className="text-2xl font-semibold text-center mb-12">
           ¿Por qué usar EmprendU?
         </h2>
          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
@@ -234,13 +234,13 @@ export default function Landing() {
 
       {/* ¿Cómo funciona? */}
       <section className="py-16 bg-white">
-        <h2 className="text-2xl font-bold text-center mb-10">¿Cómo funciona?</h2>
+  <h2 className="text-2xl font-semibold text-center mb-10">¿Cómo funciona?</h2>
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 relative">
             <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-brand/30"></div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 1
               </div>
               <h3 className="mt-4 font-semibold">Registra tu emprendimiento</h3>
@@ -250,7 +250,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 2
               </div>
               <h3 className="mt-4 font-semibold">Gestiona tu información</h3>
@@ -260,7 +260,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 3
               </div>
               <h3 className="mt-4 font-semibold">Conecta con la comunidad</h3>
@@ -270,7 +270,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 4
               </div>
               <h3 className="mt-4 font-semibold">Haz crecer tu emprendimiento</h3>

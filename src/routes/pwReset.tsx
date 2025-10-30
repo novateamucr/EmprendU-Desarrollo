@@ -73,7 +73,7 @@ export default function PwReset() {
         </Link>
 
         <div className="bg-white rounded-xl p-10 w-1/2 text-center">
-          <h2 className="text-2xl font-bold text-slate-700 mb-4">
+          <h2 className="text-2xl font-semibold text-slate-700 mb-4">
             Revisa tu correo electrónico
           </h2>
           <p className="text-slate-600">
@@ -82,7 +82,7 @@ export default function PwReset() {
           </p>
           <Link
             to="/login"
-            className="mt-6 inline-block bg-black text-white font-bold px-6 py-3 rounded-full hover:bg-green-600"
+            className="mt-6 inline-block bg-black text-white font-semibold px-6 py-3 rounded-full hover:bg-green-600"
           >
             Volver al login
           </Link>
@@ -112,7 +112,7 @@ export default function PwReset() {
         ]}
         button={[
           <Btn
-            style="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-full w-full"
+            style="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-full w-full"
             key="restablecerPw"
             text={loading ? "Enviando..." : "Enviar enlace"}
             onClick={handleSubmit}
