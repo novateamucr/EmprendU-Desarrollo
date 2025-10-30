@@ -254,7 +254,7 @@ export function FeedEmpredimientoDetalle() {
             )}
             <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
             <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
+            <p className="text-gray-600 max-w-2xl mx-auto px-2 md:text-base lg:text-base text-sm">{business.description}</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
@@ -299,14 +299,14 @@ export function FeedEmpredimientoDetalle() {
         {/* Productos del emprendimiento */}
         {/* 🔍 Buscador */}
         <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-          <div className="relative flex-1">
+          <div className="relative w-full md:flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
             <input
               type="text"
               placeholder="Buscar producto..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white md:text-base lg:text-base text-sm"
             />
           </div>
 
@@ -315,7 +315,7 @@ export function FeedEmpredimientoDetalle() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none"
+              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none md:text-base lg:text-base text-sm"
             >
               <option value="none">Ordenar por precio</option>
               <option value="lowToHigh">Menor a mayor</option>
@@ -353,7 +353,7 @@ export function FeedEmpredimientoDetalle() {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500 text-center">
+          <div className="text-gray-500 text-center md:text-base lg:text-base text-sm">
             {searchQuery
               ? 'No se encontraron productos con ese nombre.'
               : 'Este emprendimiento aún no tiene productos.'}

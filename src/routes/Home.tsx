@@ -544,7 +544,7 @@ export default function Home() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                      className="w-full pl-12 pr-4 py-3 md:py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
+                      className="w-full pl-12 pr-4 py-3 md:py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white md:text-base lg:text-base text-sm"
                     />
                     {/* Search Suggestions */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
@@ -571,7 +571,7 @@ export default function Home() {
                     <select
                       value={selectedProvince || 'Todos'}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none md:text-base lg:text-base text-sm before:"
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (
@@ -590,7 +590,7 @@ export default function Home() {
                     <select
                       value={selectedZone}
                       onChange={(e) => setSelectedZone(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none md:text-base lg:text-base text-sm"
                     >
                       <option value="Todas">Todos los cantones</option>
                       {zones.map((z) => (
