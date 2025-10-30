@@ -476,7 +476,7 @@ export default function Home() {
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <AnimatedContainer className="mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-primary mb-2">
             ¡Hola! ¿Qué te gustaría descubrir hoy?
           </h1>
           <p className="text-secondary">

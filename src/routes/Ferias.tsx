@@ -231,7 +231,7 @@ export default function Ferias() {
   return (
    <div className="pt-20 md:pt-24 flex flex-col min-h-full">
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
 

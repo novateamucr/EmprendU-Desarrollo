@@ -125,13 +125,13 @@ export default function RouteComponent() {
       style="w-[25%] h-screen"
       title="¡Únete a nuestra comunidad!"
       text="Regístrate para descubrir y apoyar emprendimientos locales"
-      button={[
-        <Btn
-          key="login"
-          style="border-2 border-white text-white font-black px-6 py-3 rounded-lg w-xs hover:bg-white hover:text-primary focus-brand"
-          text="Iniciar sesión"
-          onClick={() => navigate("/login")}
-        />
+          button={[
+              <Btn
+                key="login"
+                style="border-2 border-white text-white font-bold px-6 py-3 rounded-lg w-xs hover:bg-white hover:text-primary focus-brand"
+                text="Iniciar sesión"
+                onClick={() => navigate("/login")}
+              />
       ]}
       imgSrc="/small_white_logo.png"
       imgPosition="left"
@@ -205,20 +205,20 @@ export default function RouteComponent() {
             dividerText="Tipo de cuenta"
             toggle={toggleComponent}
             button={[
-              <button
-                key="register"
-                type="button"
-                onClick={handleSubmit}
-                className="bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
-                disabled={
-                  loading ||
-                  passwordMessage !== "La contraseña es válida" ||
-                  confirmMessage !== "Las contraseñas coinciden"
-                }
-              >
-                {loading ? 'Creando cuenta...' : 'Registrarme'}
-              </button>
-            ]}
+                <button
+                  key="register"
+                  type="button"
+                  onClick={handleSubmit}
+                  className="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
+                  disabled={
+                    loading ||
+                    passwordMessage !== "La contraseña es válida" ||
+                    confirmMessage !== "Las contraseñas coinciden"
+                  }
+                >
+                  {loading ? 'Creando cuenta...' : 'Registrarme'}
+                </button>
+              ]}
           />
 
           {/* ✅ Mensaje de confirmación de correo */}
@@ -228,7 +228,7 @@ export default function RouteComponent() {
               <p>Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.</p>
               <button
                 onClick={() => navigate('/login')}
-                className="mt-4 bg-brand hover:bg-brandDark text-white font-black p-3 rounded-lg"
+                className="mt-4 bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg"
               >
                 Ir a Login
               </button>
