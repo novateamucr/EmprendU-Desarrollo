@@ -34,7 +34,7 @@ export default function BusinessFeedback({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-500 p-4">
       {/*contenedor blanco principal */}
-      <div className={`bg-white rounded-xl w-full md:w-1/3 relative overflow-y-auto transition-all duration-500 category-scroll
+      <div className={`bg-white rounded-xl w-full md:w-2/3 relative overflow-y-auto transition-all duration-500 category-scroll
           ${submitted ? "pb-6 h-[80vh]" : "pb-8 max-h-[80vh]"}`}>
 
         {/* Parte gris*/}
@@ -67,7 +67,7 @@ export default function BusinessFeedback({
         {!submitted ? (
           <div className="flex flex-col items-center gap-3">
             {/* Estrellas */}
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-8 lg:gap-8">
               {[1, 2, 3, 4, 5].map((star) => (
                 <span
                   key={star}
@@ -84,7 +84,7 @@ export default function BusinessFeedback({
             </div>
 
             {/* Comentarios */}
-            <p className="text-slate-500 self-start pl-10 text-sm mt-2">Comentarios (opcional)</p>
+            <p className="text-slate-500 self-start pl-6 md:pl-8 lg:pl-10 text-sm mt-2">Comentarios (opcional)</p>
             <textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
