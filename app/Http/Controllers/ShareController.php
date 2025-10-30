@@ -23,19 +23,34 @@ class ShareController extends Controller
             ? 'Mira esto de ' . $product->entrepreneurship->name
             : '¡Mira esto!';
 
+        // Make image absolute and HTTPS, support storage/CDN
         $image = (string) ($product->image_url ?? '');
+        $publicBase = rtrim(env('CDN_URL', $appUrl), '/');
         $imageAbsolute = $image;
-        if ($image && !Str::startsWith($image, ['http://', 'https://'])) {
-            $imageAbsolute = $appUrl . '/' . ltrim($image, '/');
+        if ($image) {
+            if (Str::startsWith($image, ['/storage/'])) {
+                $imageAbsolute = $publicBase . '/' . ltrim($image, '/');
+            } elseif (!Str::startsWith($image, ['http://', 'https://'])) {
+                $imageAbsolute = $publicBase . '/' . ltrim($image, '/');
+            }
+            // Force HTTPS if starts with http://
+            if (Str::startsWith($imageAbsolute, ['http://'])) {
+                $imageAbsolute = preg_replace('/^http:\/\//i', 'https://', $imageAbsolute);
+            }
         }
 
-        return view('share.product', [
+        $data = [
             'title' => $title,
             'description' => $description,
-            'image' => $imageAbsolute ?: null,
+            'image' => $imageAbsolute ?: '',
             'url' => $frontendProductUrl,
             'type' => 'product',
             'redirect_url' => $frontendProductUrl,
+            'site_name' => 'EmprendU',
+        ];
+
+        return response()->view('share.product', $data, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
         ]);
     }
 }

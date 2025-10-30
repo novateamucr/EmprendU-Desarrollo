@@ -8,24 +8,29 @@
     <title>{{ $title ? e($title) : 'Compartir' }}</title>
 
     <!-- Open Graph -->
-    <meta property="og:title" content="{{ e($title) }}">
-    <meta property="og:description" content="{{ e($description) }}">
+    <meta property="og:title" content="{{ $title }}">
+    <meta property="og:description" content="{{ $description }}">
+    <meta property="og:type" content="{{ $type ?? 'website' }}">
+    <meta property="og:url" content="{{ $url }}">
     @if(!empty($image))
-        <meta property="og:image" content="{{ e($image) }}">
+        <meta property="og:image" content="{{ $image }}">
+        <meta property="og:image:secure_url" content="{{ $image }}">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
     @endif
-    <meta property="og:url" content="{{ e($url) }}">
-    <meta property="og:type" content="{{ e($type ?? 'website') }}">
+    <meta property="og:site_name" content="{{ $site_name ?? 'EmprendU' }}">
 
-    <!-- Twitter (opcional) -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ e($title) }}">
-    <meta name="twitter:description" content="{{ e($description) }}">
+    <meta name="twitter:title" content="{{ $title }}">
+    <meta name="twitter:description" content="{{ $description }}">
     @if(!empty($image))
-        <meta name="twitter:image" content="{{ e($image) }}">
+        <meta name="twitter:image" content="{{ $image }}">
     @endif
 
     <!-- Fallback redirect for non-JS environments -->
-    <meta http-equiv="refresh" content="5;url={{ e($redirect_url) }}">
+    <meta http-equiv="refresh" content="2;url={{ $redirect_url }}">
 </head>
 <body>
     <noscript>
