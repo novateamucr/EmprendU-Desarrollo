@@ -14,8 +14,9 @@ class ShareController extends Controller
         $product = Product::with('entrepreneurship')->findOrFail($id);
 
         $appUrl = rtrim(config('app.url') ?? env('APP_URL', ''), '/');
+        $frontendBase = rtrim(env('FRONTEND_URL', $appUrl), '/');
         $frontendProductPath = "/product/{$product->id}";
-        $frontendProductUrl = $appUrl . $frontendProductPath;
+        $frontendProductUrl = $frontendBase . $frontendProductPath;
 
         $title = $product->name ?? '';
         $description = $product->entrepreneurship && $product->entrepreneurship->name
