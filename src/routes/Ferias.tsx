@@ -27,6 +27,7 @@ export default function Ferias() {
   const [selectedProvince, setSelectedProvince] = useState("Todas las provincias");
   const [selectedCanton, setSelectedCanton] = useState("Todos los cantones");
   const [userInscripciones, setUserInscripciones] = useState<any[]>([]);
+  const [userEntrepreneurships, setUserEntrepreneurships] = useState<Entrepreneurship[]>([]);
   const [showPopupEmprendimientos, setShowPopupEmprendimientos] = useState(false);
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [showPopupDetalles, setShowPopupDetalles] = useState(false);
@@ -61,6 +62,10 @@ export default function Ferias() {
     return matchesQuery && matchesProvince && matchesCanton;
   });
 
+  // Helper para extraer id de emprendimiento desde una inscripción (robusto a distintas formas)
+  const getInsEntrepreneurshipId = (ins: any) =>
+    ins?.emprendimiento?.id ?? ins?.emprendimiento ?? ins?.entrepreneurship?.id ?? ins?.entrepreneurship ?? ins?.emprendimiento_id ?? ins?.entrepreneurship_id ?? null;
+
   // Función para inscribirse
   const handleInscribirse = async (fair: Fair) => {
     setSelectedFair(fair);
@@ -76,16 +81,41 @@ export default function Ferias() {
 
     toast.info('Cargando emprendimientos...');
     try {
+      // Obtener inscripciones del usuario para esta feria (tener datos frescos)
+      let userIns: any[] = [];
+      try {
+        const insRes = await inscripcionesApi.getByUser(authUser.id);
+        const insData = insRes && (insRes.data ?? insRes);
+        userIns = Array.isArray(insData) ? insData : [];
+      } catch (err) {
+        console.warn('No se pudieron obtener inscripciones del usuario antes de filtrar emprendimientos', err);
+        userIns = [];
+      }
+
       const res = await entrepreneurshipApi.getAll({ page: 1, per_page: 50, user_id: authUser.id });
-      const items = Array.isArray(res)
-        ? res
+      const items: Entrepreneurship[] = Array.isArray(res)
+        ? (res as unknown as Entrepreneurship[])
         : Array.isArray((res as any).data)
         ? (res as any).data
         : Array.isArray((res as any).data?.data)
         ? (res as any).data.data
         : [];
-      setFetchedEntrepreneurships(items);
+
+      // Filtrar los emprendimientos que ya estén inscritos por el usuario en la feria seleccionada
+  const filtered = items.filter((e: Entrepreneurship) => {
+        const already = userIns.some((ins) => {
+          const feriaId = ins?.fair_id ?? ins?.feria_id ?? ins?.feriaId ?? null;
+          const emprendId = getInsEntrepreneurshipId(ins);
+          return feriaId === fair.id && emprendId === e.id;
+        });
+        return !already;
+      });
+
+      setFetchedEntrepreneurships(filtered);
       setShowPopupEmprendimientos(true);
+      if (filtered.length === 0) {
+        toast.info('No tienes emprendimientos disponibles para inscribirte en esta feria (ya estás registrado en todos).');
+      }
     } catch (err) {
       console.error('Error fetching entrepreneurships for user', err);
       toast.error('No se pudieron cargar tus emprendimientos. Intenta de nuevo.');
@@ -148,14 +178,59 @@ export default function Ferias() {
     }
   };
 
+  // Cargar emprendimientos del usuario (para determinar qué ferias ocultar)
+  const fetchUserEntrepreneurships = async () => {
+    if (!isAuthenticated || !authUser) return;
+    try {
+      const res = await entrepreneurshipApi.getAll({ page: 1, per_page: 100, user_id: authUser.id });
+      const items: Entrepreneurship[] = Array.isArray(res)
+        ? (res as unknown as Entrepreneurship[])
+        : Array.isArray((res as any).data)
+        ? (res as any).data
+        : Array.isArray((res as any).data?.data)
+        ? (res as any).data.data
+        : [];
+      setUserEntrepreneurships(items);
+    } catch (err) {
+      console.error('Error fetching user entrepreneurships', err);
+      setUserEntrepreneurships([]);
+    }
+  };
+
   useEffect(() => {
     fetchUserInscripciones();
+    fetchUserEntrepreneurships();
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [authUser]);
 
+  // Filtrar ferias: ocultar ferias en las que el usuario ya inscribió todos sus emprendimientos
+  const visibleFairs = useMemo(() => {
+    // Si no hay ferias abiertas o no hay emprendimientos del usuario, mostrar todo
+    if (!fairs || fairs.length === 0) return openFairs;
+    if (!userEntrepreneurships || userEntrepreneurships.length === 0) return openFairs;
+
+    const userEmpIds = userEntrepreneurships.map((e) => e.id);
+
+    return openFairs.filter((fair) => {
+      // obtener inscripciones del usuario para esta feria
+      const insForFair = userInscripciones.filter((ins) => (ins?.fair_id ?? ins?.feria_id ?? ins?.feriaId) === fair.id);
+      const registeredIds = insForFair
+        .map((ins) => getInsEntrepreneurshipId(ins))
+        .map((id) => (typeof id === 'string' ? Number(id) : id))
+        .filter(Boolean) as number[];
+
+      // Si el usuario no tiene emprendimientos registrados en esta feria -> mostrar
+      if (registeredIds.length === 0) return true;
+
+      // Si todos los emprendimientos del usuario están incluidos en registeredIds, ocultar
+      const allRegistered = userEmpIds.every((id) => registeredIds.includes(id));
+      return !allRegistered;
+    });
+  }, [openFairs, userEntrepreneurships, userInscripciones, fairs]);
+
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
-      <div className="w-full">
+   <div className="pt-20 md:pt-24 flex flex-col min-h-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
@@ -240,8 +315,8 @@ export default function Ferias() {
 
         {/* 🧩 Lista de ferias */}
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {openFairs.length > 0 ? (
-            openFairs.map((fair: Fair) => (
+          {visibleFairs.length > 0 ? (
+            visibleFairs.map((fair: Fair) => (
               <FeriaCard
                 key={fair.id}
                 title={fair.title}
