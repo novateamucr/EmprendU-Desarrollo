@@ -9,6 +9,7 @@ import { entrepreneurshipApi, categoryApi } from '../../../services/entrepreneur
 import ChannelsEditor from './ChannelsEditor';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
+import { ImageUpload } from '../../../components/ImageUpload';
 
 interface Category {
   id: number;
@@ -230,6 +231,23 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       <Card className="p-6">
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
+            {!isEditMode && (
+              <div className="flex flex-col items-center">
+                <label className="block w-full text-sm font-medium mb-3">
+                  Imagen del emprendimiento
+                </label>
+                <ImageUpload
+                  currentImage={typeof formData.image_url === 'string' ? formData.image_url || undefined : undefined}
+                  placeholderInitial={(formData.name || 'E').trim().charAt(0).toUpperCase()}
+                  onImageChange={(imageData: string) => {
+                    setFormData(prev => ({ ...prev, image_url: imageData }));
+                  }}
+                />
+                <p className="mt-2 text-xs text-muted-foreground text-center">
+                  Sube una imagen representativa de tu emprendimiento. Formatos: JPG, PNG. Máx 5MB.
+                </p>
+              </div>
+            )}
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Nombre del emprendimiento *

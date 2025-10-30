@@ -93,6 +93,13 @@ export function Layout({ children }: LayoutProps) {
           // Only show to admins (role 3)
           visible: user?.role === 3
         },
+        { 
+          type: 'link' as const, 
+          label: 'CRUD Ferias', 
+          to: '/admin/ferias',
+          // Only show to admins (role 3)
+          visible: user?.role === 3
+        },
     ],
       visible: user?.role === 3
     },

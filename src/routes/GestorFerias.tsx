@@ -1,49 +1,55 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from '../components/Modal';
 import { Link } from "react-router-dom";
-import useProducts from "../hooks/useProducts";
-import { deleteProduct } from '../services/productService';
+import useFairs from "../hooks/useFairs";
+import { deleteFair } from '../services/fairService';
 
 const button = (
   <Link
-    to="/admin/añadirproductos"
+    to="/admin/añadirferias"
     className="bg-brand text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
   >
-    + Añadir producto
+    + Añadir feria
   </Link>
 );
 
-// Helper function to format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+// Helper to format date safely (supports dd/mm/yyyy and ISO)
+const formatDate = (dateString?: string | null) => {
+  if (!dateString) return '-';
+  // Try dd/mm/yyyy
+  const ddmmyyyy = /^([0-3]?\d)\/([01]?\d)\/(\d{4})$/;
+  let d: Date | null = null;
+  const m = dateString.match(ddmmyyyy);
+  if (m) {
+    const day = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10) - 1; // 0-based
+    const year = parseInt(m[3], 10);
+    d = new Date(year, month, day);
+  } else {
+    const parsed = new Date(dateString);
+    if (!isNaN(parsed.getTime())) d = parsed;
+  }
+  if (!d || isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
-const formatPrice = (value: number | string | undefined) => {
-  if (value === undefined || value === null || value === '') return '-';
-  const n = typeof value === 'string' ? parseFloat(value) : value;
-  return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', maximumFractionDigits: 0 }).format(n || 0);
-};
-
-export default function Gestorproductos() {
+export default function Gestorferias() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<any | null>(null);
+  const [fairToDelete, setFairToDelete] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { products: allProducts, loading, error, pagination, refetch } = useProducts({ page: currentPage });
-  const [products, setProducts] = useState<any[]>(allProducts || []);
+  // Load fairs list
+  const { fairs: allFairs, loading, error, refetch } = useFairs({ page: currentPage });
+  const [fairs, setFairs] = useState<any[]>(allFairs || []);
 
   useEffect(() => {
-    if (allProducts) setProducts(allProducts);
-    if (pagination && (pagination.last_page || pagination.lastPage)) setTotalPages(pagination.last_page || pagination.lastPage);
-  }, [allProducts, pagination]);
+    if (allFairs) setFairs(allFairs);
+    // If backend adds pagination later, update totalPages; for now assume single page
+    setTotalPages(1);
+  }, [allFairs]);
 
   // Cerrar menú si se hace click fuera
   useEffect(() => {
@@ -54,15 +60,15 @@ export default function Gestorproductos() {
     }
   }, [openMenuId]);
 
-  const filteredProducts = React.useMemo(() => {
-    if (!products) return [];
-    if (!searchTerm.trim()) return products;
+  const filteredFairs = React.useMemo(() => {
+    if (!fairs) return [];
+    if (!searchTerm.trim()) return fairs;
     const searchLower = searchTerm.toLowerCase().trim();
-    return products.filter(p =>
-      (p.name?.toLowerCase() || '').includes(searchLower) ||
-      (p.entrepreneurship?.name?.toLowerCase() || '').includes(searchLower)
+    return fairs.filter(f =>
+      (f.title?.toLowerCase() || '').includes(searchLower) ||
+      (f.owner_name?.toLowerCase?.() || '').includes(searchLower)
     );
-  }, [products, searchTerm]);
+  }, [fairs, searchTerm]);
 
   const handleActionClick = (id: number) => {
     setOpenMenuId(openMenuId === id ? null : id);
@@ -70,8 +76,8 @@ export default function Gestorproductos() {
 
   const handleOptionClick = async (option: string, id: number) => {
     if (option === 'Eliminar') {
-      const p = products.find(e => e.id === id) || null;
-      setProductToDelete(p);
+      const f = fairs.find(e => e.id === id) || null;
+      setFairToDelete(f);
       setShowDeleteModal(true);
       return;
     }
@@ -79,16 +85,16 @@ export default function Gestorproductos() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!productToDelete) return;
+    if (!fairToDelete) return;
     try {
-      await deleteProduct(productToDelete.id);
-      setProducts(prev => prev.filter(e => e.id !== productToDelete.id));
+      await deleteFair(fairToDelete.id);
+      setFairs(prev => prev.filter(e => e.id !== fairToDelete.id));
       refetch();
       setShowDeleteModal(false);
       setOpenMenuId(null);
-      setProductToDelete(null);
+      setFairToDelete(null);
     } catch (error) {
-      console.error('Ocurrió un error al eliminar el producto', error);
+      console.error('Ocurrió un error al eliminar la feria', error);
     }
   };
 
@@ -97,7 +103,7 @@ export default function Gestorproductos() {
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         {/* Header y buscador */}
         <div className="flex flex-col gap-4 mt-6">
-          <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de productos</h1>
+          <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de ferias</h1>
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 mb-2">
             <div className="w-full md:w-1/2">
               <input
@@ -117,10 +123,10 @@ export default function Gestorproductos() {
           <table className="w-full text-center border-collapse bg-white rounded-card shadow-soft border border-border">
             <thead>
               <tr className="bg-gray-50">
-                <th className="py-3 px-2">Nombre</th>
+                <th className="py-3 px-2">Título</th>
                 <th className="py-3 px-2">Propietario</th>
-                <th className="py-3 px-2">Precio</th>
-                <th className="py-3 px-2">Stock</th>
+                <th className="py-3 px-2">Fecha</th>
+                <th className="py-3 px-2">Estado</th>
                 <th className="py-3 px-2">Última modificación</th>
                 <th className="py-3 px-2">Añadido en</th>
                 <th className="py-3 px-2"></th>
@@ -128,37 +134,37 @@ export default function Gestorproductos() {
             </thead>
             <tbody>
               {/* ...tu renderizado de filas sigue igual */}
-              {loading && products.length === 0 && (
-                <tr><td colSpan={7} className="py-4 text-center text-gray-500">Cargando productos...</td></tr>
+              {loading && fairs.length === 0 && (
+                <tr><td colSpan={7} className="py-4 text-center text-gray-500">Cargando ferias...</td></tr>
               )}
               {error && (
                 <tr><td colSpan={7} className="py-4 text-center text-red-500">Error: {error.message}</td></tr>
               )}
-              {filteredProducts.length === 0 && !loading && (
-                <tr><td colSpan={7} className="py-4 text-center text-gray-500">No se encontraron productos</td></tr>
+              {filteredFairs.length === 0 && !loading && (
+                <tr><td colSpan={7} className="py-4 text-center text-gray-500">No se encontraron ferias</td></tr>
               )}
-              {filteredProducts.map(ent => (
-                <tr key={ent.id} className="relative hover:bg-gray-50">
-                  <td className="py-3 px-2 font-medium">{ent.name}</td>
-                  <td className="py-3 px-2">{ent.entrepreneurship?.name || '-'}</td>
-                  <td className="py-3 px-2">{formatPrice(ent.price)}</td>
-                  <td className="py-3 px-2">{ent.stock_quantity ?? ent.stock ?? '-'}</td>
-                  <td className="py-3 px-2">{formatDate(ent.updated_at)}</td>
-                  <td className="py-3 px-2">{formatDate(ent.created_at)}</td>
+              {filteredFairs.map(f => (
+                <tr key={f.id} className="relative hover:bg-gray-50">
+                  <td className="py-3 px-2 font-medium">{f.title}</td>
+                  <td className="py-3 px-2">{f.owner_name || f.owner?.name || `#${f.user_id}`}</td>
+                  <td className="py-3 px-2">{formatDate(f.date)}</td>
+                  <td className="py-3 px-2">{(f.is_active === 1 || f.is_active === true) ? 'Activo' : 'Inactivo'}</td>
+                  <td className="py-3 px-2">{formatDate(f.updated_at)}</td>
+                  <td className="py-3 px-2">{formatDate(f.created_at)}</td>
                   <td className="py-3 px-2 relative">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleActionClick(ent.id); }}
+                      onClick={(e) => { e.stopPropagation(); handleActionClick(f.id); }}
                       className="px-2 py-1 hover:bg-gray-100 rounded-full"
                     >
                       ⋮
                     </button>
-                    {openMenuId === ent.id && (
+                    {openMenuId === f.id && (
                       <div
                         className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden animate-fadeIn"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
-                        <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
+                        <Link to={`/admin/añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
+                        <button onClick={() => handleOptionClick("Eliminar", f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
                       </div>
                     )}
                   </td>
@@ -170,29 +176,29 @@ export default function Gestorproductos() {
 
         {/* Cards para pantallas <640px */}
         <div className="mt-8 sm:hidden space-y-4">
-          {filteredProducts.map(ent => (
-            <div key={ent.id} className="bg-white rounded-xl shadow p-4 relative border border-border">
+          {filteredFairs.map(f => (
+            <div key={f.id} className="bg-white rounded-xl shadow p-4 relative border border-border">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-lg">{ent.name}</h3>
-                  <p className="text-sm text-gray-600">Propietario: {ent.entrepreneurship?.name || '-'}</p>
-                  <p className="text-sm mt-1">Precio: <span className="font-medium">{formatPrice(ent.price)}</span></p>
-                  <p className="text-sm mt-1">Stock: {ent.stock_quantity ?? ent.stock ?? '-'}</p>
-                  <p className="text-xs text-gray-500 mt-1">Última mod.: {formatDate(ent.updated_at)}</p>
+                  <h3 className="font-semibold text-lg">{f.title}</h3>
+                  <p className="text-sm text-gray-600">Propietario: {f.owner_name || f.owner?.name || `#${f.user_id}`}</p>
+                  <p className="text-sm mt-1">Fecha: <span className="font-medium">{formatDate(f.date)}</span></p>
+                  <p className="text-sm mt-1">Estado: {(f.is_active === 1 || f.is_active === true) ? 'Sí' : 'No'}</p>
+                  <p className="text-xs text-gray-500 mt-1">Última mod.: {formatDate(f.updated_at)}</p>
                 </div>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleActionClick(ent.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleActionClick(f.id); }}
                   className="px-2 py-1 hover:bg-gray-100 rounded-full"
                 >
                   ⋮
                 </button>
-                {openMenuId === ent.id && (
+                {openMenuId === f.id && (
                   <div
                     className="absolute right-3 top-10 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden animate-fadeIn"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
-                    <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
+                    <Link to={`/admin/Añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
+                    <button onClick={() => handleOptionClick("Eliminar", f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
                   </div>
                 )}
               </div>
@@ -229,11 +235,11 @@ export default function Gestorproductos() {
         {/* Modal de confirmación de eliminación */}
         <Modal
           isOpen={showDeleteModal}
-          onClose={() => { setShowDeleteModal(false); setProductToDelete(null); }}
+          onClose={() => { setShowDeleteModal(false); setFairToDelete(null); }}
           title="Confirmar eliminación"
         >
           <div className="space-y-4 text-center">
-            <p className="text-lg">¿Desea eliminar el producto <span className="font-semibold">{productToDelete?.name}</span>?</p>
+            <p className="text-lg">¿Desea eliminar la feria <span className="font-semibold">{fairToDelete?.title}</span>?</p>
             <div className="flex justify-center gap-4 pt-4">
               <button
                 onClick={handleConfirmDelete}
@@ -242,7 +248,7 @@ export default function Gestorproductos() {
                 Sí
               </button>
               <button
-                onClick={() => { setShowDeleteModal(false); setProductToDelete(null); }}
+                onClick={() => { setShowDeleteModal(false); setFairToDelete(null); }}
                 className="px-6 py-2 bg-gray-200 text-secondary rounded-lg font-medium hover:bg-gray-300 transition-colors"
               >
                 No
