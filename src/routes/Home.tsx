@@ -13,116 +13,86 @@ import type { UserProfile } from '../domain/profile/types';
 import { useAuth } from '../context/AuthContext';
 import { categoryIconUrl } from '../utils/categoryIcons';
 import { Modal } from '../components/Modal';
+import FeaturedEntrepreneurOfDay from '../components/FeaturedEntrepreneurOfDay';
+
   import { 
     Search, 
     Star, 
     Apps,
     Palette,
-    Diamond,
     Favorite,
     FavoriteBorder
 } from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
-import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
+import { SkeletonEntrepreneurCard, SkeletonProductCard } from '../components/ui/Skeleton';
 import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
 
 // Custom hook to fetch all reviews at once
-const useAllReviews = () => {
+const useReviews = (entrepreneurshipId: string | number) => {
   const { token } = useAuth();
-  
-  return useQuery({
-    queryKey: ['allReviews'],
-    queryFn: async () => {
-      try {
-        const res = await fetch(
-          'https://emprendu-desarrollo-production.up.railway.app/api/reviews',
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-          }
-        );
-        
-        if (!res.ok) {
-          if (res.status === 429) {
-            console.warn('Rate limited when fetching reviews, will retry later');
-            throw new Error('rate_limited');
-          }
-          throw new Error('Error al obtener reviews');
-        }
 
-        return await res.json();
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-        throw error;
-      }
+  return useQuery({
+    queryKey: ['reviews', entrepreneurshipId],
+    queryFn: async () => {
+      if (!entrepreneurshipId) return [];
+      const res = await fetch(
+        `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+      if (!res.ok) throw new Error('Error al obtener reviews');
+      return res.json();
     },
-    retry: (failureCount, error) => {
-      // Don't retry on rate limit, wait for the next refetch
-      if (error.message === 'rate_limited') return false;
-      return failureCount < 2; // Retry up to 2 times for other errors
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false
+    enabled: !!entrepreneurshipId, // solo activar si hay id
   });
 };
 
-export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number }) {
-  const { data: reviewsData } = useAllReviews();
+export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: number | string }) {
+  const { data: reviewsData } = useReviews(entrepreneurshipId);
   const [averageRating, setAverageRating] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!reviewsData || !entrepreneurshipId) {
+    if (!reviewsData || reviewsData.length === 0) {
       setAverageRating(null);
       return;
     }
 
     try {
-      // Find the average rating for this specific entrepreneurship
-      const entrepreneurshipReviews = reviewsData.filter(
-        (review: any) => review.entrepreneurship_id === entrepreneurshipId
-      );
-      
-      if (entrepreneurshipReviews.length === 0) {
-        setAverageRating(null);
-        return;
-      }
-      
-      const sum = entrepreneurshipReviews.reduce(
+
+      const sum = reviewsData.reduce(
         (acc: number, review: any) => acc + (parseFloat(review.rating) || 0), 
         0
       );
-      const avg = sum / entrepreneurshipReviews.length;
+      const avg = sum / reviewsData.length;
       setAverageRating(avg);
     } catch (error) {
       console.error('Error calculating average rating:', error);
       setAverageRating(null);
     }
-  }, [reviewsData, entrepreneurshipId]);
+  }, [reviewsData]);
 
   return (
-    <>
-      <div className="flex flex-wrap justify-center gap-2">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <div key={star} className="relative group">
-            <span
-              className={`text-sm ${
-                averageRating && star <= Math.round(averageRating)
-                  ? "text-yellow-500"
-                  : "text-gray-300"
-              }`}
-            >
-              ★
-            </span>
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="flex flex-wrap justify-center gap-2">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <div key={star} className="relative group">
+          <span
+            className={`text-sm ${
+              averageRating && star <= Math.round(averageRating)
+                ? "text-yellow-500"
+                : "text-gray-300"
+            }`}
+          >
+            ★
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -159,11 +129,7 @@ const float = keyframes`
 `;
 
 // Subtle glow animation for featured cards
-const glow = keyframes`
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-`;
+
 
 // Styled components with softer animations
 const AnimatedContainer = styled.div`
@@ -183,31 +149,7 @@ const AnimatedCard = styled.div`
 `;
 
 // Glowing card used for the "Emprendimiento del Día" section
-const GlowingCard = styled.div`
-  position: relative;
-  border-radius: 0.5rem;
-  animation: ${scaleIn} 0.25s ease-out;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-  will-change: transform, box-shadow;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    background: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.18), transparent 60%),
-                radial-gradient(120% 120% at 100% 100%, rgba(59, 130, 246, 0.18), transparent 60%);
-    filter: blur(10px);
-    z-index: -1;
-    pointer-events: none;
-    animation: ${glow} 4s ease-in-out infinite;
-  }
-`;
 
 const FloatingElement = styled.div`
   animation: ${float} 3s ease-in-out infinite;
@@ -341,7 +283,6 @@ export default function Home() {
       select: (d) => d ?? [],
       staleTime: 5 * 60 * 1000,
     });
-    console.log("estas son las categorias",categoriesData);
     // Loading states are handled individually for better control
 
     // Build counts depending on view: products per category or entrepreneurships per category
@@ -535,7 +476,7 @@ export default function Home() {
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Header */}
         <AnimatedContainer className="mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-primary mb-2">
             ¡Hola! ¿Qué te gustaría descubrir hoy?
           </h1>
           <p className="text-secondary">
@@ -580,62 +521,11 @@ export default function Home() {
         {viewMode === 'emprendimientos' ? (
           <>
             {/* Emprendimiento del Día */}
-            <AnimatedContainer className="mb-8">
-              <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
-                <FloatingElement>
-                  <Diamond sx={{ fontSize: 20 }} />
-                </FloatingElement>
-                Emprendimiento del Día
-              </h2>
-              {loading ? (
-                <SkeletonFeaturedEntrepreneur />
-              ) : (() => {
-                const featured = entrepreneurships.find((b: any) => b?.id === 1) || filteredBusinesses[0] || entrepreneurships[0];
-                const featuredId = featured?.id ?? '';
-                return (
-                  <Link
-                    to={`/business/${featuredId}`}
-                    className="block"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                  >
-                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
-                      <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                        <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"}
-                            alt={featured?.name || "Emprendimiento"}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-primary line-clamp-2">{featured?.name || "Emprendimiento"}</h3>
-                              <div className="flex items-center gap-1">
-                                <BusinessStars entrepreneurshipId={Number(featured.id)} />
-                              </div>
-                            </div>
-                            <p className="text-secondary text-sm mb-3 line-clamp-3">
-                              {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
-                              <Palette sx={{ fontSize: 12 }} />
-                              {featured?.category_relation?.nombre || "General"}
-                            </span>
-                            <span className="text-brand hover:text-brandDark text-sm font-medium">
-                              Detalles →
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </GlowingCard>
-                  </Link>
-                );
-              })()}
-            </AnimatedContainer>
-
+            {viewMode === 'emprendimientos' && (
+  <AnimatedContainer className="mb-8">
+    <FeaturedEntrepreneurOfDay entrepreneurships={entrepreneurships} loading={loading} />
+  </AnimatedContainer>
+)}
               {/* Search Bar + Zone Selector */}
               <div className="mb-8 rounded-lg">
                 <h2 className="text-base font-semibold text-primary mb-2">Buscar emprendimientos</h2>

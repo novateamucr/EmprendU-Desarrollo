@@ -13,9 +13,9 @@ interface PopupDetallesProps {
 export function PopupDetalles({ onClose, fair = null, entrepreneurship = null, inscription = null }: PopupDetallesProps) {
   return (
     
-<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
   
-  <div className="bg-white p-8 rounded-xl max-w-md w-full shadow-lg text-center">
+  <div className="bg-white p-8 rounded-xl max-w-md w-full shadow-lg text-center max-h-[90vh] overflow-auto">
 
     <PopupHeader title="Detalles de la Feria" subtitle="Revisa toda la información del evento" variant="info" />
 
@@ -47,7 +47,6 @@ export function PopupDetalles({ onClose, fair = null, entrepreneurship = null, i
               <img src={entrepreneurship?.image_url || 'img/Frame 11.jpg'} alt="Logo emprendimiento" className="w-12 h-12 rounded-lg object-cover" />
               <div>
                 <p className="text-sm text-gray-700 font-medium">{entrepreneurship?.name ?? inscription?.emprendimiento_name ?? '—'}</p>
-                <p className="text-xs text-gray-500">{entrepreneurship?.description ?? inscription?.emprendimiento_description ?? ''}</p>
               </div>
             </div>
           </div>

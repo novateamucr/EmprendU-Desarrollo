@@ -12,8 +12,8 @@ interface ConfirmationPopupProps {
 
 export function ConfirmationPopup({ onClose, onConfirmar, fair = null, entrepreneurship = null }: ConfirmationPopupProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg text-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+      <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg text-center max-h-[90vh] overflow-auto">
         <PopupHeader title="Confirmar inscripción" subtitle="Revisa los detalles antes de continuar" variant="confirm" />
 
         {/* Resumen */}
@@ -42,7 +42,6 @@ export function ConfirmationPopup({ onClose, onConfirmar, fair = null, entrepren
               <img src="img/Frame 11.jpg" alt="Logo emprendimiento" className="w-12 h-12 rounded-lg object-cover" />
               <div>
                     <p className="text-sm text-gray-700 font-medium">{entrepreneurship?.name ?? '—'}</p>
-                    <p className="text-xs text-gray-500">{entrepreneurship?.description ?? ''}</p>
               </div>
             </div>
           </div>
