@@ -7,9 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Entrepreneurship;
 use App\Services\OpenAIService;
-use App\Services\FileUploadService;
+use App\Services\R2FileUploadService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -25,82 +28,90 @@ class ProductController extends Controller
         return response()->json($q->paginate($perPage));
     }
 
-    public function store(Request $request, FileUploadService $fileUploadService)
-{
-    DB::beginTransaction();
-    try {
-        // Validate the request data
-        $data = $request->validate([
-            'name' => 'required|string|max:150',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:entrepreneurship_categories,id',
-            'entrepreneurship_id' => 'required|exists:entrepreneurships,id',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'long_description' => 'nullable|string',
-        ]);
+    public function store(Request $request, R2FileUploadService $fileUploadService)
+    {
+        DB::beginTransaction();
+        try {
+            // Validate the request data
+            $data = $request->validate([
+                'name' => 'required|string|max:150',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'category_id' => 'required|exists:entrepreneurship_categories,id',
+                'entrepreneurship_id' => 'required|exists:entrepreneurships,id',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'long_description' => 'nullable|string',
+            ]);
 
-        // Create the product first
-        $product = Product::create([
-            'name' => $data['name'],
-            'description' => $data['description'],
-            'long_description' => $data['long_description'] ?? null,
-            'price' => $data['price'],
-            'category_id' => $data['category_id'],
-            'entrepreneurship_id' => $data['entrepreneurship_id'],
-        ]);
+            // Handle image upload first
+            if (!$request->hasFile('image')) {
+                throw new \Exception('Product image is required');
+            }
 
-        // Handle the image upload
-        $imageUrl = $fileUploadService->upload(
-            $request->file('image'),
-            'products/' . $product->id
-        );
+            // Generate a slug from the product name for the filename
+            $filename = Str::slug($data['name']) . '-' . time();
+            
+            // Upload the image
+            $uploadResult = $fileUploadService->upload(
+                $request->file('image'),
+                'products',
+                'images',
+                $filename
+            );
+            
+            if (!$uploadResult) {
+                throw new \Exception('Failed to upload product image to storage');
+            }
 
-        if (!$imageUrl) {
-            throw new \Exception('Failed to upload product image');
+            // Create the product with the image URL
+            $product = Product::create([
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'long_description' => $data['long_description'] ?? null,
+                'price' => $data['price'],
+                'category_id' => $data['category_id'],
+                'entrepreneurship_id' => $data['entrepreneurship_id'],
+                'image_url' => $uploadResult['url'],
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Product created successfully',
+                'data' => $product->load('entrepreneurship'),
+                'image_url' => $uploadResult['url']
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating product: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Clean up the product if it was created but the image upload failed
+            if (isset($product)) {
+                $product->delete();
+            }
+            
+            return response()->json([
+                'message' => 'Error creating product',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Update the product with the image URL
-        $product->update(['image_url' => $imageUrl]);
-
-        DB::commit();
-
-        return response()->json([
-            'message' => 'Product created successfully',
-            'data' => $product->load('entrepreneurship'),
-            'image_url' => $imageUrl
-        ], 201);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        DB::rollBack();
-        return response()->json([
-            'message' => 'Validation error',
-            'errors' => $e->errors()
-        ], 422);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error creating product: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
-        
-        // Clean up the product if it was created but the image upload failed
-        if (isset($product)) {
-            $product->delete();
-        }
-        
-        return response()->json([
-            'message' => 'Error creating product',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     public function show(Product $product)
     {
         return response()->json($product->load('entrepreneurship'));
     }
 
-    public function update(Request $request, Product $product, FileUploadService $fileUploadService)
+    public function update(Request $request, Product $product, R2FileUploadService $fileUploadService)
     {
         DB::beginTransaction();
         
@@ -174,31 +185,43 @@ class ProductController extends Controller
                 $file = $request->file('image');
                 
                 if ($file->isValid()) {
-                    // Delete old image if exists
+                    // Generate a slug from the product name for the filename
+                    $filename = Str::slug($request->input('name', $product->name)) . '-' . time();
+                    
+                    // Upload new image to R2
+                    $uploadResult = $fileUploadService->upload(
+                        $file,
+                        'products',
+                        'images',
+                        $filename
+                    );
+                    
+                    if (!$uploadResult) {
+                        throw new \Exception('Failed to upload product image');
+                    }
+
+                    // Delete old image from R2 if exists
                     if ($product->image_url) {
                         $fileUploadService->delete($product->image_url);
                     }
 
-                    // Upload new image
-                    $imageUrl = $fileUploadService->upload(
-                        $file,
-                        'products/' . $product->id,
-                        'public'
-                    );
-
-                    if (!$imageUrl) {
-                        throw new \Exception('Failed to upload product image');
-                    }
-
-                    $updateData['image_url'] = $imageUrl;
+                    $updateData['image_url'] = $uploadResult['url'];
                     $changesDetected = true;
                 } else {
                     throw new \Exception('Invalid file: ' . $file->getErrorMessage());
                 }
-            } elseif (array_key_exists('image_url', $validated) && $validated['image_url'] !== $product->image_url) {
-                // Handle direct image_url update or removal
-                $updateData['image_url'] = $validated['image_url'] ?: null;
-                $changesDetected = true;
+            } 
+            // Handle image_url update or removal
+            elseif (array_key_exists('image_url', $validated)) {
+                // If image_url is being set to null or a new URL
+                if ($validated['image_url'] !== $product->image_url) {
+                    // If there was an existing image, delete it
+                    if ($product->image_url && empty($validated['image_url'])) {
+                        $fileUploadService->delete($product->image_url);
+                    }
+                    $updateData['image_url'] = $validated['image_url'] ?: null;
+                    $changesDetected = true;
+                }
             }
 
             // Log the changes
@@ -247,10 +270,28 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product, R2FileUploadService $fileUploadService)
     {
-        $product->delete();
-        return response()->json(['message' => 'Deleted']);
+        DB::beginTransaction();
+        try {
+            // Delete the image from R2 if it exists
+            if (!empty($product->image_url)) {
+                $fileUploadService->delete($product->image_url);
+            }
+            
+            $product->delete();
+            
+            DB::commit();
+            return response()->json(['message' => 'Product deleted successfully']);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error deleting product: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error deleting product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
 }

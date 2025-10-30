@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Services\R2FileUploadService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -24,54 +26,86 @@ class UserController extends Controller
     }
 
 
-        public function show(User $user)
+    public function show(User $user)
     {
         return response()->json($user);
     }
 
 
     // store (registro)
-    public function store(Request $request)
+    public function store(Request $request, R2FileUploadService $fileUploadService)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6',
-            'role' => 'required|integer|exists:user_roles,id',
-            'phone' => 'nullable|string|max:20',
-            'province' => 'nullable|string|max:100',
-            'canton' => 'nullable|string|max:100',
-            'district' => 'nullable|string|max:100',
-            'address' => 'nullable|string',
-            'banned' => 'nullable|boolean',
-            'avatar_url' => 'nullable|url|max:500',
-        ]);
+        DB::beginTransaction();
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email',
+                'password' => 'required|string|min:6',
+                'role' => 'required|integer|exists:user_roles,id',
+                'phone' => 'nullable|string|max:20',
+                'province' => 'nullable|string|max:100',
+                'canton' => 'nullable|string|max:100',
+                'district' => 'nullable|string|max:100',
+                'address' => 'nullable|string',
+                'banned' => 'nullable|boolean',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'avatar_url' => 'nullable|string', // For existing URLs if needed
+            ]);
 
-        $data['password'] = Hash::make($data['password']);
-        $data['isConfirmed'] = false; // usuario no confirmado al crear
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarUrl = $fileUploadService->upload($avatar, 'users/avatars');
+                if (!$avatarUrl) {
+                    throw new \Exception('Error al subir la imagen de perfil');
+                }
+                $data['avatar_url'] = $avatarUrl;
+            } elseif (empty($data['avatar_url'])) {
+                $data['avatar_url'] = null;
+            }
 
-        $user = User::create($data);
+            $data['password'] = Hash::make($data['password']);
+            $data['isConfirmed'] = false; // usuario no confirmado al crear
 
-        // Generar token de confirmación
-        $token = Str::random(60);
-        DB::table('email_tokens')->insert([
-            'user_id' => $user->id,
-            'token' => $token,
-            'created_at' => now(),
-            'expires_at' => Carbon::now()->addDay(), // token válido 24h
-        ]);
+            $user = User::create($data);
 
-        // Enviar correo de confirmación directamente con Mail::raw
-        $confirmLink = url("/api/confirm?token={$token}");
-        Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
-            $message->to($user->email)
-                    ->subject('Confirma tu correo');
-        });
+            // Generar token de confirmación
+            $token = Str::random(60);
+            DB::table('email_tokens')->insert([
+                'user_id' => $user->id,
+                'token' => $token,
+                'created_at' => now(),
+                'expires_at' => Carbon::now()->addDay(), // token válido 24h
+            ]);
 
-        return response()->json([
-            'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
-            'user' => $user->load('roleRelation'),
-        ], 201);
+            // Enviar correo de confirmación directamente con Mail::raw
+            $confirmLink = url("/api/confirm?token={$token}");
+            Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Confirma tu correo');
+            });
+
+            DB::commit();
+            
+            return response()->json([
+                'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
+                'user' => $user->load('roleRelation')
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating user: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al crear el usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // confirm email

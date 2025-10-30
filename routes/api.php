@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\Api\EntrepreneurshipController;
 use App\Http\Controllers\Api\ProductController;
@@ -21,6 +22,141 @@ use App\Http\Controllers\InscripcionController;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
+
+// Test R2 Upload
+Route::get('test-r2-upload', function() {
+    try {
+        $disk = Storage::disk('r2');
+        
+        // Test file content
+        $testContent = 'Test content ' . now();
+        $testPath = 'test-files/test-' . uniqid() . '.txt';
+        
+        // Upload test file
+        $disk->put($testPath, $testContent, [
+            'visibility' => 'public',
+            'mimetype' => 'text/plain'
+        ]);
+        
+        // Get public URL
+        $url = $disk->url($testPath);
+        
+        // Check if file exists
+        $exists = $disk->exists($testPath);
+        
+        // Get file content
+        $content = $disk->get($testPath);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'File uploaded successfully',
+            'path' => $testPath,
+            'url' => $url,
+            'exists' => $exists,
+            'content' => $content,
+            'config' => [
+                'bucket' => config('filesystems.disks.r2.bucket'),
+                'endpoint' => config('filesystems.disks.r2.endpoint'),
+                'url' => config('filesystems.disks.r2.url'),
+            ]
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'config' => [
+                'bucket' => config('filesystems.disks.r2.bucket'),
+                'endpoint' => config('filesystems.disks.r2.endpoint'),
+                'url' => config('filesystems.disks.r2.url'),
+                'key' => config('filesystems.disks.r2.key') ? '*** set ***' : 'Not set',
+                'secret' => config('filesystems.disks.r2.secret') ? '*** set ***' : 'Not set',
+            ]
+        ], 500);
+    }
+});
+
+// Test R2 upload (simplified)
+Route::match(['get', 'post'], 'test-r2-upload', function() {
+    try {
+        $disk = Storage::disk('r2');
+        
+        // Test file content
+        $testContent = 'Test file content ' . now();
+        $testPath = 'test-' . uniqid() . '.txt'; // Removed test-files/ to avoid directory issues
+        
+        // Upload test file
+        $uploaded = $disk->put($testPath, $testContent, [
+            'visibility' => 'public',
+            'ContentType' => 'text/plain'
+        ]);
+        
+        if (!$uploaded) {
+            throw new \Exception('Failed to upload file to R2');
+        }
+        
+        // Get public URL
+        $url = $disk->url($testPath);
+        
+        // Try to get file content directly without checking existence first
+        $content = null;
+        try {
+            $content = $disk->get($testPath);
+        } catch (\Exception $e) {
+            // Ignore error, we'll handle it in the response
+        }
+        
+        // Try to delete the file
+        $deleted = false;
+        try {
+            $deleted = $disk->delete($testPath);
+        } catch (\Exception $e) {
+            // Ignore error, we'll handle it in the response
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'R2 upload test completed',
+            'uploaded' => $uploaded,
+            'path' => $testPath,
+            'url' => $url,
+            'content' => $content,
+            'deleted' => $deleted,
+            'config' => [
+                'bucket' => config('filesystems.disks.r2.bucket'),
+                'endpoint' => config('filesystems.disks.r2.endpoint'),
+                'url' => config('filesystems.disks.r2.url'),
+            ]
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('R2 Test Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        // Get the underlying AWS exception if it exists
+        $awsError = '';
+        if ($e instanceof \Aws\S3\Exception\S3Exception) {
+            $awsError = $e->getAwsErrorMessage() ?: $e->getMessage();
+        }
+        
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'aws_error' => $awsError,
+            'file' => $e->getFile() . ':' . $e->getLine(),
+            'config' => [
+                'bucket' => config('filesystems.disks.r2.bucket'),
+                'endpoint' => config('filesystems.disks.r2.endpoint'),
+                'url' => config('filesystems.disks.r2.url'),
+                'key' => config('filesystems.disks.r2.key') ? '*** set ***' : 'Not set',
+                'secret' => config('filesystems.disks.r2.secret') ? '*** set ***' : 'Not set',
+            ]
+        ], 500);
+    }
+});
 
 // Protected routes (authentication required)
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
