@@ -33,7 +33,14 @@ api.interceptors.response.use(
 // Add request interceptor to include auth token and handle CORS
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    let token = localStorage.getItem('token');
+    if (!token && typeof document !== 'undefined') {
+      // Fallback: try to read token from cookies (e.g., set by login)
+      const match = document.cookie.split('; ').find((c) => c.startsWith('token='));
+      if (match) {
+        token = decodeURIComponent(match.split('=')[1]);
+      }
+    }
     
     // Add CORS headers to all requests
     config.headers = config.headers || {};
