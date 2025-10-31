@@ -771,7 +771,7 @@ export default function Home() {
                 <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
               </div>
             </div>
-            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
+            <p className="text-sm text-center mt-4">© 2025 EmpowerUp. Todos los derechos reservados.</p>
           </div>
         </footer>
       </div>

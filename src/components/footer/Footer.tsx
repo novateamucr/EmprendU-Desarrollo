@@ -9,10 +9,10 @@ const Footer: React.FC = () => {
           <div className="h-6 border-l border-gray-400 mx-2 hidden md:block" />
           <a href="/contactUs" className="hover:underline text-gray-500 text-xs md:text-sm">Contáctanos</a>
           <div className="h-6 border-l border-gray-400 mx-2 hidden md:block" />
-          <a href="/" className="hover:underline text-gray-500 text-xs md:text-sm">EmprendU</a>
+          <a href="/" className="hover:underline text-gray-500 text-xs md:text-sm">EmpowerUp</a>
         </div>
         <span className="order-2 md:order-1 text-center w-full md:w-auto text-xs md:text-sm mt-2 md:mt-0">
-          © 2025 EmprendU. Todos los derechos reservados.
+          © 2025 EmpowerUp. Todos los derechos reservados.
         </span>
       </div>
     </footer>
