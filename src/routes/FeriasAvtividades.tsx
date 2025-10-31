@@ -43,13 +43,13 @@ export default function FeriasPage() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
+    <div className="w-full px-4 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16 mt-12 md:mt-16">
       <div className="w-full">
         {/* Título */}
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl 3xl:text-4xl 4xl:text-5xl font-bold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
-        <p className="text-secondary mb-8 text-center md:text-left">
+        <p className="text-secondary mb-8 text-center md:text-left text-sm md:text-base 3xl:text-lg 4xl:text-xl">
           Aquí puedes ver las próximas ferias y actividades.
         </p>
 
@@ -57,30 +57,30 @@ export default function FeriasPage() {
         <div className="flex flex-col lg:flex-row flex-wrap items-center justify-between gap-4 mb-8">
           {/* Buscador (más largo que los filtros) */}
           <div className="relative flex-grow lg:flex-[2] min-w-[250px]">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary 4xl:scale-110" />
             <input
               type="text"
               placeholder="Buscar feria..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+              className="w-full pl-12 pr-4 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
             />
           </div>
 
           {/* Filtros (más pequeños que el buscador) */}
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             {/* Provincia */}
-            <div className="w-full sm:w-56">
+            <div className="w-full sm:w-56 3xl:w-64 4xl:w-72">
               <select
                 value={selectedProvince}
                 onChange={(e) => {
                   setSelectedProvince(e.target.value);
                   setSelectedCanton("Todos los cantones");
                 }}
-                className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                className="w-full px-3 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
               >
                 {provinces.map((prov) => (
-                  <option key={prov} value={prov}>
+                  <option key={String(prov)} value={String(prov)}>
                     {prov}
                   </option>
                 ))}
@@ -88,14 +88,14 @@ export default function FeriasPage() {
             </div>
 
             {/* Cantón */}
-            <div className="w-full sm:w-56">
+            <div className="w-full sm:w-56 3xl:w-64 4xl:w-72">
               <select
                 value={selectedCanton}
                 onChange={(e) => setSelectedCanton(e.target.value)}
-                className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                className="w-full px-3 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
               >
                 {cantons.map((c) => (
-                  <option key={c} value={c}>
+                  <option key={String(c)} value={String(c)}>
                     {c}
                   </option>
                 ))}
@@ -106,7 +106,7 @@ export default function FeriasPage() {
 
         {/* 🧩 Lista de ferias */}
         <section className="mb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10">
             {filteredFerias.length > 0 ? (
               filteredFerias.map((feria) => (
                 <FeriaCard
@@ -120,7 +120,7 @@ export default function FeriasPage() {
                 />
               ))
             ) : (
-              <p className="text-secondary col-span-full text-center py-8">
+              <p className="text-secondary col-span-full text-center py-8 text-sm md:text-base 3xl:text-lg 4xl:text-xl">
                 No se encontraron ferias.
               </p>
             )}
@@ -129,10 +129,10 @@ export default function FeriasPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-brand text-white py-6 mt-auto rounded-t-2xl">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-6 md:px-12 text-center md:text-left">
-          <p className="text-sm">© 2025 EmpowerUp. Todos los derechos reservados.</p>
-          <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+      <footer className="bg-brand text-white py-6 md:py-8 3xl:py-10 4xl:py-12 mt-auto rounded-t-2xl">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-6 md:px-12 3xl:px-16 4xl:px-20 text-center md:text-left">
+          <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl">© 2025 EmprendU. Todos los derechos reservados.</p>
+          <img src={footerHero} alt="Logo" className="w-8 3xl:w-9 4xl:w-10 p-1 rounded-full" />
         </div>
       </footer>
 
