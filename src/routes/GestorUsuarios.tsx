@@ -3,6 +3,7 @@ import { Modal } from '../components/Modal';
 import { Link, useNavigate } from "react-router-dom";
 import useUsers from "../hooks/useUsers";
 import { api } from "../lib/api";
+import { toast } from "react-hot-toast";
 
 const button = (
   <Link
@@ -102,10 +103,14 @@ export default function GestorUsuarios() {
       // Use axios instance to include auth token and shared config
       if (option === 'Habilitar' || option === 'Deshabilitar') {
         const isBanning = option === 'Deshabilitar';
-        const payload = { banned: isBanning };
+        // Some backends expect numeric 0/1; send both boolean and numeric for compatibility
+        const payload = { banned: isBanning, banned_numeric: isBanning ? 1 : 0 } as any;
         // debug
         // eslint-disable-next-line no-console
         console.debug('GestorUsuarios: calling PUT /users/', userId, payload);
+        // Optimistic update
+        const prevState = usuarios;
+        setUsuarios(prev => prev.map(u => u.id === userId ? { ...u, banned: isBanning } : u));
         let res;
         try {
           res = await api.put(`/users/${userId}`, payload);
@@ -116,14 +121,18 @@ export default function GestorUsuarios() {
             console.warn('PUT failed with 500, trying PATCH as fallback', userId);
             res = await api.patch(`/users/${userId}`, payload);
           } else {
+            // Revert optimistic update
+            setUsuarios(prevState);
             throw err;
           }
         }
         // update local state optimistically
         if (res.status >= 200 && res.status < 300) {
-          setUsuarios(prev => prev.map(u => u.id === userId ? { ...u, banned: isBanning } : u));
           refetch();
+          toast.success(isBanning ? 'Usuario deshabilitado' : 'Usuario habilitado');
         } else {
+          // Revert on unexpected status
+          setUsuarios(prevState);
           throw new Error('Error en actualización');
         }
         setOpenMenuId(null);
@@ -139,11 +148,13 @@ export default function GestorUsuarios() {
           const msg = resp.data?.message || resp.data?.error || JSON.stringify(resp.data);
           // eslint-disable-next-line no-alert
           alert(`Error al actualizar usuario: ${msg}`);
+          toast.error('No se pudo actualizar el estado del usuario');
         } catch {}
       } else {
         console.error('Error in handleOptionClick:', error);
         // eslint-disable-next-line no-alert
         alert('Ocurrió un error al procesar la solicitud');
+        toast.error('Ocurrió un error al procesar la solicitud');
       }
     }
   };

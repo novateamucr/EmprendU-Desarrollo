@@ -19,7 +19,7 @@ interface BusinessFormData {
 
 interface Category {
   id: number;
-  name: string;
+  nombre: string;
 }
 
 export default function BusinessForm() {
@@ -42,11 +42,11 @@ export default function BusinessForm() {
       try {
         // This is a placeholder - replace with actual API call to fetch categories
         const mockCategories = [
-          { id: 1, name: 'Alimentos' },
-          { id: 2, name: 'Artesanías' },
-          { id: 3, name: 'Tecnología' },
-          { id: 4, name: 'Moda' },
-          { id: 5, name: 'Belleza' },
+          { id: 1, nombre: 'Alimentos' },
+          { id: 2, nombre: 'Artesanías' },
+          { id: 3, nombre: 'Tecnología' },
+          { id: 4, nombre: 'Moda' },
+          { id: 5, nombre: 'Belleza' },
         ];
         setCategories(mockCategories);
       } catch (error) {
@@ -205,7 +205,7 @@ export default function BusinessForm() {
               <option value="">Selecciona una categoría</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {category.nombre}
                 </option>
               ))}
             </Select>

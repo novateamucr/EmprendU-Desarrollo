@@ -197,7 +197,7 @@ export default function Gestorferias() {
                     className="absolute right-3 top-10 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden animate-fadeIn"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Link to={`/admin/Añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
+                    <Link to={`/admin/añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
                     <button onClick={() => handleOptionClick("Eliminar", f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
                   </div>
                 )}
