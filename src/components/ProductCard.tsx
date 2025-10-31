@@ -110,7 +110,7 @@ export function ProductCard(props: ProductCardProps) {
             {props.categoryName}
           </span>
         )}
-        <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1">{props.title}</h3>
+        <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1 font-bold">{props.title}</h3>
         <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
         </p>
