@@ -100,6 +100,10 @@ const CHART_COLORS = {
   teal: 'rgb(20, 184, 166)',
 };
 
+// Componente principal del panel de "Mis emprendimientos":
+// - Carga los emprendimientos del usuario y permite seleccionar uno.
+// - Muestra estadísticas (productos, ventas, clientes) y gráficos.
+// - Enlaza a inventario y otras secciones de gestión.
 export default function Dashboard() {
   const { selectedBusiness, setSelectedBusiness } = useBusiness();
   const { user, logout } = useAuth();
@@ -315,7 +319,7 @@ export default function Dashboard() {
     loadCharts();
   }, [selectedBusiness]);
 
-  // Track window width to tweak chart options responsively
+  // Observa el ancho de la ventana para ajustar opciones de gráficos de forma responsiva
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handler = () => setWindowWidth(window.innerWidth);
@@ -323,7 +327,7 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Fetch user's entrepreneurships from the API
+  // Obtiene los emprendimientos del usuario desde la API
   useEffect(() => {
     if (!user?.id) return;
 
@@ -506,7 +510,7 @@ export default function Dashboard() {
     );
   }
 
-  // Convert the selectedBusiness to BusinessOption for the UI
+  // Convierte el objeto seleccionado a la forma usada por el UI (BusinessOption)
   const currentBusiness = selectedBusiness ? {
     ...selectedBusiness,
     id: selectedBusiness.id.toString(),
@@ -528,7 +532,7 @@ export default function Dashboard() {
     updated_at: selectedBusiness.updated_at || new Date().toISOString()
   } as BusinessOption : null;
 
-  // Show loading state
+  // Estado de carga alternativo (skeletons de interface)
   if (isLoading) {
     return (
       <div className="space-y-6 pt-12 px-4 sm:px-6">
@@ -580,7 +584,7 @@ export default function Dashboard() {
     );
   }
 
-  // Early return if no business is selected or no businesses exist
+  // Si no hay emprendimientos o no hay uno seleccionado, se muestra un vacío con CTA
   if (!currentBusiness || businesses.length === 0) {
     return (
   <div className="container mx-auto px-4 3xl:px-12 4xl:px-16 py-8 text-base 3xl:text-lg 4xl:text-xl">
@@ -745,6 +749,7 @@ export default function Dashboard() {
         </div>
       </div>
       
+      {/* Información del emprendimiento seleccionado */}
       <Card>
         <div className="p-6 3xl:p-8 4xl:p-10">
           <div className="flex items-center justify-between mb-4">
@@ -807,7 +812,7 @@ export default function Dashboard() {
         </div>
       </Card>
 
-      {/* Charts Section */}
+      {/* Sección de gráficos */}
       <div className="mt-8">
   <h3 className="text-lg md:text-xl 3xl:text-3xl 4xl:text-4xl font-medium mb-6">Estadísticas</h3>
         

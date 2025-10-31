@@ -12,6 +12,10 @@ interface PopupEmprendimientosProps {
   loading?: boolean;
 }
 
+// Popup para seleccionar un emprendimiento del usuario:
+// - Lista los emprendimientos disponibles y permite elegir uno.
+// - Mantiene selección local y propaga cambios vía onSelect.
+// - Botones de Cancelar y Siguiente (valida selección antes de continuar).
 export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships = [], selectedId = null, onSelect, loading = false }: PopupEmprendimientosProps) {
   const [localSelected, setLocalSelected] = useState<number | null>(selectedId ?? null);
 
@@ -31,6 +35,7 @@ export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships =
       <div className="bg-white p-6 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md w-full shadow-lg max-h-[90vh] overflow-auto 3xl:max-w-lg 4xl:max-w-xl">
         <PopupHeader title="Selecciona tu emprendimiento" variant="help" />
 
+        {/* Lista de emprendimientos y estado de carga/vacío */}
         <div className="space-y-4">
           {loading && (
             <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-500">Cargando emprendimientos...</p>
@@ -66,7 +71,7 @@ export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships =
           ))}
         </div>
 
-        {/* Botones estilo flex-1 como ConfirmationPopup */}
+        {/* Botones de acción */}
         <div className="flex space-x-3 mt-6">
           <button
             className="flex-1 py-2 3xl:py-2.5 4xl:py-3 rounded-full border border-gray-300 text-gray-600 font-medium hover:bg-gray-100 transition text-sm md:text-base 3xl:text-lg 4xl:text-xl"

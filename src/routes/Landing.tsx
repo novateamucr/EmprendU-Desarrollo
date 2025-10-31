@@ -180,13 +180,13 @@ export default function Landing() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12 mt-20 px-6 sm:py-20 sm:mt-20">
         <div>
-          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
+          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 text-center md:text-left">EmpowerUp</h1>
           <h2 className="text-xl md:text-2xl font-semibold leading-tight mb-6 text-center md:text-left">
             Haz que tu idea llegue más lejos. Comparte, conecta y haz crecer tu
-            emprendimiento con EmprendU.
+            emprendimiento con EmpowerUp.
           </h2>
           <p className="text-gray-600 mb-6 text-center md:text-left">
-            EmprendU es una plataforma para la comunidad donde podés registrar,
+            EmpowerUp es una plataforma para la comunidad donde podés registrar,
             gestionar y dar visibilidad a los proyectos emprendedores.
           </p>
           <div className="flex gap-4 justify-center md:justify-start">
@@ -211,7 +211,7 @@ export default function Landing() {
       {/* ¿Por qué usar EmprendU? */}
       <section id="porque" className="py-16">
         <h2 className="text-2xl font-semibold text-center mb-12">
-          ¿Por qué usar EmprendU?
+          ¿Por qué usar EmpowerUp?
         </h2>
          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
       <CardLanding
@@ -307,7 +307,7 @@ export default function Landing() {
                 <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
               </div>
             </div>
-            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
+            <p className="text-sm text-center mt-4">© 2025 EmpowerUp. Todos los derechos reservados.</p>
           </div>
         </footer>
     </div>
