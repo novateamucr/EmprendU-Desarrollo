@@ -1,22 +1,101 @@
+import { useState } from "react";
 import Footer from "../components/footer/Footer";
 
 export default function ContactUs() {
+  const [formData, setFormData] = useState({
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [status, setStatus] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("Enviando...");
+
+    try {
+      const res = await fetch("https://emprendu-desarrollo-production.up.railway.app/api/ContactUs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Error al enviar el correo");
+
+      const data = await res.json();
+      setStatus(data.message);
+      setFormData({ email: "", subject: "", message: "" });
+      setTimeout(() => setStatus(""), 4000);
+    } catch (err) {
+      console.error(err);
+      setStatus("Error al enviar el mensaje");
+      setTimeout(() => setStatus(""), 4000);
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1 flex items-center justify-center px-10 md:p-12 mt-10 md:mt-4 lg:p-28" > 
+    <div className="flex flex-col h-[100vh]">
+      <main className="flex-1 flex items-center justify-center px-10 md:p-12 mt-10 md:mt-4 lg:px-28 lg:pt-20">
         <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 items-center">
           <div className="flex flex-col gap-2 w-full md:w-1/2">
             <h3 className="text-sm md:text-xl font-bold text-blue-400 leading-tight">CONTACTO</h3>
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">Contáctanos</h1>
-            <p className="text-sm md:text-lg mt-4">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias. Las consultas enviadas serán confidenciales siempre que se mantenga un lenguaje respetuoso y adecuado.</p>
+            <p className="text-sm md:text-lg mt-4">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias.</p>
             <p className="text-sm md:text-lg mt-4">Nuestro equipo revisará tu mensaje y te brindará una respuesta en el menor tiempo posible.</p>
+            <p className="text-sm md:text-lg mt-4 font-bold">¡Recuerda revisar la carpeta de spam!</p>
           </div>
           <div className="w-full md:w-1/2 flex justify-center">
-            <form className="flex flex-col gap-4 w-full max-w-md">
-              <input type="text" placeholder="Correo electrónico" className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base" />
-              <input type="text" placeholder="Asunto" className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base"/>
-              <textarea placeholder="Mensaje" rows={5} className="border p-4 rounded-xl shadow-soft resize-none text-xs sm:text-sm md:text-base"></textarea>
-              <button type="submit" className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition">Enviar</button>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
+              <div className="flex flex-col">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Correo electrónico"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base mb-1"
+                />
+                <p className="text-xs sm:text-sm md:text-sm text-gray-500 mt-0 pl-2 pb-2">Correo al que deseas ser contactado</p>
+              </div>
+              <input
+                type="text"
+                name="subject"
+                placeholder="Asunto"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+                className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base"
+              />
+              <textarea
+                name="message"
+                placeholder="Mensaje"
+                rows={5}
+                value={formData.message}
+                onChange={handleChange}
+                required
+                className="border p-4 rounded-xl shadow-soft resize-none text-xs sm:text-sm md:text-base"
+              ></textarea>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+              >
+                Enviar
+              </button>
+              <div className="h-6 flex items-center justify-center mt-2">
+                {status && <p className="text-sm text-center text-gray-700">{status}</p>}
+              </div>
             </form>
           </div>
         </div>
