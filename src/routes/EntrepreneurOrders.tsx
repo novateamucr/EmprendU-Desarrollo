@@ -88,16 +88,21 @@ export default function EntrepreneurOrders() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('useEffect triggered in EntrepreneurOrders');
     (async () => {
       try {
         setError(null);
         setLoading(true);
+        console.log('Fetching profile...');
         const profile = await getProfile();
+        console.log('Profile fetched:', profile);
         
         // Get all entrepreneur's businesses
         const entrepreneurShips = Array.isArray(profile?.entrepreneurships) ? profile.entrepreneurships : [];
+        console.log('Found businesses:', entrepreneurShips);
         
         if (entrepreneurShips.length === 0) {
+          console.log('No businesses found for this entrepreneur');
           setOrders([]);
           setError('No se encontraron emprendimientos asociados a tu usuario.');
           return;
@@ -115,9 +120,12 @@ export default function EntrepreneurOrders() {
         }
         
         // Fetch orders for all businesses in parallel
+        console.log('Fetching orders with params:', params);
         const allOrdersPromises = entrepreneurShips.map(async (business: any) => {
           try {
+            console.log(`Fetching orders for business ${business.id} (${business.name || 'unnamed'})`);
             const res: any = await listOrdersTable(business.id, { ...params });
+            console.log(`Orders for business ${business.id}:`, res?.data);
             return res?.data?.data || res?.data || [];
           } catch (err) {
             console.error(`Error fetching orders for business ${business.id}:`, err);
@@ -125,14 +133,17 @@ export default function EntrepreneurOrders() {
           }
         });
         
+        console.log('Waiting for all order requests to complete...');
         const allOrdersResults = await Promise.all(allOrdersPromises);
         const allOrders = allOrdersResults.flat();
+        console.log('All orders combined:', allOrders);
         
         const addressString = [profile?.province, profile?.canton, profile?.district, profile?.address]
           .filter((p) => !!p && String(p).trim().length > 0)
           .join(', ');
           
         // Process all orders
+        console.log('Processing orders...');
         const backendOrders: Order[] = allOrders.map((o: any) => {
           const entre = o.entrepreneurship || {};
           const entrepreneurshipId = Number(o.entrepreneurship_id ?? entre.id ?? 0);
