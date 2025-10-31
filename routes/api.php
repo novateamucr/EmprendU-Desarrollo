@@ -72,11 +72,14 @@ Route::put('products/{product}/custom-forms/{custom_form}', [ProductCustomFormCo
 Route::delete('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'destroy']);
 
 // Orders
-Route::get('orders', [OrdersController::class, 'index']); // ?entrepreneurship_id=
+Route::get('orders', [OrdersController::class, 'index'])->middleware('auth:sanctum'); // infer user from token
 Route::post('orders', [OrdersController::class, 'store']);
 Route::post('orders/{order}/items', [OrdersController::class, 'addItem']);
-Route::patch('orders/{order}/status', [OrdersController::class, 'updateStatus']);
-Route::delete('orders/{order}', [OrdersController::class, 'destroy']);
+Route::patch('orders/{order}/status', [OrdersController::class, 'updateStatus'])->middleware('auth:sanctum');
+Route::delete('orders/{order}', [OrdersController::class, 'destroy'])->middleware('auth:sanctum');
+Route::get('orders/{order}', [OrdersController::class, 'show'])->middleware('auth:sanctum');
+Route::get('entrepreneurships/{entrepreneurship}/orders', [OrdersController::class, 'forEntrepreneur'])->middleware('auth:sanctum');
+Route::get('orders-table', [OrdersController::class, 'table'])->middleware('auth:sanctum');
 
 
 // AI Assistant routes
