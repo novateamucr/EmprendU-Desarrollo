@@ -50,6 +50,11 @@ return [
             'transport' => 'ses',
         ],
 
+        'sendgrid' => [
+            'transport' => 'sendgrid',
+            'api_key' => env('SENDGRID_API_KEY'),
+        ],
+
         'postmark' => [
             'transport' => 'postmark',
             // 'message_stream_id' => null,
