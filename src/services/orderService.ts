@@ -76,10 +76,79 @@ export async function deleteOrder(orderId: number | string) {
   return res.data;
 }
 
-// Cliente autenticado: lista mis pedidos (el backend infiere user_id del token)
-export async function listMyOrders(params?: { status?: string | string[]; page?: number }) {
-  const res = await api.get('/orders', { params });
-  return res.data;
+export interface OrderTableItem {
+  id: number;
+  order_number: string;
+  status: string;
+  total: number;
+  created_at: string;
+  updated_at: string;
+  entrepreneurship: {
+    id: number;
+    name: string;
+    logo_url?: string;
+  };
+  items_count: number;
+}
+
+export interface OrdersTableResponse {
+  data: OrderTableItem[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+// Cliente autenticado: lista mis pedidos
+export async function listMyOrders(userId: number): Promise<OrdersTableResponse> {
+  try {
+    if (!userId) {
+      throw new Error('No se pudo obtener el ID de usuario');
+    }
+
+    console.log('Fetching orders for user:', userId);
+    
+    const res = await api.get('/orders', {
+      params: {
+        user_id: userId
+      },
+      paramsSerializer: {
+        indexes: null // Prevents array indices in query params
+      }
+    });
+    
+    console.log('Orders API Response:', res.data);
+    
+    // Map the response data to match the expected format
+    const orders = Array.isArray(res.data) ? res.data : [];
+    
+    // Map to OrderTableItem format
+    const mappedData = orders.map((order: any) => ({
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+      total: parseFloat(order.total || 0),
+      created_at: order.created_at,
+      updated_at: order.updated_at,
+      entrepreneurship: {
+        id: order.entrepreneurship?.id || 0,
+        name: order.entrepreneurship?.name || 'Emprendimiento',
+        logo_url: order.entrepreneurship?.logo_url
+      },
+      items_count: order.items?.length || 0
+    }));
+    
+    return {
+      data: mappedData,
+      current_page: 1,
+      last_page: 1,
+      per_page: mappedData.length,
+      total: mappedData.length
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
 }
 
 // Ver un pedido (incluye items por defecto)

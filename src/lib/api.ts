@@ -1,6 +1,6 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = 'https://emprendu-desarrollo-production.up.railway.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://emprendu-backend.test/api';
 
 // Create axios instance with base configuration
 export const api = axios.create({
@@ -16,42 +16,46 @@ export const api = axios.create({
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(
-  (config) => {
-    let token = localStorage.getItem('token');
-    if (!token && typeof document !== 'undefined') {
-      // Fallback: try to read token from cookies (e.g., set by login)
-      const match = document.cookie.split('; ').find((c) => c.startsWith('token='));
-      if (match) {
-        token = decodeURIComponent(match.split('=')[1]);
+  (config: InternalAxiosRequestConfig) => {
+    // Create new headers object using AxiosHeaders
+    const headers = new AxiosHeaders({
+      ...config.headers,
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Access-Control-Allow-Credentials': 'true'
+    });
+    
+    // Only run in browser environment
+    if (typeof window !== 'undefined') {
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // Add authorization header if token exists
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
       }
+      
+      // For file uploads, let the browser set the Content-Type with the boundary
+      if (config.data instanceof FormData) {
+        headers.delete('Content-Type');
+      } else {
+        headers.set('Content-Type', 'application/json');
+      }
+      
+      // Set CORS headers for browser environment
+      headers.set('Access-Control-Allow-Origin', window.location.origin);
+    } else {
+      // Set default CORS headers for non-browser environment
+      headers.set('Access-Control-Allow-Origin', '*');
     }
     
-    // Add CORS headers to all requests
-    config.headers = config.headers || {};
-    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
-    config.headers['Access-Control-Allow-Credentials'] = 'true';
-    
-    const token = localStorage.getItem('token');
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    
-    // For file uploads, let the browser set the Content-Type with the boundary
-    if (config.data instanceof FormData) {
-      delete headers['Content-Type'];
-    }
-    
+    // Return new config with updated headers
     return {
       ...config,
-      headers: {
-        ...headers,
-        // Ensure these headers are set for CORS
-        'Access-Control-Allow-Origin': window.location.origin,
-        'Access-Control-Allow-Credentials': 'true',
-      },
+      headers
     };
   },
-  (error: any) => {
+  (error) => {
     console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }

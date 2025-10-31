@@ -586,7 +586,7 @@ export default function Home() {
                     <select
                       value={selectedProvince || 'Todos'}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (

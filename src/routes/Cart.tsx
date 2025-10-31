@@ -36,16 +36,13 @@ export default function Cart() {
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          className: 'bg-green-50 text-green-800',
-          bodyClassName: 'flex items-center',
+          className: 'bg-green-50 text-green-800 flex items-center',
           progressClassName: 'bg-green-500',
         });
         
-        // Scroll to the top to see the success message
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Optionally navigate to order confirmation
-        // navigate(`/orders/${result.orderId}`);
+        // The cart will be automatically cleared by the CartContext
+        // Navigate to the orders page or home
+        navigate('/orders');
       } else if (result.error) {
         toast.error(result.error, {
           position: "top-center",
