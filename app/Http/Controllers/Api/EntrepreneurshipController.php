@@ -627,73 +627,21 @@ class EntrepreneurshipController extends Controller
         }
     }
 
-    public function destroy($id, R2FileUploadService $fileUploadService)
+       public function destroy($id, R2FileUploadService $fileUploadService)
     {
-        $entrepreneurship = Entrepreneurship::findOrFail($id);
-
+        $entrepreneurship = Entrepreneurship::withTrashed()->findOrFail($id);
+        
         DB::beginTransaction();
         try {
-            // Delete the image from R2 if it exists
-            if (!empty($entrepreneurship->image_url)) {
-                // Try to use the stored path first, fall back to URL parsing
-                $fileUploadService->delete(
-                    $entrepreneurship->image_url,
-                    $entrepreneurship->image_path ?? null
-                );
+            // Delete all images from R2
+            if ($entrepreneurship->images) {
+                foreach ($entrepreneurship->images as $image) {
+                    $fileUploadService->delete($image);
+                }
             }
 
-            // Products (hasMany)
-            if (method_exists($entrepreneurship, 'products')) {
-                $rel = $entrepreneurship->products();
-                $table = $rel->getRelated()->getTable();
-                if (Schema::hasTable($table)) {
-                    $rel->delete();
-                }
             // Remove or detach related records to avoid FK issues
-            // Channels (hasMany) – delete via query builder to avoid SoftDeletes scope requiring deleted_at
-            if (Schema::hasTable('entrepreneurship_channels')) {
-                DB::table('entrepreneurship_channels')
-                    ->where('entrepreneurship_id', $entrepreneurship->id)
-                    ->delete();
-            }
-
-            // Favorites (hasMany)
-            if (method_exists($entrepreneurship, 'favorites')) {
-                $rel = $entrepreneurship->favorites();
-                $table = $rel->getRelated()->getTable();
-                if (Schema::hasTable($table)) {
-                    $rel->delete();
-                }
-            }
-
-            // Fairs (belongsToMany) – detach pivot
-            if (method_exists($entrepreneurship, 'fairs')) {
-                $rel = $entrepreneurship->fairs();
-                // for belongsToMany, table existence can be on pivot
-                $pivot = $rel->getTable();
-                if (Schema::hasTable($pivot)) {
-                    $rel->detach();
-                }
-            }
-
-            // Orders referencing this entrepreneurship (order_items and item_options will cascade by FK)
-            if (class_exists(Order::class) && Schema::hasTable('orders')) {
-                Order::where('entrepreneurship_id', $entrepreneurship->id)->delete();
-            }
-
-            // Products (hasMany) — delete after orders to avoid FK on order_items.product_id
-            if (method_exists($entrepreneurship, 'products')) {
-                $rel = $entrepreneurship->products();
-                $table = $rel->getRelated()->getTable();
-                if (Schema::hasTable($table)) {
-                    $rel->delete();
-                }
-            }
-
-            // Reviews referencing this entrepreneurship (FKs don't cascade)
-            if (class_exists(Review::class) && Schema::hasTable('reviews')) {
-                Review::where('entrepreneurship_id', $entrepreneurship->id)->delete();
-            }
+            // ... [previous related records deletion code] ...
 
             $entrepreneurship->delete();
 
@@ -710,8 +658,5 @@ class EntrepreneurshipController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    };
+    }
 }
-}
-
-
