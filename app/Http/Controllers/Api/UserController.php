@@ -28,6 +28,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        // Include related data needed by frontend (profile and entrepreneur views)
+        $user->load(['roleRelation','interests','entrepreneurships']);
         return response()->json($user);
     }
 
@@ -60,17 +62,12 @@ class UserController extends Controller
                 'avatar_url' => 'nullable|string', // For existing URLs if needed
             ]);
 
-            // Handle avatar upload
-            if ($request->hasFile('avatar')) {
-                $avatar = $request->file('avatar');
-                $avatarUrl = $fileUploadService->upload($avatar, 'users/avatars');
-                if (!$avatarUrl) {
-                    throw new \Exception('Error al subir la imagen de perfil');
-                }
-                $data['avatar_url'] = $avatarUrl;
-            } elseif (empty($data['avatar_url'])) {
-                $data['avatar_url'] = null;
-            }
+        // Enviar correo de confirmación directamente con Mail::raw
+       /* $confirmLink = url("/api/confirm?token={$token}");
+        Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('Confirma tu correo');
+        });*/
 
             $data['password'] = Hash::make($data['password']);
             $data['isConfirmed'] = false; // usuario no confirmado al crear

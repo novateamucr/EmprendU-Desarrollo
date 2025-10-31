@@ -9,14 +9,19 @@ class Fair extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id',
-        'title',
-        'location',
-        'time',
-        'image',
-        'province',
+        'description',
+        'address',
         'canton',
-        'district'
+        'district',
+        'location',
+        'canton',
+        'title',
+        'date',
+        'time',
+        'province',
+        'image',
+        'user_id',
+        'is_active',
     ];
     public function owner()
     {

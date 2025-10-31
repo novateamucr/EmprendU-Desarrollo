@@ -20,15 +20,18 @@ class FairController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:150',
+            'user_id'   => 'required|exists:users,id',
+            'title'     => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'province' => 'required|string|max:100',
-            'canton' => 'required|string|max:100',
-            'district' => 'required|string|max:100',
-            'address' => 'required|string',
+            'date'      => 'required|string',
+            'time'      => 'required|string',
+            'province'  => 'required|string|max:100',
+            'canton'    => 'required|string|max:100',
+            'district'  => 'required|string|max:100',
+            'address'   => 'required|string',
+            'location'  => 'required|string|max:255',
+            'image'     => 'nullable|url',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $fair = Fair::create($data);
@@ -43,15 +46,18 @@ class FairController extends Controller
     public function update(Request $request, Fair $fair)
     {
         $data = $request->validate([
-            'user_id' => 'sometimes|required|exists:users,id',
-            'name' => 'sometimes|required|string|max:150',
-            'description' => 'nullable|string',
-            'start_date' => 'sometimes|required|date',
-            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
-            'province' => 'sometimes|required|string|max:100',
-            'canton' => 'sometimes|required|string|max:100',
-            'district' => 'sometimes|required|string|max:100',
-            'address' => 'sometimes|required|string',
+            'user_id'   => 'sometimes|required|exists:users,id',
+            'title'     => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'date'      => 'sometimes|required|string',
+            'time'      => 'sometimes|required|string',
+            'province'  => 'sometimes|required|string|max:100',
+            'canton'    => 'sometimes|required|string|max:100',
+            'district'  => 'sometimes|required|string|max:100',
+            'address'   => 'sometimes|required|string',
+            'location'  => 'sometimes|required|string|max:255',
+            'image'     => 'sometimes|nullable|url',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $fair->update($data);

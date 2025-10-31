@@ -12,6 +12,8 @@ use Throwable;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Models\Order;
+use App\Models\Review;
 
 class EntrepreneurshipController extends Controller
 {
@@ -647,6 +649,12 @@ class EntrepreneurshipController extends Controller
                 if (Schema::hasTable($table)) {
                     $rel->delete();
                 }
+            // Remove or detach related records to avoid FK issues
+            // Channels (hasMany) – delete via query builder to avoid SoftDeletes scope requiring deleted_at
+            if (Schema::hasTable('entrepreneurship_channels')) {
+                DB::table('entrepreneurship_channels')
+                    ->where('entrepreneurship_id', $entrepreneurship->id)
+                    ->delete();
             }
 
             // Favorites (hasMany)
@@ -668,6 +676,25 @@ class EntrepreneurshipController extends Controller
                 }
             }
 
+            // Orders referencing this entrepreneurship (order_items and item_options will cascade by FK)
+            if (class_exists(Order::class) && Schema::hasTable('orders')) {
+                Order::where('entrepreneurship_id', $entrepreneurship->id)->delete();
+            }
+
+            // Products (hasMany) — delete after orders to avoid FK on order_items.product_id
+            if (method_exists($entrepreneurship, 'products')) {
+                $rel = $entrepreneurship->products();
+                $table = $rel->getRelated()->getTable();
+                if (Schema::hasTable($table)) {
+                    $rel->delete();
+                }
+            }
+
+            // Reviews referencing this entrepreneurship (FKs don't cascade)
+            if (class_exists(Review::class) && Schema::hasTable('reviews')) {
+                Review::where('entrepreneurship_id', $entrepreneurship->id)->delete();
+            }
+
             $entrepreneurship->delete();
 
             DB::commit();
@@ -683,5 +710,8 @@ class EntrepreneurshipController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
+    };
 }
+}
+
+
