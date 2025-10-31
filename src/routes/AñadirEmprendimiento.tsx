@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+import { ImageUpload } from '../components/ImageUpload';
 interface Category {
   id: number;
   nombre: string;
@@ -151,7 +152,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
     try {
       setIsLoading(true);
       setError(null);
-      
+
       if (!user?.id) {
         throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
       }
@@ -177,7 +178,10 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           },
-          body: JSON.stringify(requestData)
+          body: JSON.stringify({
+            ...requestData,
+            image_url: formData.image_url ?? null,
+          })
         });
         
         if (!response.ok) {
@@ -209,7 +213,10 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           },
-          body: JSON.stringify(requestData)
+          body: JSON.stringify({
+            ...requestData,
+            image_url: formData.image_url ?? null,
+          })
         });
         
         if (!response.ok) {
@@ -283,6 +290,23 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       <Card className="p-6">
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
+            {/* Image Upload - top of the form */}
+            <div className="flex flex-col items-center">
+              <label className="block w-full text-sm font-medium mb-3">
+                Imagen del emprendimiento
+              </label>
+              <ImageUpload
+                currentImage={typeof formData.image_url === 'string' ? formData.image_url || undefined : undefined}
+                placeholderInitial={(formData.name || 'E').trim().charAt(0).toUpperCase()}
+                onImageChange={(imageData: string) => {
+                  setFormData(prev => ({ ...prev, image_url: imageData }));
+                }}
+              />
+              <p className="mt-2 text-xs text-muted-foreground text-center">
+                Sube una imagen representativa de tu emprendimiento. Formatos: JPG, PNG. Máx 5MB.
+              </p>
+            </div>
+
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Nombre del emprendimiento *

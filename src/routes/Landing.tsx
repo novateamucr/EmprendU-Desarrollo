@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { CardLanding } from "../components/CardLanding";
 import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 
-//import emprendu from "../assets/emprendu.svg";
+import emprendu from "../assets/logo.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
 import insta from "../assets/instagram_icon.svg";
@@ -29,7 +29,7 @@ const slideInRight = keyframes`
 
 const logo = (
     <Link to="/" className="flex items-center">
-      <img src="https://emprendu-desarrollo-production.up.railway.app/storage/products/16/1c1dc22e-db62-4130-b97a-9d245851fdea.png" alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src={emprendu} alt="EmprendeU Logo" className="h-8 w-auto" />
     </Link>
   );
 
@@ -94,7 +94,7 @@ export default function Landing() {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className="bg-white text-gray-900 font-sans ">
       {/* Navbar arriba */}
       <AnimatedNav className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-3xl w-full px-4 z-40">
         <div className="bg-white rounded-[16px] shadow-soft border border-border px-6 py-3 h-14 flex items-center">
@@ -180,8 +180,8 @@ export default function Landing() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto md:px-12 py-28 grid md:grid-cols-2 items-center gap-12 mt-20 px-6 sm:py-20 sm:mt-20">
         <div>
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
-          <h2 className="text-xl md:text-2xl font-bold leading-tight mb-6 text-center md:text-left">
+          <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6 text-center md:text-left">EmprendU</h1>
+          <h2 className="text-xl md:text-2xl font-semibold leading-tight mb-6 text-center md:text-left">
             Haz que tu idea llegue más lejos. Comparte, conecta y haz crecer tu
             emprendimiento con EmprendU.
           </h2>
@@ -210,7 +210,7 @@ export default function Landing() {
 
       {/* ¿Por qué usar EmprendU? */}
       <section id="porque" className="py-16">
-        <h2 className="text-2xl font-bold text-center mb-12">
+        <h2 className="text-2xl font-semibold text-center mb-12">
           ¿Por qué usar EmprendU?
         </h2>
          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
@@ -234,13 +234,13 @@ export default function Landing() {
 
       {/* ¿Cómo funciona? */}
       <section className="py-16 bg-white">
-        <h2 className="text-2xl font-bold text-center mb-10">¿Cómo funciona?</h2>
+  <h2 className="text-2xl font-semibold text-center mb-10">¿Cómo funciona?</h2>
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 relative">
             <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-brand/30"></div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 1
               </div>
               <h3 className="mt-4 font-semibold">Registra tu emprendimiento</h3>
@@ -250,7 +250,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 2
               </div>
               <h3 className="mt-4 font-semibold">Gestiona tu información</h3>
@@ -260,7 +260,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 3
               </div>
               <h3 className="mt-4 font-semibold">Conecta con la comunidad</h3>
@@ -270,7 +270,7 @@ export default function Landing() {
             </div>
 
             <div className="relative flex flex-col items-center text-center">
-              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-bold z-10">
+              <div className="bg-brandDark text-white w-12 h-12 rounded-full flex items-center justify-center font-semibold z-10">
                 4
               </div>
               <h3 className="mt-4 font-semibold">Haz crecer tu emprendimiento</h3>
@@ -293,26 +293,23 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer
-        id="contacto"
-        className="bg-brand text-white py-6 rounded-t-2xl"
-      >
-        <div className="items-center flex flex-col gap-4">
-          <div className="max-w-6xl mx-auto flex justify-between items-center px-6 md:px-12 border-b border-white pb-4  w-full">
-            <div className="flex align-middle items-center gap-6">
-              <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
-              <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
-              <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+      <footer id="contacto" className="bg-brand text-white py-6 rounded-t-2xl w-full">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 border-b border-white pb-4 w-full">
+              <div className="flex align-middle items-center gap-4 md:gap-6">
+                <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
+                <a href="/faqs" className="text-white text-sm">Preguntas frecuentes</a>
+                <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
+              </div>
+              <div className="flex gap-4 md:gap-6">
+                <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
+                <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
+                <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
+              </div>
             </div>
-            <div className="flex gap-6">
-              <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
-              <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
-              <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="" className=" h-7"/></a>
-            </div>    
+            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
           </div>
-          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+        </footer>
     </div>
   );
 }

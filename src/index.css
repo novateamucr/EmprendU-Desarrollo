@@ -1,3 +1,6 @@
+/* Importar la fuente Montserrat desde Google Fonts - debe ir antes de otras reglas */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,6 +15,9 @@
 
 /* Brand-wide minimal, lively accents */
 @layer base {
+  html, body {
+  font-family: 'Montserrat', sans-serif;
+}
   /* Text selection brand highlight */
   ::selection {
     background-color: rgba(118, 176, 205, 0.25); /* brand/25 */
@@ -26,6 +32,18 @@
   /* Global body colors */
   body {
     @apply bg-white text-primary;
+    /* Peso por defecto del texto del cuerpo (regular) */
+    font-weight: 400; /* Montserrat 400 */
+  }
+
+  /* Pesos globales de encabezados y elementos tipográficos */
+  h1, h2, h3, h4, h5, h6, strong {
+    font-weight: 700; /* encabezados y strong en bold */
+  }
+
+  /* Enlaces y acciones (botones) ligeramente más pesados para mejor legibilidad */
+  a, button {
+    font-weight: 600; /* semibold: usa 600 cuando esté disponible */
   }
 }
 

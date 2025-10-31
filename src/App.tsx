@@ -38,6 +38,9 @@ import GestorEmprendimientos from './routes/GestorEmprendimientos';
 import AñadirEmprendimiento from './routes/AñadirEmprendimiento';
 import GestorProductos from './routes/GestorProductos';
 import AñadirProductos from './routes/AñadirProducto';
+import AdminEditProductRoute from './routes/AdminEditProductRoute';
+import GestorFerias from './routes/GestorFerias';
+import AñadirFeria from './routes/AñadirFeria';
 
 // Entrepreneur
 import EntrepreneurManager from './routes/entrepreneur/EntrepreneurManager';
@@ -116,10 +119,14 @@ function App() {
                     <Route path="/admin/emprendimientos/nuevo" element={<AñadirEmprendimiento />} />
                     <Route path="/admin/emprendimientos/nuevo/:id" element={<AñadirEmprendimiento />} />
                     <Route path="/admin/productos" element={<GestorProductos />} />
-                    <Route path="/admin/Añadirproductos" element={<AñadirProductos />} />
-                    <Route path="/admin/Añadirproductos/:id" element={<AñadirProductos />} />
+                    <Route path="/admin/añadirproductos" element={<AñadirProductos businessId={null} />} />
+                    <Route path="/admin/añadirproductos/:id" element={<AdminEditProductRoute />} />
                     <Route path="/admin/dashboard" element={<AdminDashB />} />
                     <Route path="/profile/edit/:id" element={<EditarPerfil />} />
+                    <Route path="/admin/ferias" element={<GestorFerias />} />
+                    {/* Fairs create/edit */}
+                    <Route path="/admin/añadirferias" element={<AñadirFeria />} />
+                    <Route path="/admin/añadirferias/:id" element={<AñadirFeria />} />
                   </Route>
 
                   {/* Entrepreneur Routes (role 2) */}

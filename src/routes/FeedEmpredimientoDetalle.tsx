@@ -254,7 +254,7 @@ export function FeedEmpredimientoDetalle() {
             )}
             <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
             <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto px-2">{business.description}</p>
+            <p className="text-gray-600 max-w-2xl mx-auto px-2 md:text-base lg:text-base text-sm">{business.description}</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
@@ -299,14 +299,14 @@ export function FeedEmpredimientoDetalle() {
         {/* Productos del emprendimiento */}
         {/* 🔍 Buscador */}
         <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-          <div className="relative flex-1">
+          <div className="relative w-full md:flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
             <input
               type="text"
               placeholder="Buscar producto..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white md:text-base lg:text-base text-sm"
             />
           </div>
 
@@ -315,7 +315,7 @@ export function FeedEmpredimientoDetalle() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none"
+              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none md:text-base lg:text-base text-sm"
             >
               <option value="none">Ordenar por precio</option>
               <option value="lowToHigh">Menor a mayor</option>
@@ -353,7 +353,7 @@ export function FeedEmpredimientoDetalle() {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500 text-center">
+          <div className="text-gray-500 text-center md:text-base lg:text-base text-sm">
             {searchQuery
               ? 'No se encontraron productos con ese nombre.'
               : 'Este emprendimiento aún no tiene productos.'}
@@ -361,11 +361,11 @@ export function FeedEmpredimientoDetalle() {
         )}
 
        {averageRating !== null && (
-  <div className=" mt-20 pb-4 flex flex-wrap justify-center gap-8 items-center">
+  <div className="mt-4 sm:mt-8 md:my-10 pb-5 sm:pb-4 flex flex-wrap justify-center gap-4 md:gap-8 items-center">
     {[1, 2, 3, 4, 5].map((star) => (
       <div key={star} className="relative group">
         <span
-          className={`text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+          className={`text-4xl sm:text-5xl md:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
         >
           ★
         </span>
@@ -383,9 +383,9 @@ export function FeedEmpredimientoDetalle() {
 )}
           
         </div>
-          <h1 className="text-2xl font-bold ">Comentarios</h1>
+          <h1 className="md:text-2xl text-lg font-bold ">Comentarios</h1>
           <Btn
-              style="text-gray-400 text-s mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
+              style="text-gray-400 md:text-lg text-sm mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
               key="abrirPopup"
               text="Agregar una reseña"
               onClick={() => {
@@ -413,20 +413,20 @@ export function FeedEmpredimientoDetalle() {
         <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500">Todavía no hay comentarios.</p>)}
           {commentedReviews.map(r => (
             <div key={r.id} className="border-b pb-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{r.user?.name}</span>
-                  <div className="flex text-yellow-400">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <div className="flex items-center min-w-0 gap-2">
+                  <span className="font-semibold truncate max-w-[110px] xs:max-w-[140px] sm:max-w-[280px]">{r.user?.name}</span>
+                  <div className="flex text-yellow-400 text-sm">
                     {'★'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                     {'☆'.repeat(5 - Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 ml-1 mt-1 sm:mt-0 shrink-0">
                   {new Date(r.created_at).toLocaleString()}
                 </span>
 
               </div>
-              <p className="text-sm text-gray-700 mt-2">{r.review}</p>
+              <p className="text-sm text-gray-700 mt-2 break-words">{r.review}</p>
             </div>
           ))}
 

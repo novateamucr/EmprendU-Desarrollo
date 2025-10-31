@@ -310,7 +310,7 @@ export default function ProductDetail() {
                 {catMap[Number(product.category_id)] || 'General'}
               </span>
             )}
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary">{product.name}</h1>
             {product.description && (
               <p className="text-secondary mt-2">{product.description}</p>
             )}

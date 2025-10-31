@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Modal } from '../components/Modal';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useUsers from "../hooks/useUsers";
+import { api } from "../lib/api";
 
 const button = (
   <Link
@@ -31,6 +32,7 @@ const getRoleName = (roleId: number) => {
 };
 
 export default function GestorUsuarios() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -48,12 +50,18 @@ export default function GestorUsuarios() {
   // 🔹 Cerrar el menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // debug: log target and whether menu contains it
+      try {
+        // eslint-disable-next-line no-console
+        console.debug('GestorUsuarios: outside click target=', event.target, 'menuRef=', menuRef.current);
+      } catch {}
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // Use 'click' so inner click handlers execute before outside close in edge cases
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   React.useEffect(() => {
@@ -72,10 +80,14 @@ export default function GestorUsuarios() {
   }, [usuarios, searchTerm]);
 
   const handleActionClick = (userId: number) => {
+    // eslint-disable-next-line no-console
+    console.debug('GestorUsuarios: toggle menu', userId, 'currentOpen=', openMenuId);
     setOpenMenuId(openMenuId === userId ? null : userId);
   };
 
   const handleOptionClick = async (option: string, userId: number) => {
+    // eslint-disable-next-line no-console
+    console.debug('GestorUsuarios: option click', option, userId);
     if (option === 'Eliminar') {
       const user = usuarios.find(u => u.id === userId) || null;
       setUserToDelete(user);
@@ -83,48 +95,99 @@ export default function GestorUsuarios() {
       return;
     }
     try {
-      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
-      let response;
-
-      switch (option) {
-        case 'Habilitar':
-        case 'Deshabilitar': {
-          const isBanning = option === 'Deshabilitar';
-          response = await fetch(`${apiUrl}/api/users/${userId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ banned: isBanning })
-          });
-          if (response.ok) {
-            setUsuarios(prev => prev.map(u =>
-              u.id === userId ? { ...u, banned: isBanning } : u
-            ));
-          }
-          break;
-        }
+      if (!userId && userId !== 0) {
+        console.error('GestorUsuarios: invalid userId for option', option, userId);
+        return;
       }
-
-      if (response && !response.ok) throw new Error('Error al procesar la solicitud');
-      refetch();
-      setOpenMenuId(null);
+      // Use axios instance to include auth token and shared config
+      if (option === 'Habilitar' || option === 'Deshabilitar') {
+        const isBanning = option === 'Deshabilitar';
+        const payload = { banned: isBanning };
+        // debug
+        // eslint-disable-next-line no-console
+        console.debug('GestorUsuarios: calling PUT /users/', userId, payload);
+        let res;
+        try {
+          res = await api.put(`/users/${userId}`, payload);
+        } catch (err) {
+          // If server returns 500, try PATCH as a fallback
+          // eslint-disable-next-line no-console
+          if ((err as any)?.response?.status === 500) {
+            console.warn('PUT failed with 500, trying PATCH as fallback', userId);
+            res = await api.patch(`/users/${userId}`, payload);
+          } else {
+            throw err;
+          }
+        }
+        // update local state optimistically
+        if (res.status >= 200 && res.status < 300) {
+          setUsuarios(prev => prev.map(u => u.id === userId ? { ...u, banned: isBanning } : u));
+          refetch();
+        } else {
+          throw new Error('Error en actualización');
+        }
+        setOpenMenuId(null);
+        return;
+      }
     } catch (error) {
-      console.error('Error:', error);
+      // axios error handling
+      // eslint-disable-next-line no-console
+      if ((error as any)?.response) {
+        const resp = (error as any).response;
+        console.error('API Error (PUT /users):', resp.status, resp.data);
+        try {
+          const msg = resp.data?.message || resp.data?.error || JSON.stringify(resp.data);
+          // eslint-disable-next-line no-alert
+          alert(`Error al actualizar usuario: ${msg}`);
+        } catch {}
+      } else {
+        console.error('Error in handleOptionClick:', error);
+        // eslint-disable-next-line no-alert
+        alert('Ocurrió un error al procesar la solicitud');
+      }
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!userToDelete) return;
     try {
-      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
-      const response = await fetch(`${apiUrl}/api/users/${userToDelete.id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Error al eliminar usuario');
+      // eslint-disable-next-line no-console
+      console.debug('GestorUsuarios: calling DELETE /users/', userToDelete.id);
+      let res;
+      try {
+        res = await api.delete(`/users/${userToDelete.id}`);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        if ((err as any)?.response?.status === 500) {
+          console.warn('DELETE failed with 500, trying POST _method=DELETE fallback', userToDelete.id);
+          // Some backends accept method override via form/body
+          res = await api.post(`/users/${userToDelete.id}`, { _method: 'DELETE' });
+        } else {
+          throw err;
+        }
+      }
+      if (res.status < 200 || res.status >= 300) throw new Error('Error al eliminar usuario');
       setUsuarios(prev => prev.filter(u => u.id !== userToDelete.id));
       refetch();
       setShowDeleteModal(false);
       setOpenMenuId(null);
       setUserToDelete(null);
-    } catch {
-      console.error('Ocurrió un error al eliminar el usuario');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      if ((error as any)?.response) {
+        const resp = (error as any).response;
+        console.error('API Error (DELETE /users):', resp.status, resp.data);
+        // mostrar mensaje al usuario si viene del servidor
+        try {
+          const msg = resp.data?.message || resp.data?.error || JSON.stringify(resp.data);
+          // eslint-disable-next-line no-alert
+          alert(`Error al eliminar usuario: ${msg}`);
+        } catch {}
+      } else {
+        console.error('Ocurrió un error al eliminar el usuario', error);
+        // eslint-disable-next-line no-alert
+        alert('Ocurrió un error al eliminar el usuario');
+      }
     }
   };
 
@@ -197,7 +260,7 @@ export default function GestorUsuarios() {
                       </button>
                       {openMenuId === user.id && (
                         <div ref={menuRef} className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-border rounded-md overflow-hidden animate-fadeIn">
-                          <Link to={`/profile/edit/${user.id}`} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</Link>
+                          <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</button>
                           <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-red-600 text-sm">Eliminar</button>
                           <button
                             onClick={() => handleOptionClick(user.banned ? 'Habilitar' : 'Deshabilitar', user.id)}
@@ -242,7 +305,7 @@ export default function GestorUsuarios() {
                 </button>
                 {openMenuId === user.id && (
                   <div ref={menuRef} className="absolute right-3 top-10 z-50 bg-white min-w-[140px] shadow-lg border border-border rounded-md overflow-hidden animate-fadeIn">
-                    <Link to={`/profile/edit/${user.id}`} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</Link>
+                    <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</button>
                     <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-red-600 text-sm">Eliminar</button>
                     <button
                       onClick={() => handleOptionClick(user.banned ? 'Habilitar' : 'Deshabilitar', user.id)}

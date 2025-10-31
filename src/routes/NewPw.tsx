@@ -61,7 +61,7 @@ export default function NewPw() {
         </Link>
 
         <div className="bg-white rounded-xl p-10 w-1/2 text-center">
-          <h2 className="text-2xl font-bold text-slate-700 mb-4">
+          <h2 className="text-2xl font-semibold text-slate-700 mb-4">
             Contraseña actualizada ✅
           </h2>
           <p className="text-slate-600">
@@ -70,7 +70,7 @@ export default function NewPw() {
           </p>
           <Link
             to="/login"
-            className="mt-6 inline-block bg-black text-white font-bold px-6 py-3 rounded-full hover:bg-green-600"
+            className="mt-6 inline-block bg-black text-white font-semibold px-6 py-3 rounded-full hover:bg-green-600"
           >
             Ir al login
           </Link>
@@ -90,7 +90,7 @@ export default function NewPw() {
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-6 w-full px-10 mt-10"
         >
-          <h2 className="text-2xl font-bold self-start">
+          <h2 className="text-2xl font-semibold self-start">
             Crear nueva contraseña
           </h2>
           <p className="text-slate-500 self-start">
@@ -114,7 +114,7 @@ export default function NewPw() {
           />
 
           <Btn
-            style="hover:bg-green-600 bg-black text-white font-black p-3 rounded-full w-full"
+            style="hover:bg-green-600 bg-black text-white font-bold p-3 rounded-full w-full"
             key="newPw"
             text={loading ? "Actualizando..." : "Guardar contraseña"}
             //type="submit"
