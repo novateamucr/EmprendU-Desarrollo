@@ -155,17 +155,18 @@ export const entrepreneurshipApi = {
   },
 
   // Create a new entrepreneurship
-  create: async (businessData: Omit<Entrepreneurship, 'id' | 'createdAt' | 'updatedAt'>): Promise<Entrepreneurship> => {
+  create: async (
+    businessData: Pick<Entrepreneurship, 'name' | 'description' | 'category' | 'image_url' | 'user_id'>
+  ): Promise<Entrepreneurship> => {
     try {
       const formData = new FormData();
       
-      // Append all business data to formData
-      Object.entries(businessData).forEach(([key, value]) => {
+      // Append only allowed primitive fields
+      const allowed: (keyof Entrepreneurship)[] = ['name', 'description', 'category', 'image_url', 'user_id'];
+      allowed.forEach((key) => {
+        const value = businessData[key as keyof typeof businessData];
         if (value !== undefined && value !== null) {
-          // Convert non-string values to strings for FormData
-          const formValue = typeof value === 'boolean' ? String(value) : 
-                          (value as string | Blob);
-          formData.append(key, formValue);
+          formData.append(String(key), String(value as any));
         }
       });
       

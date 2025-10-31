@@ -6,7 +6,7 @@ import Input from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Select } from '../../../components/ui/Select';
 import { toast } from 'react-hot-toast';
-import { entrepreneurshipApi } from '../../../services/entrepreneurshipService';
+import { entrepreneurshipApi, categoryApi, type Category } from '../../../services/entrepreneurshipService';
 import { useAuth } from '../../../context/AuthContext';
 
 interface BusinessFormData {
@@ -17,10 +17,7 @@ interface BusinessFormData {
   user_id?: number;
 }
 
-interface Category {
-  id: number;
-  name: string;
-}
+ 
 
 export default function BusinessForm() {
   const navigate = useNavigate();
@@ -40,15 +37,8 @@ export default function BusinessForm() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // This is a placeholder - replace with actual API call to fetch categories
-        const mockCategories = [
-          { id: 1, name: 'Alimentos' },
-          { id: 2, name: 'Artesanías' },
-          { id: 3, name: 'Tecnología' },
-          { id: 4, name: 'Moda' },
-          { id: 5, name: 'Belleza' },
-        ];
-        setCategories(mockCategories);
+        const apiCategories = await categoryApi.getAll();
+        setCategories(apiCategories);
       } catch (error) {
         console.error('Error fetching categories:', error);
         toast.error('Error al cargar las categorías');
@@ -93,44 +83,15 @@ export default function BusinessForm() {
         throw new Error('User must be logged in to create a business');
       }
 
-      const selectedCategory = categories.find(cat => cat.id === parseInt(formData.category));
-      if (!selectedCategory) {
-        throw new Error('Selected category not found');
-      }
-
-      const businessData = {
+      const payload = {
         name: formData.name,
         description: formData.description,
         category: parseInt(formData.category),
         image_url: formData.image_url || '',
         user_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        owner: {
-          id: user.id,
-          name: user.name || '',
-          email: user.email || '',
-          role: 2, // Default role for business owner
-          phone: user.phone || null,
-          province: user.province || null,
-          canton: user.canton || null,
-          district: user.district || null,
-          address: user.address || null,
-          avatar_url: user.avatar_url || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          // Required fields with default values
-          email_verified_at: null,
-          password: '', // This will be ignored by the backend
-          username: user.email?.split('@')[0] || 'user' + user.id,
-          banned: false,
-          remember_token: null
-        },
-        category_relation: selectedCategory,
-        products: []
       };
 
-      await entrepreneurshipApi.create(businessData);
+      await entrepreneurshipApi.create(payload);
 
       toast.success('Emprendimiento creado exitosamente');
       navigate('/entrepreneur/businesses');
@@ -205,7 +166,7 @@ export default function BusinessForm() {
               <option value="">Selecciona una categoría</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {category.nombre}
                 </option>
               ))}
             </Select>

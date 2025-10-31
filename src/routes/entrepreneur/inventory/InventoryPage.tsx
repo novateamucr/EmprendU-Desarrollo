@@ -4,7 +4,7 @@ import { Button } from '../../../components/Button';
 import { Plus } from 'lucide-react';
 import { Skeleton } from '@mui/material';
 import { SkeletonProductList } from '../../../components/ui/SkeletonProductList';
-import { getAllProducts, Product } from '../../../services/productService';
+import { getProductsByEntrepreneurship, Product } from '../../../services/productService';
 import { ProductList } from './components/ProductList';
 import ProductForm from './components/ProductForm';
 import { useToast } from '../../../hooks/useToast';
@@ -68,21 +68,12 @@ export default function InventoryPage() {
   
   const loadProducts = useCallback(async () => {
     if (!businessId) return;
-    
     try {
       setIsLoading(true);
-      console.log('Fetching all products for frontend filtering');
-      
-      // Fetch all products across all pages
-      const allProducts = await getAllProducts();
-      console.log('All products from API:', allProducts);
-      
-      // Filter products by businessId on the frontend
-      const businessProducts = allProducts.filter(
-        product => product.entrepreneurship_id.toString() === businessId
-      );
-      
-      console.log(`Filtered products for business ${businessId}:`, businessProducts);
+      console.log('Fetching products filtered by entrepreneurship on backend');
+      const bizIdNum = Number(businessId);
+      const businessProducts = await getProductsByEntrepreneurship(bizIdNum, 100);
+      console.log(`Products for business ${businessId}:`, businessProducts);
       setProducts(businessProducts);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -161,7 +152,7 @@ export default function InventoryPage() {
       <ProductList 
         products={filteredProducts} 
         onEdit={handleEditProduct} 
-        onDelete={loadProducts}
+        onDelete={() => { loadProducts(); }}
         onSort={requestSort}
         sortConfig={sortConfig}
         onSearch={setSearchTerm}
