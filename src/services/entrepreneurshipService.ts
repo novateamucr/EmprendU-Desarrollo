@@ -48,6 +48,15 @@ export interface Entrepreneurship {
   banned?: boolean;
 }
 
+// Minimal payload for creation
+export interface CreateEntrepreneurshipPayload {
+  name: string;
+  description: string;
+  category: number;
+  image_url?: string | null;
+  user_id: number;
+}
+
 export interface PaginationLink {
   url: string | null;
   label: string;
@@ -115,7 +124,6 @@ export const categoryApi = {
     }
   },
 };
-
 
 // Entrepreneurship API
 export const entrepreneurshipApi = {
