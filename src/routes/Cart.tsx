@@ -153,22 +153,22 @@ export default function Cart() {
                 <div className="mt-2 text-sm text-red-600">{orderError}</div>
               )}
             </div>
-            <div className="divide-y">
+            <div className="md:divide-y">
               {group.items.map((item) => (
                 <div
                   key={item.productId}
-                  className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer"
                   onClick={() => navigate(`/product/${item.productId}`)}
+                  className="p-4 cursor-pointer bg-white md:bg-transparent rounded-md md:rounded-none border md:border-0 shadow-sm md:shadow-none mb-3 md:mb-0"
                 >
-                  <div className="flex w-full justify-between items-start sm:items-center flex-col sm:flex-row gap-2 sm:gap-0">
-                    <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="flex items-start md:items-center gap-3 min-w-0">
                       <img
                         src={item.imageUrl || 'https://placehold.co/100x100?text=Producto'}
                         alt={item.name}
-                        className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
+                        className="w-16 h-16 object-cover rounded flex-shrink-0"
                       />
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-medium hover:underline text-sm sm:text-base line-clamp-2">{item.name}</h3>
+                      <div className="min-w-0">
+                        <h3 className="font-medium hover:underline text-sm md:text-base line-clamp-2">{item.name}</h3>
                         <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
                         {item.selectionSummary && item.selectionSummary.length > 0 && (
                           <ul className="mt-1 text-xs text-gray-500 list-disc pl-4 space-y-0.5">
@@ -179,45 +179,47 @@ export default function Cart() {
                         )}
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-1 sm:space-x-2 mt-2 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
-                      {group.status !== 'requested' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (item.quantity > 1) {
-                              updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
-                            } else {
-                              removeItem(group.entrepreneurshipId, item.productId);
-                            }
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
-                          aria-label="Disminuir cantidad"
-                        >
-                          {item.quantity > 1 ? (
-                            <Minus className="w-3.5 h-3.5" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                          )}
-                        </button>
-                      )}
-                      <span className="w-8 text-center text-sm sm:text-base">{item.quantity}</span>
-                      {group.status !== 'requested' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
-                          aria-label="Aumentar cantidad"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="w-16 sm:w-20 text-right font-medium text-sm sm:text-base">
-                      ₡{(item.price * item.quantity).toLocaleString()}
+
+                    <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto mt-2 md:mt-0">
+                      <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+                        {group.status !== 'requested' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (item.quantity > 1) {
+                                updateQty(group.entrepreneurshipId, item.productId, item.quantity - 1);
+                              } else {
+                                removeItem(group.entrepreneurshipId, item.productId);
+                              }
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            aria-label="Disminuir cantidad"
+                          >
+                            {item.quantity > 1 ? (
+                              <Minus className="w-3.5 h-3.5" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                            )}
+                          </button>
+                        )}
+                        <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
+                        {group.status !== 'requested' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            aria-label="Aumentar cantidad"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="text-right font-medium text-sm md:text-base">
+                        ₡{(item.price * item.quantity).toLocaleString()}
+                      </div>
                     </div>
                   </div>
                 </div>
