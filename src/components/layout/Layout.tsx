@@ -3,7 +3,7 @@ import { Navbar } from '../navbar';
 import { UserProfile } from '../navbar/UserProfile';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, LayoutDashboard, Store } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Store, Package } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import emprendULogo from '../../assets/logo.svg';
 
@@ -48,6 +48,13 @@ export function Layout({ children }: LayoutProps) {
           label: 'Mis emprendimientos',
           to: '/entrepreneur/businesses',
           icon: <Store size={16} />,
+          visible: user?.role === 2
+        },
+        {
+          type: 'link' as const,
+          label: 'Pedidos',
+          to: '/entrepreneur/orders',
+          icon: <Package size={16} />,
           visible: user?.role === 2
         }
       ],
