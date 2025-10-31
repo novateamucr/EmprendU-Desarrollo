@@ -18,15 +18,21 @@ class EntrepreneurshipChannel extends Model
         'url',
         'handle',
         'is_primary',
-        'is_public',
-        'display_order',
+        'is_public'
     ];
 
     protected $casts = [
         'is_primary' => 'boolean',
-        'is_public' => 'boolean',
-        'display_order' => 'integer',
+        'is_public' => 'boolean'
     ];
+    
+    protected static function booted()
+    {
+        static::addGlobalScope('ordered', function ($builder) {
+            $builder->orderBy('is_primary', 'desc')
+                   ->orderBy('id', 'asc');
+        });
+    }
 
     public function entrepreneurship()
     {

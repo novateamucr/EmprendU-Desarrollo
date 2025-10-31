@@ -23,7 +23,7 @@ class User extends Authenticatable
         'address',
         'banned',
         'avatar_url',
-        'isConfirmed', // ✅ agregamos el campo de confirmación
+        'isConfirmed', 
     ];
 
     protected $casts = [

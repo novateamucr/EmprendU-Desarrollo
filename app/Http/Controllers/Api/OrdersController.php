@@ -17,49 +17,40 @@ class OrdersController extends Controller
 {
     public function index(Request $request)
     {
-        // Return orders for: (a) authenticated user_id, else (b) user_id param
-        $authUserId = optional($request->user())->id;
-        $paramUserId = $request->query('user_id');
+        $userId = $request->query('user_id');
 
-        $query = Order::with(['entrepreneurship','items.product','items.orderOptions'])->orderByDesc('id');
-
-        if ($authUserId) {
-            $query->where('user_id', (int) $authUserId);
-        } elseif ($paramUserId) {
-            $query->where('user_id', (int) $paramUserId);
-        } else {
-            abort(400, 'user_id is required');
+        if (!$userId) {
+            return response()->json(['error' => 'User ID is required'], 400);
         }
 
-        // Optional status filter: supports status=draft,requested or status[]=draft&status[]=requested
-        $status = $request->query('status');
-        if ($status) {
-            if (is_string($status)) {
-                $parts = array_filter(array_map('trim', explode(',', $status)));
-                if (!empty($parts)) {
-                    $query->whereIn('status', $parts);
-                }
-            } elseif (is_array($status)) {
-                $query->whereIn('status', $status);
-            }
-        }
+        $orders = Order::with(['entrepreneurship', 'items.product', 'items.orderOptions'])
+            ->where('user_id', (int) $userId)
+            ->orderByDesc('created_at')
+            ->get();
 
-        $orders = $query->paginate(20);
-        return OrderResource::collection($orders);
+        return response()->json($orders);
     }
-
     public function store(StoreOrderRequest $request)
     {
         $data = $request->validated();
-        // Permitir que cualquier usuario cree pedidos, excepto si administra ese emprendimiento (auto-pedido)
+
+        // Get the authenticated user's ID
+        $userId = $request->user()?->id;
+
+        // If user is not authenticated but we have a user_id in the request, use it
+        if (!$userId && isset($data['user_id'])) {
+            $userId = $data['user_id'];
+        }
+
+        // Allow any user to create orders, except if they manage the entrepreneurship (self-order)
         $eid = (int) $data['entrepreneurship_id'];
-        if (\Illuminate\Support\Facades\Auth::check() && Gate::allows('manage-entrepreneurship', $eid)) {
+        if ($userId && Gate::allows('manage-entrepreneurship', $eid)) {
             abort(403, 'No puedes hacer pedidos a tu propio emprendimiento.');
         }
 
         $order = Order::create([
             'entrepreneurship_id' => $data['entrepreneurship_id'],
-            'user_id' => optional($request->user())->id, // associate to current user
+            'user_id' => $userId, // This will be null if user is not authenticated and no user_id provided
             'customer_name' => $data['customer_name'],
             'customer_phone_8' => $data['customer_phone_8'],
             'customer_email' => $data['customer_email'],
@@ -75,9 +66,8 @@ class OrdersController extends Controller
 
         $this->recalculateTotals($order);
 
-        return new OrderResource($order->load(['entrepreneurship','items.orderOptions']));
+        return new OrderResource($order->load(['entrepreneurship', 'items.product', 'items.orderOptions']));
     }
-
     public function addItem(StoreOrderItemRequest $request, Order $order)
     {
         // Permitir agregar ítems a la orden para clientes; bloquear si el usuario administra el emprendimiento (evitar flujo de auto-pedido)
@@ -181,10 +171,10 @@ class OrdersController extends Controller
 
         $authorized = false;
         if ($authUser && $authUser->id) {
-            $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id);
+            $authorized = ($order->user_id && (int) $order->user_id === (int) $authUser->id);
         }
         if (!$authorized && $paramUserId) {
-            $authorized = (int)$order->user_id === (int)$paramUserId;
+            $authorized = (int) $order->user_id === (int) $paramUserId;
         }
         abort_unless($authorized, 403);
 
@@ -223,10 +213,10 @@ class OrdersController extends Controller
             $authUser = optional($request->user());
             $paramUserId = $request->query('user_id');
             if ($authUser && $authUser->id) {
-                $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id);
+                $authorized = ($order->user_id && (int) $order->user_id === (int) $authUser->id);
             }
             if (!$authorized && $paramUserId) {
-                $authorized = (int)$order->user_id === (int)$paramUserId;
+                $authorized = (int) $order->user_id === (int) $paramUserId;
             }
         }
 
@@ -264,9 +254,16 @@ class OrdersController extends Controller
 
         $include = (string) $request->query('include', 'entrepreneurship');
         $with = [];
-        if (str_contains($include, 'entrepreneurship')) { $with[] = 'entrepreneurship'; }
-        if (str_contains($include, 'items')) { $with[] = 'items.orderOptions'; $with[] = 'items.product'; }
-        if (!empty($with)) { $query->with($with); }
+        if (str_contains($include, 'entrepreneurship')) {
+            $with[] = 'entrepreneurship';
+        }
+        if (str_contains($include, 'items')) {
+            $with[] = 'items.orderOptions';
+            $with[] = 'items.product';
+        }
+        if (!empty($with)) {
+            $query->with($with);
+        }
 
         $orders = $query->paginate(20);
         return OrderResource::collection($orders);

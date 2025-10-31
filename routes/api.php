@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -27,15 +28,23 @@ use App\Mail\ContactUsMailable;
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
 
+
 // Protected routes (authentication required)
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
+
 Route::apiResource('products', ProductController::class);
 Route::apiResource('fairs', FairController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
+// User routes
 Route::apiResource('users', UserController::class);
+
+// Profile route for the authenticated user
+Route::middleware('auth:api')->group(function () {
+    Route::put('profile', [UserController::class, 'updateProfile']);
+});
 Route::apiResource('reviews', ReviewController::class);
 Route::get('/fairs', [FairController::class, 'index']);
 Route::get('/featured-business/today', [FeaturedBusinessController::class, 'today']);
