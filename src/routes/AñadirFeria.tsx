@@ -5,7 +5,6 @@ import { Button } from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
-import { ImageUpload } from '../components/ImageUpload';
 import { fairApi } from '../services/fairService';
 import { userApi, User } from '../services/userService';
 import { useToast } from '../hooks/useToast';
@@ -106,7 +105,7 @@ export default function AñadirFeria() {
 					district: data.district || '',
 					location: data.location || '',
 					date: normalizeDateToDDMMYYYY(data.date || ''),
-					time: data.time || '',
+					time: toHHMM(String(data.time || '')),
 					user_id: data.user_id ?? '',
 					image: data.image || null,
 					is_active: (data.is_active === 1 || data.is_active === true),
@@ -125,7 +124,8 @@ export default function AñadirFeria() {
 		// When province in form changes or provinces loaded, fetch cantons
 		useEffect(() => {
 			const fetchCantones = async () => {
-				const prov = provincias.find(p => p.nombre === form.province);
+					// try match by name (case/accent-insensitive) or by id (if legacy value stored)
+					const prov = findByNameOrId(provincias, form.province);
 				if (!prov) {
 					setCantonesFiltrados([]);
 					setDistritosFiltrados([]);
@@ -133,11 +133,20 @@ export default function AñadirFeria() {
 					return;
 				}
 				setProvinciaId(prov.id);
+				// Normalize province to its display name if needed so the <select> value matches an option
+				if (form.province !== prov.nombre) {
+					setForm((p) => ({ ...p, province: prov.nombre }));
+				}
 				try {
 					const res = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/cantones.json`);
 					const data = await res.json();
 					const cant = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
 					setCantonesFiltrados(cant);
+						// If current canton is an id or doesn't match by name, normalize it to the option label
+						const normalizedCanton = findByNameOrId(cant, form.canton)?.nombre;
+						if (form.canton && normalizedCanton && normalizedCanton !== form.canton) {
+							setForm((p) => ({ ...p, canton: normalizedCanton }));
+						}
 				} catch (e) {
 					console.error('Error loading cantones', e);
 					setCantonesFiltrados([]);
@@ -155,7 +164,7 @@ export default function AñadirFeria() {
 					setDistritosFiltrados([]);
 					return;
 				}
-				const canton = cantonesFiltrados.find(c => c.nombre === form.canton);
+					const canton = findByNameOrId(cantonesFiltrados, form.canton);
 				if (!canton) {
 					setDistritosFiltrados([]);
 					return;
@@ -165,6 +174,11 @@ export default function AñadirFeria() {
 					const data = await res.json();
 					const dist = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
 					setDistritosFiltrados(dist);
+						// Normalize district similarly
+						const normalizedDistrict = findByNameOrId(dist, form.district)?.nombre;
+						if (form.district && normalizedDistrict && normalizedDistrict !== form.district) {
+							setForm((p) => ({ ...p, district: normalizedDistrict }));
+						}
 				} catch (e) {
 					console.error('Error loading distritos', e);
 					setDistritosFiltrados([]);
@@ -251,17 +265,6 @@ export default function AñadirFeria() {
 							<div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin" /></div>
 						) : (
 							<>
-								{/* Image */}
-								<div className="flex flex-col items-center">
-									<label className="block w-full text-sm font-medium mb-3">Imagen de la feria</label>
-									<ImageUpload
-										currentImage={typeof form.image === 'string' ? form.image || undefined : undefined}
-										placeholderInitial={(form.title || 'F').trim().charAt(0).toUpperCase()}
-										onImageChange={(img) => setForm((p) => ({ ...p, image: img }))}
-									/>
-									<p className="mt-2 text-xs text-muted-foreground text-center">Formatos: JPG, PNG. Máx 5MB.</p>
-								</div>
-
 								{/* Title */}
 								<div>
 									<label htmlFor="title" className="block text-sm font-medium mb-1">Título *</label>
@@ -408,3 +411,43 @@ function normalizeDateToDDMMYYYY(dateStr: string): string {
 	return `${dd}/${mm}/${yyyy}`;
 }
 
+// Convert various time formats to 24h HH:mm acceptable by <input type="time">
+function toHHMM(src: string): string {
+	if (!src) return '';
+	// If already HH:mm
+	const exact = src.match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+	if (exact) return `${exact[1].padStart(2, '0')}:${exact[2]}`;
+	// Try to extract first time from ranges like "10:00 AM - 5:00pm" or "10:00AM-17:30"
+	const timeLike = src.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+	if (timeLike) {
+		let h = parseInt(timeLike[1], 10);
+		const m = timeLike[2];
+		const ampm = (timeLike[3] || '').toLowerCase();
+		if (ampm === 'pm' && h < 12) h += 12;
+		if (ampm === 'am' && h === 12) h = 0;
+		if (h >= 0 && h <= 23) {
+			return `${String(h).padStart(2, '0')}:${m}`;
+		}
+	}
+	return '';
+}
+
+// Helpers to find option by display name (case/accents-insensitive) or by id string.
+function normalizeString(s: string): string {
+	return s
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.trim();
+}
+
+function findByNameOrId<T extends { id: string; nombre: string }>(list: T[], value: string): T | undefined {
+	if (!value) return undefined;
+	// direct name match (case/accents-insensitive)
+	const norm = normalizeString(String(value));
+	const byName = list.find((it) => normalizeString(it.nombre) === norm);
+	if (byName) return byName;
+	// id match: some legacy records might store the numeric id as string in DB
+	const byId = list.find((it) => String(it.id) === String(value));
+	return byId;
+}

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Modal } from "../components/Modal";
 import { Link } from "react-router-dom";
 import useEntrepreneurships from "../hooks/useEntrepreneurships";
+import { entrepreneurshipApi } from "../services/entrepreneurshipService";
+import { toast } from "react-hot-toast";
 
 const button = (
   <Link
@@ -81,18 +83,16 @@ export default function GestorEmprendimientos() {
   const handleConfirmDelete = async () => {
     if (!entrepreneurshipToDelete) return;
     try {
-      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
-      const response = await fetch(`${apiUrl}/api/entrepreneurships/${entrepreneurshipToDelete.id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Error al eliminar emprendimiento");
+      await entrepreneurshipApi.delete(String(entrepreneurshipToDelete.id));
       setEntrepreneurships((prev) => prev.filter((e) => e.id !== entrepreneurshipToDelete.id));
       refetch();
       setShowDeleteModal(false);
       setOpenMenuId(null);
       setEntrepreneurshipToDelete(null);
+      toast.success("Emprendimiento eliminado");
     } catch (error) {
-      console.error("Ocurrió un error al eliminar el emprendimiento");
+      console.error("Ocurrió un error al eliminar el emprendimiento", error);
+      toast.error("No se pudo eliminar el emprendimiento");
     }
   };
 

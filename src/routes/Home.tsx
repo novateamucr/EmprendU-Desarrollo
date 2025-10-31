@@ -312,7 +312,7 @@ export default function Home() {
           ? [{ name: 'Mis intereses', icon: Star, count: misInteresesCount } as const]
           : []
       ),
-      ...((categoriesData || []).map((c: Category) => ({ name: c.name || c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
+      ...((categoriesData || []).map((c: Category) => ({ name: c.nombre, icon: Palette, count: counts.get(c.nombre || c.nombre) || 0 })))
     ]), [totalCount, userInterests.length, misInteresesCount, categoriesData, counts]);
 
     return (

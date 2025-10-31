@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Input from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import { Textarea } from "../components/ui/Textarea";
 import useEntrepreneurships from "../hooks/useEntrepreneurships";
 import { X, Upload } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -102,7 +104,7 @@ export default function ProductFormUpload({
           setFetchedInitial(prod);
         } catch (err) {
           console.error('Error fetching product for edit:', err);
-          toast({ title: 'Error', description: 'No se pudo cargar el producto', variant: 'destructive' });
+          toast.error('No se pudo cargar el producto');
         } finally {
           setLoadingInitial(false);
         }
@@ -153,20 +155,12 @@ export default function ProductFormUpload({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Formato no válido",
-        description: "Por favor sube una imagen válida (JPG, PNG, etc.)",
-        variant: "destructive",
-      });
+      toast.error("Formato no válido. Por favor sube una imagen válida (JPG, PNG, etc.)");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Archivo muy grande",
-        description: "La imagen no debe superar los 5MB",
-        variant: "destructive",
-      });
+      toast.error("Archivo muy grande. La imagen no debe superar los 5MB");
       return;
     }
 
@@ -190,22 +184,14 @@ export default function ProductFormUpload({
     e.preventDefault();
 
     if (!form.name || !form.price) {
-      toast({
-        title: "Campos requeridos",
-        description: "Por favor completa los campos obligatorios",
-        variant: "destructive",
-      });
+      toast.error("Campos requeridos: por favor completa los campos obligatorios");
       return;
     }
 
     // For new products, image is required
     const editingId = (fetchedInitial && fetchedInitial.id) || (initialData && initialData.id);
     if (!editingId && !form.imageFile) {
-      toast({
-        title: "Imagen requerida",
-        description: "Por favor selecciona una imagen para el producto",
-        variant: "destructive",
-      });
+      toast.error("Imagen requerida: por favor selecciona una imagen para el producto");
       return;
     }
 
@@ -236,14 +222,14 @@ export default function ProductFormUpload({
           (dataForApi as any).image = null;
         }
         await updateProduct(updateId, dataForApi);
-        toast({ title: "¡Listo!", description: "Producto actualizado correctamente" });
+        toast.success("Producto actualizado correctamente");
       } else {
         // Ensure image is provided for creation (checked above), but the service expects image File
         if (!dataForApi.image) {
           throw new Error('Imagen requerida para crear un producto');
         }
         await createProduct(dataForApi);
-        toast({ title: "¡Listo!", description: "Producto creado correctamente" });
+        toast.success("Producto creado correctamente");
       }
 
       handleSuccess();
@@ -335,6 +321,8 @@ export default function ProductFormUpload({
 
   return (
     <div className="p-6 max-w-3xl mx-auto mt-10">
+      {/* Toast container for notifications */}
+      <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
       {loadingInitial && (
         <div className="mb-4 text-gray-600">Cargando producto...</div>
       )}

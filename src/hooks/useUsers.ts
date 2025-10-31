@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 interface User {
   id: number;
@@ -71,18 +72,12 @@ const useUsers = ({ page = 1 }: UseUsersOptions = {}) => {
       setLoading(true);
       setError(null);
       
-      const params = new URLSearchParams({
-        page: page.toString(),
+      // Use shared axios instance to ensure auth headers, base URL and interceptors
+      const response = await api.get('/users', {
+        params: { page },
+        headers: { 'Cache-Control': 'no-cache' },
       });
-      const apiUrl = "https://emprendu-desarrollo-production.up.railway.app";
-      
-      const response = await fetch(`${apiUrl}/api/users?${params.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error fetching users: ${response.statusText}`);
-      }
-
-      const data: UsersResponse = await response.json();
+      const data: UsersResponse = response.data?.data ? response.data : response.data;
       
       setUsers(data.data);
       

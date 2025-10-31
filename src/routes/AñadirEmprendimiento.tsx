@@ -10,14 +10,9 @@ import { userApi, User } from '../services/userService';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { entrepreneurshipApi } from '../services/entrepreneurshipService';
 
-import { ImageUpload } from '../components/ImageUpload';
-interface Category {
-  id: number;
-  nombre: string;
-  created_at: string;
-  updated_at: string;
-}
+
 
 // Form data interface matching API requirements
 interface BusinessFormData {
@@ -40,6 +35,11 @@ interface BusinessSetupProps {
 const API_URL = 'https://emprendu-desarrollo-production.up.railway.app/api';
 
 // Categories will be loaded from the API
+// Local Category interface to ensure we use `nombre` consistently
+interface Category {
+  id: number;
+  nombre: string;
+}
 
 export default function BusinessSetup({ initialData, onSuccess, onCancel }: BusinessSetupProps) {
   const { id } = useParams<{ id?: string }>();
@@ -74,14 +74,24 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   }, []);
   
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   // Load categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get<Category[]>(`${API_URL}/categories`);
-        setCategories(response.data);
+        const response = await axios.get<any>(`${API_URL}/categories`);
+        // Handle both array and { data: [] } formats and normalize name/nombre
+        const raw = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : [];
+        const normalized: Category[] = raw.map((c: any) => ({
+          id: c.id ?? c.value ?? c.key,
+          nombre: c?.nombre ?? c?.name ?? c?.label ?? ''
+        }));
+        setCategories(normalized);
       } catch (error) {
         console.error('Error fetching categories:', error);
         toast.error('No se pudieron cargar las categorías');
@@ -99,13 +109,12 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       const fetchBusiness = async () => {
         try {
           setIsLoading(true);
-          const response = await axios.get(`${API_URL}/businesses/${id}`);
-          const business = response.data;
+          const business = await entrepreneurshipApi.getById(String(id));
           setFormData({
             id: business.id,
             name: business.name,
             description: business.description || '',
-            category: business.category_id,
+            category: (business as any).category ?? (business as any).category_id ?? '',
             user_id: business.user_id,
             image_url: business.image_url || null
           });
@@ -208,28 +217,15 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         imageUrl: formData.image_url
       });
       
-      // Determine the URL and method based on edit/create mode
-      const url = isEditMode && id 
-        ? `${API_URL}/businesses/${id}`
-        : `${API_URL}/businesses`;
-      
-      const method = isEditMode ? 'put' : 'post';
-      
-      // Make the API request
-      const response = await axios({
-        method,
-        url,
-        data: formDataToSend,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json'
-        }
-      });
-      
-      const result = response.data;
+      // Make the API request via service
+      let result;
+      if (isEditMode && id) {
+        result = await entrepreneurshipApi.update(String(id), formDataToSend);
+      } else {
+        result = await entrepreneurshipApi.create(formDataToSend);
+      }
 
-      // Check if the response indicates success (status 200-299)
-      if (response.status >= 200 && response.status < 300) {
+      if (result) {
         // Only show success message if the API call was successful
         const successMessage = isEditMode 
           ? '✅ Emprendimiento actualizado exitosamente' 
@@ -249,7 +245,6 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         
         // Success is handled by the toast message
       } else {
-        // If the response status is not in the success range, throw an error
         throw new Error('La respuesta del servidor no fue exitosa');
       }
 
@@ -265,7 +260,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         }, 500);
       }
       
-      return result;
+  return result;
       
     } catch (err: any) {
       console.error('Error saving business:', err);
@@ -401,22 +396,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       <Card className="p-6">
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
-            {/* Image Upload - top of the form */}
-            <div className="flex flex-col items-center">
-              <label className="block w-full text-sm font-medium mb-3">
-                Imagen del emprendimiento
-              </label>
-              <ImageUpload
-                currentImage={typeof formData.image_url === 'string' ? formData.image_url || undefined : undefined}
-                placeholderInitial={(formData.name || 'E').trim().charAt(0).toUpperCase()}
-                onImageChange={(imageData: string) => {
-                  setFormData(prev => ({ ...prev, image_url: imageData }));
-                }}
-              />
-              <p className="mt-2 text-xs text-muted-foreground text-center">
-                Sube una imagen representativa de tu emprendimiento. Formatos: JPG, PNG. Máx 5MB.
-              </p>
-            </div>
+            
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
