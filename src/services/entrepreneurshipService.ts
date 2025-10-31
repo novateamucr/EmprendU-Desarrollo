@@ -57,11 +57,15 @@ export interface PaginationLink {
 export interface PaginatedResponse<T> {
   current_page: number;
   data: T[];
-  first_page_url: string;
+  first_page_url?: string | null;
   from: number;
   last_page: number;
-  last_page_url: string;
-  links: PaginationLink[];
+  last_page_url?: string | null;
+  links: Array<{
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
   next_page_url: string | null;
   path: string;
   per_page: number;
@@ -90,7 +94,7 @@ export interface Product {
   stock: number;
   status: 'active' | 'draft' | 'out_of_stock';
   category: string;
-  // Nuevo: categoría opcional por id proveniente del backend
+  // Categoría opcional por id proveniente del backend
   category_id?: number;
   image_url: string | null;
   entrepreneurship_id: number;
@@ -99,6 +103,13 @@ export interface Product {
     name: string;
     image_url?: string | null;
     // Add other necessary fields from Entrepreneurship
+    description: string;
+    category: number;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+    owner: User;
+    category_relation: Category;
   };
 }
 
@@ -122,17 +133,47 @@ export const entrepreneurshipApi = {
   // Get all entrepreneurships with pagination
   getAll: async (params?: PaginationParams): Promise<PaginatedResponse<Entrepreneurship>> => {
     try {
-      const response = await api.get<PaginatedResponse<Entrepreneurship>>(
+      const response = await api.get(
         '/entrepreneurships',
         {
           params: {
             ...(params || {}),
             page: params?.page ?? 1,
             per_page: params?.per_page ?? 15,
+            include: 'owner,category_relation,products,favorites',
           },
         }
       );
-      return response.data as any;
+      
+      // Handle both direct data and nested data response formats
+      const responseData = response.data;
+      
+      // If the response already has pagination structure, return it as is
+      if (responseData && 'data' in responseData && 'current_page' in responseData) {
+        return responseData;
+      }
+      
+      // If the response is just the data array, wrap it in a pagination structure
+      if (Array.isArray(responseData)) {
+        return {
+          data: responseData,
+          current_page: 1,
+          from: 1,
+          to: responseData.length,
+          total: responseData.length,
+          per_page: responseData.length,
+          last_page: 1,
+          first_page_url: null,
+          last_page_url: null,
+          next_page_url: null,
+          prev_page_url: null,
+          path: '/entrepreneurships',
+          links: []
+        };
+      }
+      
+      // If we get here, the response format is unexpected
+      throw new Error('Formato de respuesta inesperado');
     } catch (error) {
       console.error('Error fetching entrepreneurships:', error);
       throw error;
@@ -142,71 +183,131 @@ export const entrepreneurshipApi = {
   // Get a single entrepreneurship by ID with relationships
   getById: async (id: string): Promise<Entrepreneurship> => {
     try {
-      const response = await api.get(`/entrepreneurships/${id}`, {
+      const response = await api.get<{ data: Entrepreneurship }>(`/entrepreneurships/${id}`, {
         params: {
           include: 'owner,category_relation,products,favorites',
         },
       });
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error(`Error fetching business ${id}:`, error);
       throw error;
     }
   },
 
-  // Create a new entrepreneurship
-  create: async (businessData: Omit<Entrepreneurship, 'id' | 'createdAt' | 'updatedAt'>): Promise<Entrepreneurship> => {
+  // Create a new entrepreneurship with file upload support
+  create: async (formData: FormData): Promise<Entrepreneurship> => {
     try {
-      const formData = new FormData();
+      // Get token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Log form data for debugging
+      console.log('Sending form data with keys:', Array.from(formData.keys()));
       
-      // Append all business data to formData
-      Object.entries(businessData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          // Convert non-string values to strings for FormData
-          const formValue = typeof value === 'boolean' ? String(value) : 
-                          (value as string | Blob);
-          formData.append(key, formValue);
-        }
+      const response = await api.post<{ data: Entrepreneurship }>('/entrepreneurships', formData, {
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+          // Let the browser set the Content-Type with the correct boundary
+        },
+        withCredentials: true,
       });
       
-      const response = await api.post('/entrepreneurships', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      
-      return response.data;
-    } catch (error) {
+      return response.data.data || response.data;
+    } catch (error: any) {
       console.error('Error creating entrepreneurship:', error);
+      
+      // If we have a 422 validation error, extract and format the error messages
+      if (error.response?.status === 422 && error.response?.data) {
+        const errorData = error.response.data;
+        let errorMessage = 'Por favor corrige los siguientes errores:\n\n';
+        
+        // Mapear los errores a mensajes en español
+        const errorMessages: Record<string, string> = {
+          name: 'El nombre es obligatorio y debe ser claro y descriptivo.',
+          description: 'La descripción es obligatoria y debe tener al menos 50 caracteres.',
+          category: 'Debes seleccionar una categoría válida.',
+          user_id: 'Debes seleccionar un usuario válido.',
+          image: 'La imagen es obligatoria.',
+          'image_url': 'La imagen es obligatoria.'
+        };
+        
+        // Check for field-specific errors
+        if (errorData.errors) {
+          Object.entries(errorData.errors).forEach(([field, messages]) => {
+            const fieldName = field.replace('_', ' ');
+            const message = Array.isArray(messages) ? messages.join(' ') : String(messages);
+            errorMessage += `• ${errorMessages[field] || `${fieldName}: ${message}`}\n`;
+          });
+        } else if (errorData.message) {
+          // Fallback to the general error message
+          errorMessage = errorData.message;
+        }
+        
+        // Create a new error with the formatted message
+        const validationError = new Error(errorMessage);
+        validationError.name = 'ValidationError';
+        throw validationError;
+      }
+      
+      // For other types of errors, rethrow them
       throw error;
     }
   },
 
-  // Update an entrepreneurship
-  update: async (id: string, entrepreneurshipData: Partial<Entrepreneurship>): Promise<Entrepreneurship> => {
+  // Update an entrepreneurship with file upload support
+  update: async (id: string, formData: FormData): Promise<Entrepreneurship> => {
     try {
-      const formData = new FormData();
-      
-      // Append all business data to formData
-      Object.entries(entrepreneurshipData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          // Convert non-string values to strings for FormData
-          const formValue = typeof value === 'boolean' ? String(value) : 
-                          (value as string | Blob);
-          formData.append(key, formValue);
-        }
+      formData.append('_method', 'PUT'); // Laravel way to handle PUT/PATCH with FormData
+      const response = await api.post<{ data: Entrepreneurship }>(`/entrepreneurships/${id}`, formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
+        },
       });
-      // Explicitly include the id in the payload (backend reads it from body)
-      formData.append('id', id);
-
-      // Use PATCH to the resource URL to satisfy Laravel route-model binding
-      const response = await api.patch(
-        `/entrepreneurships/${id}`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
       
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating entrepreneurship ${id}:`, error);
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.error(`Error updating business ${id}:`, error);
+      
+      // If we have a 422 validation error, extract and format the error messages
+      if (error.response?.status === 422 && error.response?.data) {
+        const errorData = error.response.data;
+        let errorMessage = 'Por favor corrige los siguientes errores:\n\n';
+        
+        // Mapear los errores a mensajes en español
+        const errorMessages: Record<string, string> = {
+          name: 'El nombre es obligatorio y debe ser claro y descriptivo.',
+          description: 'La descripción es obligatoria y debe tener al menos 50 caracteres.',
+          category: 'Debes seleccionar una categoría válida.',
+          user_id: 'Debes seleccionar un usuario válido.',
+          image: 'La imagen es obligatoria.',
+          'image_url': 'La imagen es obligatoria.'
+        };
+        
+        // Check for field-specific errors
+        if (errorData.errors) {
+          Object.entries(errorData.errors).forEach(([field, messages]) => {
+            const fieldName = field.replace('_', ' ');
+            const message = Array.isArray(messages) ? messages.join(' ') : String(messages);
+            errorMessage += `• ${errorMessages[field] || `${fieldName}: ${message}`}\n`;
+          });
+        } else if (errorData.message) {
+          // Fallback to the general error message
+          errorMessage = errorData.message;
+        }
+        
+        // Create a new error with the formatted message
+        const validationError = new Error(errorMessage);
+        validationError.name = 'ValidationError';
+        throw validationError;
+      }
+      
+      // For other types of errors, rethrow them
       throw error;
     }
   },
@@ -369,7 +470,15 @@ export const productApi = {
     productId: string,
     _status: 'active' | 'draft' | 'out_of_stock'
   ): Promise<Product> => {
-    throw new Error(`Status update not supported by backend for product ${productId}`);
+    try {
+      const response = await api.put<Product>(`/products/${productId}/status`, {
+        status: _status
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating status for product ${productId}:`, error);
+      throw error;
+    }
   },
 
   category: categoryApi,

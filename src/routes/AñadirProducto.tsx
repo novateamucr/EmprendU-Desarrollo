@@ -1,9 +1,8 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Button } from "../components/Button";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Input from "../components/ui/Input";
-import { Textarea } from "../components/ui/Textarea";
-import { useToast } from "../hooks/useToast";
 import useEntrepreneurships from "../hooks/useEntrepreneurships";
 import { X, Upload } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -37,7 +36,7 @@ export default function ProductFormUpload({
   onSuccess,
   onCancel,
 }: Props) {
-  const { toast } = useToast();
+  // toast is now imported directly from react-toastify
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const handleCancel = onCancel || (() => navigate(-1));
@@ -248,13 +247,87 @@ export default function ProductFormUpload({
       }
 
       handleSuccess();
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Ocurrió un error al guardar el producto",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      console.error('Error saving product:', err);
+      
+      // Handle inappropriate content error - check for different possible error messages
+      const errorMessage = err.message || '';
+      const isInappropriateContent = 
+        errorMessage.includes('image: The uploaded image contains content that violates') ||
+        errorMessage.includes('image: The image contains explicit nudity and sexual content') ||
+        (errorMessage.includes('image:') && errorMessage.toLowerCase().includes('inappropriate'));
+      
+      if (isInappropriateContent) {
+        const errorDetails = errorMessage.includes('details:') 
+          ? errorMessage.split('details:')[1].trim() 
+          : 'La imagen contiene contenido que no cumple con nuestras políticas de contenido.';
+        
+        const errorTitle = "🚫 Contenido no permitido";
+        const errorMessageText = `No se pudo guardar el producto.\n\nMotivo: ${errorDetails}\n\nPor favor, sube una imagen diferente que cumpla con nuestras políticas.`;
+        
+        // Use react-toastify for better visibility and z-index handling
+        toast.error(
+          <div className="p-4">
+            <h4 className="font-bold text-lg mb-2">{errorTitle}</h4>
+            <div className="whitespace-pre-line text-sm">{errorMessageText}</div>
+          </div>,
+          {
+            position: "top-center" as const,
+            autoClose: 15000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            className: '!bg-red-50 !text-red-800 !rounded-lg !shadow-lg',
+            style: { zIndex: 10000 }
+          }
+        );
+        
+        // Clear the image if there's an inappropriate content error
+        removeImage();
+      } 
+      // Handle other image validation errors
+      else if (errorMessage.includes('image:')) {
+        toast.error(
+          <div className="p-4">
+            <h4 className="font-bold text-lg mb-2">Error en la imagen</h4>
+            <div className="text-sm">{errorMessage.replace('image: ', '')}</div>
+          </div>,
+          {
+            position: "top-center" as const,
+            autoClose: 10000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            className: '!bg-red-50 !text-red-800 !rounded-lg !shadow-lg',
+            style: { zIndex: 10000 }
+          }
+        );
+      }
+      // Handle other errors
+      else {
+        const errorMessage = err instanceof Error ? 
+          (err.message || "Por favor revisa los datos e intenta de nuevo") : 
+          "Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.";
+          
+        toast.error(
+          <div className="p-4">
+            <h4 className="font-bold text-lg mb-2">Error al guardar el producto</h4>
+            <div className="text-sm">{errorMessage}</div>
+          </div>,
+          {
+            position: "top-center" as const,
+            autoClose: 10000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            className: '!bg-red-50 !text-red-800 !rounded-lg !shadow-lg',
+            style: { zIndex: 10000 }
+          }
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
