@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\Api\EntrepreneurshipController;
 use App\Http\Controllers\Api\ProductController;
@@ -19,6 +21,8 @@ use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
+
+use App\Mail\ContactUsMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
@@ -83,3 +87,15 @@ Route::post('assistant/validate/product', [AIAssistantController::class, 'valida
 
 Route::post('/inscripciones', [InscripcionController::class, 'store']);
 Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
+
+Route::post('/ContactUs', function (Request $request) {
+    $data = $request->validate([
+        'email' => 'required|email',
+        'subject' => 'required|string',
+        'message' => 'required|string',
+    ]);
+
+    Mail::to('novateamucr@gmail.com')->send(new ContactUsMailable($data));
+
+    return response()->json(['message' => '¡Correo enviado exitosamente! Pronto serás contactado.']);
+});
