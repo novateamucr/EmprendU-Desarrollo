@@ -91,14 +91,19 @@ export default function EntrepreneurOrders() {
     (async () => {
       try {
         setError(null);
+        setLoading(true);
         const profile = await getProfile();
-        const firstEntre = Array.isArray(profile?.entrepreneurships) && profile.entrepreneurships.length > 0 ? profile.entrepreneurships[0] : null;
-        const entrepreneurshipId = Number(firstEntre?.id || 0);
-        if (!entrepreneurshipId) {
+        
+        // Get all entrepreneur's businesses
+        const entrepreneurShips = Array.isArray(profile?.entrepreneurships) ? profile.entrepreneurships : [];
+        
+        if (entrepreneurShips.length === 0) {
           setOrders([]);
-          setError('No se encontró un emprendimiento asociado a tu usuario.');
+          setError('No se encontraron emprendimientos asociados a tu usuario.');
           return;
         }
+        
+        // Build status filter
         const params: any = {};
         const s = statusFilter;
         if (s !== 'all') {
@@ -108,15 +113,30 @@ export default function EntrepreneurOrders() {
           if (s === 'pedido_completado') params.status = 'completed';
           if (s === 'pedido_calificado') params.status = 'rated';
         }
-        const res: any = await listOrdersTable(entrepreneurshipId, params);
-        const arr = (res?.data && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : (res?.data?.data || res?.data || []));
+        
+        // Fetch orders for all businesses in parallel
+        const allOrdersPromises = entrepreneurShips.map(async (business: any) => {
+          try {
+            const res: any = await listOrdersTable(business.id, { ...params });
+            return res?.data?.data || res?.data || [];
+          } catch (err) {
+            console.error(`Error fetching orders for business ${business.id}:`, err);
+            return [];
+          }
+        });
+        
+        const allOrdersResults = await Promise.all(allOrdersPromises);
+        const allOrders = allOrdersResults.flat();
+        
         const addressString = [profile?.province, profile?.canton, profile?.district, profile?.address]
           .filter((p) => !!p && String(p).trim().length > 0)
           .join(', ');
-        const backendOrders: Order[] = (arr || []).map((o: any) => {
+          
+        // Process all orders
+        const backendOrders: Order[] = allOrders.map((o: any) => {
           const entre = o.entrepreneurship || {};
-          const entrepreneurshipId2 = Number(o.entrepreneurship_id ?? entre.id ?? entrepreneurshipId);
-          const entrepreneurshipName = String(entre.name ?? o.entrepreneurship_name ?? `Emprendimiento #${entrepreneurshipId2 || ''}`);
+          const entrepreneurshipId = Number(o.entrepreneurship_id ?? entre.id ?? 0);
+          const entrepreneurshipName = String(entre.name ?? o.entrepreneurship_name ?? `Emprendimiento #${entrepreneurshipId || ''}`);
           const items = Number(o.items_total ?? (Array.isArray(o.items) ? o.items.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0) : o.items_count || 0));
           const total = Number(o.grand_total ?? 0);
           const customer = {
@@ -129,13 +149,19 @@ export default function EntrepreneurOrders() {
             id: String(o.id),
             createdAt: String(o.created_at ?? new Date().toISOString()),
             entrepreneurshipName,
-            entrepreneurshipId: entrepreneurshipId2,
+            entrepreneurshipId,
             items,
             total,
             status: mapStatus(o.status),
             customer,
           } as Order;
         });
+        
+        // Sort by creation date, newest first
+        backendOrders.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
         setOrders(backendOrders);
       } catch (err: any) {
         console.error('Error cargando pedidos:', err?.response?.data || err);
