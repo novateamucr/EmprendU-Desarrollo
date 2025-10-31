@@ -53,7 +53,6 @@ export default function ContactUs() {
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">Contáctanos</h1>
             <p className="text-sm md:text-lg mt-4">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias.</p>
             <p className="text-sm md:text-lg mt-4">Nuestro equipo revisará tu mensaje y te brindará una respuesta en el menor tiempo posible.</p>
-            <p className="text-sm md:text-lg mt-4 font-bold">¡Recuerda revisar la carpeta de spam!</p>
           </div>
           <div className="w-full md:w-1/2 flex justify-center">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
