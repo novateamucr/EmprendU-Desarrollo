@@ -32,7 +32,9 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
   const isAdminRole = rr?.id === 3 || String(displayedRole).toLowerCase() === 'administrador';
 
   return (
-    <div className="bg-white rounded-card shadow-soft border border-border p-6 top-20 relative">
+    // Only apply the top offset on large screens so the panel doesn't visually
+    // overlap the stacked content on small/mobile viewports.
+    <div className="bg-white rounded-card shadow-soft border border-border p-6 relative lg:top-20">
     {!hideEdit && (
       <button
         onClick={() => navigate('/profile/edit')}

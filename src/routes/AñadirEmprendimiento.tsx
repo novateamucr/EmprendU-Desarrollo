@@ -27,6 +27,7 @@ interface BusinessFormData {
   category: number | string;
   user_id?: number;
   image_url?: string | null;
+  imageFile?: File | null;
 }
 
 interface BusinessSetupProps {
@@ -138,6 +139,25 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   };
 
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file,
+        image_url: URL.createObjectURL(file) // Create a preview URL
+      }));
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      image_url: null
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -157,43 +177,65 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
       }
 
-      // Prepare the data to be sent
-      const requestData = {
-        name: formData.name,
-        description: formData.description || null,
-        category: Number(formData.category),
-        user_id: formData.user_id || user?.id,
-        image_url: null
-      };
-
-      console.log('Sending data to API:', requestData);
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
       
-      let result;
-      if (isEditMode && id) {
-        // For update, use a direct fetch call to ensure data is sent correctly
-        const response = await fetch(`https://emprendu-desarrollo-production.up.railway.app/api/entrepreneurships/${id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify({
-            ...requestData,
-            image_url: formData.image_url ?? null,
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al actualizar el emprendimiento');
+      // Append all form data
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('category', formData.category.toString());
+      formDataToSend.append('status', 'active');
+      
+      // Add user_id if available
+      if (formData.user_id) {
+        formDataToSend.append('user_id', formData.user_id.toString());
+      }
+      
+      // Handle image file if present
+      if (formData.imageFile) {
+        formDataToSend.append('image', formData.imageFile);
+      } else if (formData.image_url && !formData.image_url.startsWith('blob:')) {
+        // If there's an image URL but no file, it's an existing image
+        formDataToSend.append('image_url', formData.image_url);
+      }
+      
+      // Log the form data for debugging
+      console.log('Form data to send:', {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        hasImage: !!formData.imageFile,
+        imageUrl: formData.image_url
+      });
+      
+      // Determine the URL and method based on edit/create mode
+      const url = isEditMode && id 
+        ? `${API_URL}/businesses/${id}`
+        : `${API_URL}/businesses`;
+      
+      const method = isEditMode ? 'put' : 'post';
+      
+      // Make the API request
+      const response = await axios({
+        method,
+        url,
+        data: formDataToSend,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
         }
-        
-        result = await response.json();
-        if (!result || !result.id) {
-          throw new Error('La API no devolvió una respuesta válida al actualizar.');
-        }
-        toast.success('✅ Emprendimiento actualizado exitosamente', {
+      });
+      
+      const result = response.data;
+
+      // Check if the response indicates success (status 200-299)
+      if (response.status >= 200 && response.status < 300) {
+        // Only show success message if the API call was successful
+        const successMessage = isEditMode 
+          ? '✅ Emprendimiento actualizado exitosamente' 
+          : '🎉 ¡Emprendimiento creado exitosamente!';
+          
+        toast.success(successMessage, {
           duration: 3000,
           position: 'top-center',
           style: {
@@ -204,75 +246,144 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           },
         });
+        
+        // Success is handled by the toast message
       } else {
-        // For create, use a direct fetch call
-        const response = await fetch('https://emprendu-desarrollo-production.up.railway.app/api/entrepreneurships', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify({
-            ...requestData,
-            image_url: formData.image_url ?? null,
-          })
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al crear el emprendimiento');
-        }
-        
-        result = await response.json();
-        if (!result || !result.id) {
-          throw new Error('La API no devolvió una respuesta válida al crear.');
-        }
-        toast.success('🎉 ¡Emprendimiento creado exitosamente!', {
-          duration: 3000,
-          position: 'top-center',
-          style: {
-            background: '#10B981',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '8px',
-          },
-        });
+        // If the response status is not in the success range, throw an error
+        throw new Error('La respuesta del servidor no fue exitosa');
       }
 
-      // Call success callback if provided
+      // At this point, we know the API call was successful
+      
+      // Only navigate on success
       if (onSuccess) {
         onSuccess();
       } else {
-        // Default navigation if no callback provided
-        navigate('/admin/emprendimientos');
+        // Small delay to show the success message before navigating
+        setTimeout(() => {
+          navigate('/admin/emprendimientos');
+        }, 500);
       }
+      
+      return result;
+      
     } catch (err: any) {
       console.error('Error saving business:', err);
-      const errorMessage = err.message || 'Ocurrió un error al guardar el emprendimiento. Por favor, inténtalo de nuevo.';
-      setError(errorMessage);
-      toast.error(`❌ ${errorMessage}`, {
-        duration: 4000,
-        position: 'top-center',
-        style: {
-          background: '#EF4444',
-          color: '#fff',
-          padding: '16px',
-          borderRadius: '8px',
-        },
-      });
+      
+      // Log the full error response for debugging
+      console.log('Full error response:', err.response?.data);
+      
+      // If it's an Axios error with response data
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Create a container div for the error message
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'text-left';
+        
+        // Add the main error message
+        if (errorData.message) {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'font-bold text-red-600';
+          messageDiv.textContent = errorData.message;
+          errorContainer.appendChild(messageDiv);
+        }
+        
+        // Add the reason if it exists and is different from message
+        if (errorData.reason && errorData.reason !== errorData.message) {
+          const reasonDiv = document.createElement('div');
+          reasonDiv.className = 'mt-1 text-red-600';
+          reasonDiv.textContent = errorData.reason;
+          errorContainer.appendChild(reasonDiv);
+        }
+        
+        // Add fields with issues if they exist
+        if (errorData.fields_with_issues && errorData.fields_with_issues.length > 0) {
+          const fieldsDiv = document.createElement('div');
+          fieldsDiv.className = 'mt-2';
+          
+          const fieldsTitle = document.createElement('p');
+          fieldsTitle.className = 'font-medium';
+          fieldsTitle.textContent = 'Campos con problemas:';
+          fieldsDiv.appendChild(fieldsTitle);
+          
+          const fieldsList = document.createElement('ul');
+          fieldsList.className = 'list-disc pl-5 mt-1 space-y-1';
+          
+          errorData.fields_with_issues.forEach((field: string) => {
+            const fieldItem = document.createElement('li');
+            fieldItem.textContent = field;
+            fieldsList.appendChild(fieldItem);
+          });
+          
+          fieldsDiv.appendChild(fieldsList);
+          errorContainer.appendChild(fieldsDiv);
+        }
+        
+        // Add suggestions if they exist
+        if (errorData.suggestions && errorData.suggestions.length > 0) {
+          const suggestionsDiv = document.createElement('div');
+          suggestionsDiv.className = 'mt-2';
+          
+          const suggestionsTitle = document.createElement('p');
+          suggestionsTitle.className = 'font-medium';
+          suggestionsTitle.textContent = 'Sugerencias:';
+          suggestionsDiv.appendChild(suggestionsTitle);
+          
+          const suggestionsList = document.createElement('ul');
+          suggestionsList.className = 'list-disc pl-5 mt-1 space-y-1';
+          
+          errorData.suggestions.forEach((suggestion: string) => {
+            const suggestionItem = document.createElement('li');
+            suggestionItem.textContent = suggestion;
+            suggestionsList.appendChild(suggestionItem);
+          });
+          
+          suggestionsDiv.appendChild(suggestionsList);
+          errorContainer.appendChild(suggestionsDiv);
+        }
+        
+        // Show the error message using dangerouslySetInnerHTML
+        toast.error(
+          <div dangerouslySetInnerHTML={{ __html: errorContainer.outerHTML }} />,
+          {
+            duration: 10000,
+            style: {
+              maxWidth: '500px',
+              padding: '1rem',
+              whiteSpace: 'pre-line',
+              textAlign: 'left'
+            }
+          }
+        );
+      } 
+      // For other types of errors, use the error message if available
+      else if (err.message) {
+        toast.error(err.message, {
+          duration: 10000,
+          style: {
+            whiteSpace: 'pre-line',
+            maxWidth: '500px',
+            textAlign: 'left',
+            padding: '1rem'
+          }
+        });
+      } else {
+        // Fallback for other error formats
+        toast.error('Ocurrió un error inesperado al guardar el emprendimiento', {
+          duration: 10000,
+          style: {
+            whiteSpace: 'pre-line',
+            maxWidth: '500px',
+            textAlign: 'left',
+            padding: '1rem'
+          }
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl mt-10">
@@ -368,23 +479,82 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
               <label htmlFor="description" className="block text-sm font-medium mb-1">
                 Descripción
               </label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe tu emprendimiento..."
-                rows={4}
-              />
+              <div className="relative">
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe tu emprendimiento en al menos 150 caracteres..."
+                  rows={4}
+                  minLength={150}
+                  className={`pr-16 ${formData.description.length > 0 && formData.description.length < 150 ? 'border-yellow-500 focus-visible:ring-yellow-500' : ''}`}
+                  required
+                />
+                <div className={`absolute bottom-2 right-2 text-xs ${
+                  formData.description.length < 150 ? 'text-yellow-600' : 'text-gray-500'
+                }`}>
+                  {formData.description.length}/150
+                </div>
+              </div>
+              {formData.description.length > 0 && formData.description.length < 150 && (
+                <p className="mt-1 text-sm text-yellow-600">
+                  La descripción debe tener al menos 150 caracteres (actualmente: {formData.description.length})
+                </p>
+              )}
             </div>
 
-            {error && (
-              <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                {error}
+            {/* Image Upload */}
+            <div>
+              <label htmlFor="image" className="block text-sm font-medium mb-1">
+                Imagen del emprendimiento
+              </label>
+              <div className="mt-1 flex items-center">
+                {formData.image_url ? (
+                  <div className="relative">
+                    <img 
+                      src={formData.image_url} 
+                      alt="Vista previa" 
+                      className="h-32 w-32 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      aria-label="Eliminar imagen"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG o JPEG (MAX. 5MB)</p>
+                      </div>
+                      <input 
+                        id="image" 
+                        name="image" 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/png, image/jpeg, image/jpg"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex justify-end space-x-4 pt-6">
               <Button
                 type="button"
                 variant="outline"

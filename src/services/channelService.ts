@@ -27,23 +27,30 @@ export type UpdateChannelDto = Partial<CreateChannelDto>;
 
 export const channelService = {
   async list(entrepreneurshipId: number): Promise<Channel[]> {
-    const { data } = await api.get(`/entrepreneurships/${entrepreneurshipId}/channels`);
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray((data as any).data)) return (data as any).data;
-    return [];
+    const { data } = await api.get<{ data: Channel[] }>(`/api/entrepreneurships/${entrepreneurshipId}/channels`);
+    return data.data || [];
   },
 
   async create(entrepreneurshipId: number, dto: CreateChannelDto): Promise<Channel> {
-    const { data } = await api.post(`/entrepreneurships/${entrepreneurshipId}/channels`, dto);
-    return data;
+    const { data } = await api.post<{ data: Channel }>(
+      `/api/entrepreneurships/${entrepreneurshipId}/channels`,
+      dto
+    );
+    return data.data;
   },
 
   async update(entrepreneurshipId: number, channelId: number, dto: UpdateChannelDto): Promise<Channel> {
-    const { data } = await api.put(`/entrepreneurships/${entrepreneurshipId}/channels/${channelId}`, dto);
-    return data;
+    const { data } = await api.post<{ data: Channel }>(
+      `/api/entrepreneurships/${entrepreneurshipId}/channels/${channelId}`,
+      {
+        ...dto,
+        _method: 'PUT' // Laravel way to handle PUT with FormData
+      }
+    );
+    return data.data;
   },
 
   async remove(entrepreneurshipId: number, channelId: number): Promise<void> {
-    await api.delete(`/entrepreneurships/${entrepreneurshipId}/channels/${channelId}`);
+    await api.delete(`/api/entrepreneurships/${entrepreneurshipId}/channels/${channelId}`);
   },
 };
