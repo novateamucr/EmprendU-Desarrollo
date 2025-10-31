@@ -1,52 +1,53 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
 import { listMyOrders } from '../services/orderService';
-import { Clock, CheckCircle2, BadgeCheck, Star, XCircle } from 'lucide-react';
-// import { Modal } from '../components/Modal';
+import { Clock, CheckCircle2, BadgeCheck, Star, XCircle, Search } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { useAuth } from '../context/AuthContext';
 
 // Types for orders shown in MyOrders
-type OrderStatus = 'pedido_solicitado' | 'pedido_aceptado' | 'pedido_cancelado' | 'pedido_completado' | 'pedido_calificado';
+type OrderStatus = 'solicitado' | 'aceptado' | 'cancelado' | 'completado' | 'calificado' | 'en_proceso';
 
 type Order = {
   id: string;
-  createdAt: string; // ISO date
+  orderNumber: string;
+  createdAt: string;
+  updatedAt: string;
   entrepreneurshipName: string;
   entrepreneurshipId: number;
-  items: number;
-  total: number; // in CRC
+  itemsCount: number;
+  total: number;
   status: OrderStatus;
-  itemsSnapshot?: Array<{
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    imageUrl?: string;
-  }>;
+  logoUrl?: string;
+  status_key: string;
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  pedido_solicitado: 'Pedido solicitado',
-  pedido_aceptado: 'Pedido aceptado',
-  pedido_cancelado: 'Pedido cancelado',
-  pedido_completado: 'Pedido completado',
-  pedido_calificado: 'Pedido calificado',
+  solicitado: 'Solicitado',
+  aceptado: 'Aceptado',
+  en_proceso: 'En proceso',
+  completado: 'Completado',
+  calificado: 'Calificado',
+  cancelado: 'Cancelado'
 };
 
 function StatusBadge({ status }: { status: OrderStatus }) {
   const styles: Record<OrderStatus, string> = {
-    pedido_solicitado: 'bg-sky-50 text-sky-700 border-sky-200',
-    pedido_aceptado: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    pedido_cancelado: 'bg-rose-50 text-rose-700 border-rose-200',
-    pedido_completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    pedido_calificado: 'bg-amber-50 text-amber-700 border-amber-200',
+    solicitado: 'bg-sky-50 text-sky-700 border-sky-200',
+    aceptado: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    en_proceso: 'bg-purple-50 text-purple-700 border-purple-200',
+    completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    calificado: 'bg-amber-50 text-amber-700 border-amber-200',
+    cancelado: 'bg-rose-50 text-rose-700 border-rose-200',
   };
   const icons: Record<OrderStatus, JSX.Element> = {
-    pedido_solicitado: <Clock size={14} className="shrink-0" />,
-    pedido_aceptado: <CheckCircle2 size={14} className="shrink-0" />,
-    pedido_cancelado: <XCircle size={14} className="shrink-0" />,
-    pedido_completado: <BadgeCheck size={14} className="shrink-0" />,
-    pedido_calificado: <Star size={14} className="shrink-0" />,
+    solicitado: <Clock size={14} className="shrink-0" />,
+    aceptado: <CheckCircle2 size={14} className="shrink-0" />,
+    en_proceso: <Clock size={14} className="shrink-0" />,
+    completado: <BadgeCheck size={14} className="shrink-0" />,
+    calificado: <Star size={14} className="shrink-0" />,
+    cancelado: <XCircle size={14} className="shrink-0" />,
   };
   return (
     <span
@@ -54,189 +55,228 @@ function StatusBadge({ status }: { status: OrderStatus }) {
       title={STATUS_LABEL[status]}
     >
       {icons[status]}
-      <span>{STATUS_LABEL[status]}</span>
+      <span className="truncate">{STATUS_LABEL[status]}</span>
     </span>
   );
 }
 
 // Map backend status -> local status keys
-function mapStatus(s?: string): OrderStatus {
-  const s2 = String(s || '').toLowerCase();
-  if (s2 === 'requested' || s2 === 'draft') return 'pedido_solicitado';
-  if (s2 === 'accepted') return 'pedido_aceptado';
-  if (s2 === 'canceled') return 'pedido_cancelado';
-  if (s2 === 'completed') return 'pedido_completado';
-  if (s2 === 'rated') return 'pedido_calificado';
-  return 'pedido_solicitado';
+function mapStatus(status: string): OrderStatus {
+  const statusMap: Record<string, OrderStatus> = {
+    'solicitado': 'solicitado',
+    'aceptado': 'aceptado',
+    'en_proceso': 'en_proceso',
+    'completado': 'completado',
+    'calificado': 'calificado',
+    'cancelado': 'cancelado'
+  };
+  return statusMap[status.toLowerCase()] || 'solicitado';
 }
 
 export default function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { groups } = useCart();
+  const { user } = useAuth();
 
-  // Derivar pedidos 'solicitados' desde el carrito (uno por grupo solicitado)
-  const cartOrders: Order[] = useMemo(() => {
-    return (groups || [])
-      .filter(g => g.status === 'requested')
-      .map(g => {
-        const items = g.items.reduce((sum, it) => sum + (it.quantity ?? 0), 0);
-        const total = g.items.reduce((sum, it) => sum + (it.price * (it.quantity ?? 0)), 0);
-        return {
-          id: String(g.orderId ?? g.groupId),
-          createdAt: new Date().toISOString(),
-          entrepreneurshipName: g.entrepreneurshipName,
-          entrepreneurshipId: Number(g.entrepreneurshipId),
-          items,
-          total,
-          status: 'pedido_solicitado' as OrderStatus,
-          itemsSnapshot: g.items.map(it => ({
-            productId: it.productId,
-            name: it.name,
-            price: it.price,
-            quantity: it.quantity,
-            imageUrl: it.imageUrl,
-          })),
-        };
-      })
-      .filter(o => o.items > 0);
-  }, [groups]);
-
-  // Cargar pedidos reales del backend y mezclar con los derivados del carrito (solicitados actuales)
+  // Fetch orders from the API
   useEffect(() => {
-    (async () => {
-      try {
-        // Try backend orders (sin filtros o con draft/requested)
-        const attempts: any[] = [];
-        attempts.push(await listMyOrders({ status: 'draft,requested' }).catch(() => null));
-        attempts.push(await listMyOrders(undefined as any).catch(() => null));
-        let raw: any[] = [];
-        for (const res of attempts) {
-          const arr = (res?.data && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : (res?.data?.data || res?.data || []));
-          if (Array.isArray(arr) && arr.length) { raw = arr; break; }
-        }
-        const backendOrders: Order[] = (raw || []).map((o: any) => {
-          const entre = o.entrepreneurship || {};
-          const entrepreneurshipId = Number(o.entrepreneurship_id ?? entre.id ?? 0);
-          const entrepreneurshipName = String(entre.name ?? o.entrepreneurship_name ?? `Emprendimiento #${entrepreneurshipId || ''}`);
-          const items = Array.isArray(o.items) ? o.items.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0) : 0;
-          const total = Number(o.grand_total ?? 0);
-          return {
-            id: String(o.id),
-            createdAt: String(o.created_at ?? new Date().toISOString()),
-            entrepreneurshipName,
-            entrepreneurshipId,
-            items,
-            total,
-            status: mapStatus(o.status),
-          } as Order;
-        });
-
-        // Merge backend + requested-from-cart (avoid duplicates by id)
-        const mapById = new Map<string, Order>();
-        backendOrders.forEach(o => mapById.set(o.id, o));
-        cartOrders.forEach(co => {
-          // If there's a backend order with same entrepreneurship and status requested, prefer backend; else include cart
-          if (!mapById.has(co.id)) mapById.set(co.id, co);
-        });
-        setOrders(Array.from(mapById.values()));
-      } catch {
-        // Fallback: show only cart-derived orders
-        setOrders(cartOrders);
+    const fetchOrders = async () => {
+      if (!user?.id) {
+        setError('Usuario no autenticado');
+        setIsLoading(false);
+        return;
       }
-    })();
-  }, [cartOrders]);
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await listMyOrders(user.id);
+        
+        // Map the response data to match our Order type
+        const mappedOrders: Order[] = response.data.map((order: any) => ({
+          id: String(order.id),
+          orderNumber: order.order_number,
+          createdAt: order.created_at,
+          updatedAt: order.updated_at,
+          entrepreneurshipName: order.entrepreneurship?.name || 'Emprendimiento',
+          entrepreneurshipId: order.entrepreneurship?.id || 0,
+          itemsCount: order.items?.length || 0,
+          total: parseFloat(order.total) || 0,
+          status: mapStatus(order.status),
+          status_key: order.status,
+          logoUrl: order.entrepreneurship?.logo_url
+        }));
+        
+        setOrders(mappedOrders);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError('No se pudieron cargar los pedidos. Por favor, intente de nuevo más tarde.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, [user]); // Removed page from dependencies since we're not paginating
 
-  const filtered = useMemo(() => {
-    return orders
-      .filter((o) => (statusFilter === 'all' ? true : o.status === statusFilter))
-      .filter((o) =>
-        query.trim() ? (
-          o.id.toLowerCase().includes(query.toLowerCase()) ||
-          o.entrepreneurshipName.toLowerCase().includes(query.toLowerCase())
-        ) : true
-      )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => 
+      (statusFilter === 'all' || order.status === statusFilter) &&
+      (query.trim() === '' || 
+       (order.orderNumber && order.orderNumber.toLowerCase().includes(query.toLowerCase())) ||
+       (order.entrepreneurshipName && order.entrepreneurshipName.toLowerCase().includes(query.toLowerCase())))
+    );
   }, [orders, statusFilter, query]);
 
-  // Reset to first page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter, query]);
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="mt-8 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 border rounded-lg bg-white">
+                  <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  if (error) {
+    return (
+      <div className="pt-24 pb-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 pb-8">
       <div className="max-w-7xl mx-auto px-4">
-  <h1 className="text-2xl md:text-3xl font-semibold text-primary">Mis pedidos</h1>
-        <p className="text-secondary mt-1">Historial de pedidos y sus estados.</p>
-
-        <div className="mt-6 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-          <div className="flex gap-2 items-center">
-            <label className="text-sm text-secondary">Estado:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="text-sm border border-border rounded-md px-2 py-1 bg-white"
-            >
-              <option value="all">Todos</option>
-              <option value="pedido_solicitado">Pedido solicitado</option>
-              <option value="pedido_aceptado">Pedido aceptado</option>
-              <option value="pedido_completado">Pedido completado</option>
-              <option value="pedido_calificado">Pedido calificado</option>
-            </select>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary">Mis pedidos</h1>
+            <p className="text-secondary mt-1">Historial de pedidos y sus estados.</p>
           </div>
-          <input
-            type="text"
-            placeholder="Buscar por emprendimiento o código..."
-            className="w-full md:w-80 border border-border rounded-md px-3 py-2 text-sm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-secondary whitespace-nowrap">Estado:</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="text-sm border border-border rounded-md px-3 py-2 bg-white w-full"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="solicitado">Solicitados</option>
+                <option value="aceptado">Aceptados</option>
+                <option value="en_proceso">En proceso</option>
+                <option value="completado">Completados</option>
+                <option value="calificado">Calificados</option>
+                <option value="cancelado">Cancelados</option>
+              </select>
+            </div>
+            <div className="relative w-full md:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar por emprendimiento o código..."
+                className="pl-10 w-full border border-border rounded-md px-3 py-2 text-sm"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
-  <div className="mt-6 md:bg-white md:rounded-lg md:border md:border-border md:shadow-sm md:overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-secondary text-center">
-            <div className="col-span-2">Emprendimiento</div>
+  <div className="mt-6 bg-white rounded-lg border border-border shadow-sm overflow-hidden">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b text-sm font-medium text-gray-500">
+            <div className="col-span-3">Emprendimiento</div>
             <div className="col-span-2">Código</div>
             <div className="col-span-2">Fecha</div>
-            <div className="col-span-2">Artículos</div>
-            <div className="col-span-2">Total</div>
-            <div className="col-span-2">Estado</div>
+            <div className="col-span-1 text-center">Artículos</div>
+            <div className="col-span-2 text-right">Total</div>
+            <div className="col-span-2 text-center">Estado</div>
           </div>
-          {filtered.length === 0 && (
-            <div className="p-6 text-center text-secondary text-sm">No hay pedidos para mostrar</div>
-          )}
+          {filteredOrders.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              <p className="text-lg font-medium">No se encontraron pedidos</p>
+              <p className="text-sm mt-1">
+                {statusFilter === 'all' 
+                  ? 'Aún no has realizado ningún pedido.' 
+                  : `No hay pedidos con el estado seleccionado.`}
+              </p>
+            </div>
+          ) : null}
 
           {/* Desktop / tablet: show table rows */}
-          <ul className="hidden md:block">
-            {paged.map((o) => (
+          <ul className="hidden md:block divide-y divide-gray-200">
+            {filteredOrders.map((order) => (
               <li
-                key={o.id}
-                className="px-4 py-4 hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/orders/${o.id}`)}
+                key={order.id}
+                className="px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                onClick={() => navigate(`/orders/${order.id}`)}
                 title="Ver detalle de pedido"
               >
-                <div className="grid grid-cols-12 gap-4 items-center text-center">
+                <div className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-3 flex items-center">
+                    {order.logoUrl ? (
+                      <img 
+                        src={order.logoUrl} 
+                        alt={order.entrepreneurshipName}
+                        className="h-10 w-10 rounded-full object-cover mr-3"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+                        {order.entrepreneurshipName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="font-medium text-gray-900">{order.entrepreneurshipName}</span>
+                  </div>
                   <div className="col-span-2">
-                    <div className="font-medium text-primary">{o.entrepreneurshipName}</div>
+                    <span className="text-sm font-mono text-gray-600">#{order.orderNumber}</span>
                   </div>
-                  <div className="col-span-2 text-sm">{o.id}</div>
-                  <div className="col-span-2 text-sm text-secondary">
-                    {new Date(o.createdAt).toLocaleDateString()}
+                  <div className="col-span-2">
+                    <div className="text-sm text-gray-600">
+                      {format(new Date(order.createdAt), 'dd MMM yyyy', { locale: es })}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {format(new Date(order.createdAt), 'HH:mm', { locale: es })}
+                    </div>
                   </div>
-                  <div className="col-span-2 text-sm">{o.items}</div>
-                  <div className="col-span-2 text-sm font-semibold text-primary">
-                    ₡{o.total.toLocaleString()}
+                  <div className="col-span-1 text-center">
+                    <span className="text-sm text-gray-600">{order.itemsCount}</span>
                   </div>
-                  <div className="col-span-2 flex items-center justify-center gap-2">
-                    <StatusBadge status={o.status} />
+                  <div className="col-span-2 text-right">
+                    <span className="font-medium text-gray-900">₡{order.total.toLocaleString()}</span>
+                  </div>
+                  <div className="col-span-2 flex justify-center">
+                    <StatusBadge status={order.status} />
                   </div>
                 </div>
               </li>
@@ -245,71 +285,69 @@ export default function MyOrders() {
 
           {/* Mobile: show cards (one per order) */}
           <div className="space-y-4 block md:hidden">
-            {paged.map((o) => (
+            {filteredOrders.map((order) => (
               <div
-                key={o.id}
-                onClick={() => navigate(`/orders/${o.id}`)}
+                key={order.id}
+                onClick={() => navigate(`/orders/${order.id}`)}
                 title="Ver detalle de pedido"
-                className="mb-4 bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
+                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer border border-gray-200"
               >
-                <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <div className="flex justify-between items-center">
-                    <div className="text-lg font-semibold text-gray-900">{o.entrepreneurshipName}</div>
+                <div className="p-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        {order.logoUrl ? (
+                          <img 
+                            src={order.logoUrl} 
+                            alt={order.entrepreneurshipName}
+                            className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium flex-shrink-0">
+                            {order.entrepreneurshipName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{order.entrepreneurshipName}</h3>
+                          <p className="text-xs text-gray-500">#{order.orderNumber}</p>
+                        </div>
+                      </div>
+                    </div>
                     <div>
-                      <StatusBadge status={o.status} />
+                      <StatusBadge status={order.status} />
                     </div>
                   </div>
-                  <div className="md:hidden text-xs text-secondary mt-1">Código: {o.id}</div>
                 </div>
 
                 <div className="p-4">
-                  {o.itemsSnapshot && o.itemsSnapshot.length > 0 ? (
+                  {order.itemsCount > 0 ? (
                     <div className="space-y-3">
-                      {o.itemsSnapshot.map((it) => (
-                        <div key={it.productId} className="p-3 bg-white rounded-md border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                          <div className="flex items-start md:items-center gap-3 min-w-0">
-                            <img
-                              src={it.imageUrl || 'https://placehold.co/100x100?text=Producto'}
-                              alt={it.name}
-                              className="w-16 h-16 object-cover rounded flex-shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <h4 className="font-medium text-sm line-clamp-2">{it.name}</h4>
-                              <p className="text-sm text-gray-600">₡{it.price.toLocaleString()}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto mt-2 md:mt-0">
-                            <div className="text-sm text-secondary">Cantidad</div>
-                            <div className="text-sm font-medium">{it.quantity}</div>
-                            <div className="text-right font-medium text-sm">₡{(it.price * it.quantity).toLocaleString()}</div>
-                          </div>
+                      <div className="p-3 bg-white rounded-md border border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-gray-600">Artículos</div>
+                          <div className="text-sm font-medium">{order.itemsCount}</div>
                         </div>
-                      ))}
-
-                      <div className="p-3 border-t pt-4">
-                        <div className="flex items-center justify-between text-sm text-gray-600">
-                          <div>{o.items} {o.items === 1 ? 'producto' : 'productos'}</div>
-                          <div className="font-semibold text-primary">₡{o.total.toLocaleString()}</div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="text-sm text-gray-600">Total</div>
+                          <div className="font-semibold text-primary">₡{order.total.toLocaleString()}</div>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-12 gap-4 items-start">
-                      <div className="col-span-6">
-                        <div className="text-sm text-secondary">Fecha</div>
-                        <div className="text-sm">{new Date(o.createdAt).toLocaleDateString()}</div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Fecha</div>
+                        <div className="text-sm">
+                          {format(new Date(order.createdAt), 'dd/MM/yyyy', { locale: es })}
+                        </div>
                       </div>
-                      <div className="col-span-3">
-                        <div className="text-sm text-secondary">Artículos</div>
-                        <div className="text-sm">{o.items}</div>
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Artículos</div>
+                        <div className="text-sm">{order.itemsCount}</div>
                       </div>
-                      <div className="col-span-3 text-right">
-                        <div className="text-sm text-secondary">Total</div>
-                        <div className="text-sm font-semibold text-primary">₡{o.total.toLocaleString()}</div>
-                      </div>
-                      <div className="hidden md:block col-span-12">
-                        <div className="text-xs text-secondary mt-2">Código: {o.id}</div>
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Total</div>
+                        <div className="text-lg font-semibold text-primary">₡{order.total.toLocaleString()}</div>
                       </div>
                     </div>
                   )}
@@ -317,40 +355,11 @@ export default function MyOrders() {
               </div>
             ))}
           </div>
-          {filtered.length > 0 && (
-            <div className="flex flex-col md:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white rounded-b-lg border-border">
-              <div className="flex items-center gap-2 text-sm text-secondary">
-                <span>Filas por página:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="border border-border rounded px-2 py-1 text-sm"
-                >
-                  {[5, 10, 20, 50].map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-                <span className="ml-3">{(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} de {filtered.length}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  className="px-3 py-1 rounded border border-border text-sm disabled:opacity-50"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Anterior
-                </button>
-                <span className="text-sm text-secondary">Página {page} de {totalPages}</span>
-                <button
-                  className="px-3 py-1 rounded border border-border text-sm disabled:opacity-50"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Siguiente
-                </button>
-              </div>
+          <div className="px-4 py-3 border-t bg-white rounded-b-lg border-border">
+            <div className="text-sm text-gray-500">
+              Mostrando {filteredOrders.length} {filteredOrders.length === 1 ? 'pedido' : 'pedidos'}
             </div>
-          )}
+          </div>
         </div>
       </div>
       {/* Cancel action removed from list; available in order detail view */}
