@@ -14,7 +14,7 @@ export default function FAQ() {
     {
       question: "¿Puedo comprar desde la aplicación web?",
       answer:
-        "Desde la plataforma de EmprendU puedes realizar pedidos a los emprendimientos, ponerte en contacto con ellos, y más.",
+        "Desde la plataforma de EmpowerUp puedes realizar pedidos a los emprendimientos, ponerte en contacto con ellos, y más.",
     },
     {
       question: "¿Puedo contactar a un emprendimiento?",
@@ -31,7 +31,7 @@ export default function FAQ() {
       answer: "No es una funcionalidad disponible actualmente.",
     },
     {
-      question: "¿Tiene algún costo usar EmprendU?",
+      question: "¿Tiene algún costo usar EmpowerUp?",
       answer:
         "No, el registro y la exploración de emprendimientos son completamente gratuitos.",
     },

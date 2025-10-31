@@ -131,7 +131,7 @@ export default function FeriasPage() {
       {/* Footer */}
       <footer className="bg-brand text-white py-6 mt-auto rounded-t-2xl">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-6 md:px-12 text-center md:text-left">
-          <p className="text-sm">© 2025 EmprendU. Todos los derechos reservados.</p>
+          <p className="text-sm">© 2025 EmpowerUp. Todos los derechos reservados.</p>
           <img src={footerHero} alt="Logo" className="w-8 p-1 rounded-full" />
         </div>
       </footer>
