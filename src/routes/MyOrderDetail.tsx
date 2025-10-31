@@ -92,7 +92,7 @@ export default function MyOrderDetail() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-primary">Pedido {order.id}</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedido {order.id}</h1>
             <p className="text-secondary text-sm">{new Date(order.createdAt).toLocaleString()}</p>
           </div>
           <Link

@@ -27,8 +27,8 @@ export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships =
   
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md 3xl:max-w-lg 4xl:max-w-xl w-full shadow-lg">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+      <div className="bg-white p-6 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md w-full shadow-lg max-h-[90vh] overflow-auto 3xl:max-w-lg 4xl:max-w-xl">
         <PopupHeader title="Selecciona tu emprendimiento" variant="help" />
 
         <div className="space-y-4">
@@ -57,6 +57,7 @@ export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships =
               >
                 <img src={e.image_url || 'img/Frame 11.jpg'} alt={e.name || 'Emprendimiento'} className="w-12 h-12 3xl:w-14 3xl:h-14 4xl:w-16 4xl:h-16 rounded-lg object-cover mr-4" />
                 <div>
+                  <h3 className="font-semibold text-gray-900">{e.name}</h3>
                   <h3 className="font-semibold text-gray-900 text-sm md:text-base 3xl:text-lg 4xl:text-xl">{e.name}</h3>
                   <p className="text-xs md:text-sm 3xl:text-base 4xl:text-lg text-gray-500">{e.description}</p>
                 </div>

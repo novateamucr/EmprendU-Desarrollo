@@ -174,7 +174,7 @@ export default function MyOrders() {
   return (
     <div className="pt-24 pb-8">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-primary">Mis pedidos</h1>
+  <h1 className="text-2xl md:text-3xl font-semibold text-primary">Mis pedidos</h1>
         <p className="text-secondary mt-1">Historial de pedidos y sus estados.</p>
 
         <div className="mt-6 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
