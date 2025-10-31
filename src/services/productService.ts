@@ -62,44 +62,13 @@ export const getAllProducts = async (): Promise<Product[]> => {
   try {
     let url: string | null = `${API_URL}/products`;
     while (url) {
-      const response: { data: PaginatedResponse<Product> } = await axios.get<PaginatedResponse<Product>>(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-        }
-      });
+      const response: { data: PaginatedResponse<Product> } = await axios.get<PaginatedResponse<Product>>(url);
       results.push(...(response.data.data || []));
       url = response.data.next_page_url;
     }
     return results;
   } catch (error) {
     console.error('Error fetching all products:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetch products filtered by entrepreneurship on the backend to avoid following paginator URLs.
- */
-export const getProductsByEntrepreneurship = async (
-  entrepreneurshipId: number,
-  perPage: number = 100
-): Promise<Product[]> => {
-  try {
-    const response = await axios.get<PaginatedResponse<Product>>(
-      `${API_URL}/products`,
-      {
-        params: {
-          entrepreneurship_id: entrepreneurshipId,
-          per_page: perPage,
-        },
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-        },
-      }
-    );
-    return response.data.data || [];
-  } catch (error) {
-    console.error('Error fetching products by entrepreneurship:', error);
     throw error;
   }
 };

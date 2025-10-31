@@ -163,18 +163,16 @@ export const entrepreneurshipApi = {
   },
 
   // Create a new entrepreneurship
-  create: async (
-    businessData: Pick<Entrepreneurship, 'name' | 'description' | 'category' | 'image_url' | 'user_id'>
-  ): Promise<Entrepreneurship> => {
+  create: async (businessData: CreateEntrepreneurshipPayload): Promise<Entrepreneurship> => {
     try {
       const formData = new FormData();
       
-      // Append only allowed primitive fields
-      const allowed: (keyof Entrepreneurship)[] = ['name', 'description', 'category', 'image_url', 'user_id'];
+      // Append only allowed primitive fields to formData
+      const allowed: (keyof CreateEntrepreneurshipPayload)[] = ['name', 'description', 'category', 'image_url', 'user_id'];
       allowed.forEach((key) => {
-        const value = businessData[key as keyof typeof businessData];
+        const value = businessData[key];
         if (value !== undefined && value !== null) {
-          formData.append(String(key), String(value as any));
+          formData.append(key, String(value));
         }
       });
       
