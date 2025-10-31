@@ -160,7 +160,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       )}
       <main className="flex-1 w-full overflow-auto">
-        <div className="max-w-full mx-auto w-full h-full px-8 pt-6 pb-0 flex flex-col min-h-full">
+        <div className="max-w-full mx-auto w-full h-full px-8 pt-6 pb-0 flex flex-col min-h-full ">
           {children}
         </div>
       </main>

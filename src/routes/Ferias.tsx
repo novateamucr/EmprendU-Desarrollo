@@ -154,19 +154,19 @@ export default function Ferias() {
   }, [authUser]);
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 mt-12 md:mt-16">
+    <div className="w-full px-4 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16 mt-12 md:mt-16">
       <div className="w-full">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
+        <h1 className="text-xl sm:text-2xl md:text-3xl 3xl:text-4xl 4xl:text-5xl font-bold text-primary mb-2 text-center md:text-left">
           Ferias y Actividades
         </h1>
 
         {userInscripciones.length > 0 && (
           <section className="mb-6">
-            <h3 className="text-md font-semibold text-primary mb-2">Mis inscripciones</h3>
-            <p className="text-secondary mb-8">
+            <h3 className="text-md md:text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-primary mb-2">Mis inscripciones</h3>
+            <p className="text-secondary mb-8 text-sm md:text-base 3xl:text-lg 4xl:text-xl">
               Aquí puedes encontrar ferias abiertas y en las que estás participando.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 3xl:grid-cols-5 gap-4 3xl:gap-6 4xl:grid-cols-5 mb-4">
               {userInscripciones.map((ins) => {
                 const feria = fairs.find((f) => f.id === (ins.fair_id ?? ins.feria_id));
                 if (!feria) return null;
@@ -192,31 +192,31 @@ export default function Ferias() {
           </section>
         )}
 
-  <h2 className="text-lg font-semibold text-primary mb-2">Ferias abiertas</h2>
-  <p className="text-secondary mb-8">Aquí aparecerán las ferias en las que puedes inscribirte</p>
+  <h2 className="text-lg md:text-xl 3xl:text-2xl 4xl:text-3xl font-semibold text-primary mb-2">Ferias abiertas</h2>
+  <p className="text-secondary mb-8 text-sm md:text-base 3xl:text-lg 4xl:text-xl">Aquí aparecerán las ferias en las que puedes inscribirte</p>
 
         {/* 🔍 Buscador + filtros (provincia y cantón) */}
   <div className="flex flex-col lg:flex-row flex-wrap items-center justify-between gap-4 mb-8">
           <div className="relative flex-grow lg:flex-[2] min-w-[250px]">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary 4xl:scale-110" />
             <input
               type="text"
               placeholder="Buscar feria..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+              className="w-full pl-12 pr-4 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
             />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-            <div className="w-full sm:w-56">
+            <div className="w-full sm:w-56 3xl:w-64 4xl:w-72">
               <select
                 value={selectedProvince}
                 onChange={(e) => {
                   setSelectedProvince(e.target.value);
                   setSelectedCanton("Todos los cantones");
                 }}
-                className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                className="w-full px-3 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
               >
                 {provinces.map((prov) => (
                   <option key={prov} value={prov}>{prov}</option>
@@ -224,11 +224,11 @@ export default function Ferias() {
               </select>
             </div>
 
-            <div className="w-full sm:w-56">
+            <div className="w-full sm:w-56 3xl:w-64 4xl:w-72">
               <select
                 value={selectedCanton}
                 onChange={(e) => setSelectedCanton(e.target.value)}
-                className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                className="w-full px-3 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-xl"
               >
                 {cantons.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -239,7 +239,7 @@ export default function Ferias() {
         </div>
 
         {/* 🧩 Lista de ferias */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-5 gap-6 3xl:gap-8 4xl:gap-10">
           {openFairs.length > 0 ? (
             openFairs.map((fair: Fair) => (
               <FeriaCard
@@ -253,7 +253,7 @@ export default function Ferias() {
               />
             ))
           ) : (
-            <p className="text-secondary col-span-full text-center py-8">
+            <p className="text-secondary col-span-full text-center py-8 text-sm md:text-base 3xl:text-lg 4xl:text-xl">
               No se encontraron ferias.
             </p>
           )}

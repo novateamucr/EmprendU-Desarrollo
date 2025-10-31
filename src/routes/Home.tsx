@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import footerHero from "../assets/hero-w.png";
@@ -13,15 +12,7 @@ import type { UserProfile } from '../domain/profile/types';
 import { useAuth } from '../context/AuthContext';
 import { categoryIconUrl } from '../utils/categoryIcons';
 import { Modal } from '../components/Modal';
-  import { 
-    Search, 
-    Star, 
-    Apps,
-    Palette,
-    Diamond,
-    Favorite,
-    FavoriteBorder
-} from '@mui/icons-material';
+import { Search, Star, Apps,Palette,Diamond,Favorite,FavoriteBorder} from '@mui/icons-material';
 import { Skeleton } from '@mui/material';
 import { SkeletonEntrepreneurCard, SkeletonProductCard, SkeletonFeaturedEntrepreneur } from '../components/ui/Skeleton';
 import insta from "../assets/instagram_icon.svg";
@@ -107,11 +98,11 @@ export function BusinessStars({ entrepreneurshipId }: { entrepreneurshipId: numb
 
   return (
     <>
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2 4xl:gap-3">
         {[1, 2, 3, 4, 5].map((star) => (
           <div key={star} className="relative group">
             <span
-              className={`text-sm ${
+              className={`text-sm md:text-base 3xl:text-lg 4xl:text-3xl ${
                 averageRating && star <= Math.round(averageRating)
                   ? "text-yellow-500"
                   : "text-gray-300"
@@ -385,7 +376,7 @@ export default function Home() {
 
     return (
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-primary mb-4">Categorías</h2>
+        <h2 className="text-lg md:text-xl 3xl:text-2xl 4xl:text-4xl font-semibold text-primary mb-4">Categorías</h2>
   <div className="relative overflow-hidden">
           <div
             ref={categoryScrollRef}
@@ -405,7 +396,7 @@ export default function Home() {
                 <button
                   key={category.name}
                   onClick={() => setSelectedCategory(category.name)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                  className={` flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                     isSelected
                       ? "bg-brand text-white border-brand"
                       : "bg-white text-secondary border-border hover:border-brand/50"
@@ -414,10 +405,10 @@ export default function Home() {
                   <img
                     src={categoryIconUrl(category.name, isSelected ? '#FFFFFF' : '#5b98b8')}
                     alt={category.name}
-                    className="w-4 h-4"
+                    className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6"
                   />
-                  <span className="font-medium text-sm truncate max-w-[100px] sm:max-w-[140px]">{category.name}</span>
-                  <span className="text-xs opacity-75">({category.count})</span>
+                  <span className="font-medium text-sm 3xl:text-base 4xl:text-3xl truncate max-w-[100px] sm:max-w-[140px]">{category.name}</span>
+                  <span className="text-xs 3xl:text-sm 4xl:text-2xl opacity-75">({category.count})</span>
                 </button>
               );
             })}
@@ -532,27 +523,27 @@ export default function Home() {
     <>
       {/* Main Content */}
       <div className="pt-20 md:pt-24 flex flex-col min-h-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+  <div className="w-full px-4 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16 max-w-7xl 2xl:max-w-[96rem] 3xl:max-w-[110rem] 4xl:max-w-[140rem] mx-auto">
         {/* Header */}
         <AnimatedContainer className="mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl 3xl:text-4xl 4xl:text-6xl font-bold text-primary mb-2">
             ¡Hola! ¿Qué te gustaría descubrir hoy?
           </h1>
-          <p className="text-secondary">
+          <p className="text-secondary text-sm md:text-base 3xl:text-lg 4xl:text-3xl">
             Explora emprendimientos locales y encuentra productos únicos
           </p>
         </AnimatedContainer>
 
         {/* Filter Toggle */}
         <AnimatedContainer className="mb-6">
-          <div className="flex bg-brand/5 rounded-lg p-1 max-w-full md:max-w-md">
+          <div className="flex bg-brand/5 rounded-lg p-1 3xl:p-2 4xl:p-3 max-w-full md:max-w-md">
             <SoftButton
               onClick={() => {
                 setViewMode('emprendimientos');
                 setSearchQuery('');
                 setShowSuggestions(false);
               }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${
                 viewMode === 'emprendimientos'
                   ? 'bg-white text-primary shadow-sm'
                   : 'text-secondary hover:text-primary hover:bg-brand/10'
@@ -566,7 +557,7 @@ export default function Home() {
                 setSearchQuery('');
                 setShowSuggestions(false);
               }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${
                 viewMode === 'productos'
                   ? 'bg-white text-primary shadow-sm'
                   : 'text-secondary hover:text-primary hover:bg-brand/10'
@@ -581,9 +572,9 @@ export default function Home() {
           <>
             {/* Emprendimiento del Día */}
             <AnimatedContainer className="mb-8">
-              <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
+              <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-4 flex items-center gap-2 4xl:gap-3">
                 <FloatingElement>
-                  <Diamond sx={{ fontSize: 20 }} />
+                  <Diamond sx={{ fontSize: 24 }} />
                 </FloatingElement>
                 Emprendimiento del Día
               </h2>
@@ -598,9 +589,9 @@ export default function Home() {
                     className="block"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                   >
-                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
+                    <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 3xl:p-8 4xl:p-10 border border-border">
                       <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                        <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
+                        <div className="w-full md:w-40 md:h-40 h-44 3xl:w-56 3xl:h-56 4xl:w-72 4xl:h-72 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
                           <img
                             src={featured?.image_url || "https://placehold.co/400x300?text=Sin+imagen"}
                             alt={featured?.name || "Emprendimiento"}
@@ -610,21 +601,21 @@ export default function Home() {
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
                             <div className="flex items-start justify-between gap-3 mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-primary line-clamp-2">{featured?.name || "Emprendimiento"}</h3>
+                              <h3 className="text-base sm:text-lg 3xl:text-xl 4xl:text-4xl font-semibold text-primary line-clamp-2">{featured?.name || "Emprendimiento"}</h3>
                               <div className="flex items-center gap-1">
                                 <BusinessStars entrepreneurshipId={Number(featured.id)} />
                               </div>
                             </div>
-                            <p className="text-secondary text-sm mb-3 line-clamp-3">
+                            <p className="text-secondary text-sm 3xl:text-base 4xl:text-2xl mb-3 line-clamp-3">
                               {featured?.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
                             </p>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
-                              <Palette sx={{ fontSize: 12 }} />
+                            <span className="bg-white text-secondary px-3 py-1 4xl:px-4 4xl:py-2 rounded-full text-xs 4xl:text-2xl border flex items-center gap-1">
+                              <Palette sx={{ fontSize: 14 }} />
                               {featured?.category_relation?.nombre || "General"}
                             </span>
-                            <span className="text-brand hover:text-brandDark text-sm font-medium">
+                            <span className="text-brand hover:text-brandDark text-sm 4xl:text-2xl font-medium">
                               Detalles →
                             </span>
                           </div>
@@ -638,7 +629,7 @@ export default function Home() {
 
               {/* Search Bar + Zone Selector */}
               <div className="mb-8 rounded-lg">
-                <h2 className="text-base font-semibold text-primary mb-2">Buscar emprendimientos</h2>
+                <h2 className="text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-primary mb-2">Buscar emprendimientos</h2>
 
                 <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
                   {/* Search Bar (un poco más largo) */}
@@ -654,7 +645,7 @@ export default function Home() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                      className="w-full pl-12 pr-4 py-3 md:py-4 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base"
+                      className="w-full pl-12 pr-4 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-4xl"
                     />
                     {/* Search Suggestions */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
@@ -666,10 +657,10 @@ export default function Home() {
                               setSearchQuery(suggestion);
                               setShowSuggestions(false);
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3"
+                            className="w-full text-left px-4 py-3 4xl:py-4 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3 4xl:gap-4"
                           >
-                            <Search sx={{ fontSize: 16 }} className="text-secondary" />
-                            <span className="text-primary">{suggestion}</span>
+                            <Search sx={{ fontSize: 18 }} className="text-secondary" />
+                            <span className="text-primary text-sm md:text-base 3xl:text-lg 4xl:text-xl">{suggestion}</span>
                           </button>
                         ))}
                       </AnimatedContainer>
@@ -677,11 +668,11 @@ export default function Home() {
                   </div>
 
                   {/* Province Selector */}
-                  <div className="w-full md:w-52 relative">
+                  <div className="w-full md:w-52 3xl:w-64 4xl:w-72 relative">
                     <select
                       value={selectedProvince || 'Todos'}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (
@@ -689,18 +680,18 @@ export default function Home() {
                       ))}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 4xl:w-6 4xl:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
                   </div>
 
                   {/* Zone Selector */}
-                  <div className="w-full md:w-52 relative">
+                  <div className="w-full md:w-52 3xl:w-64 4xl:w-72 relative">
                     <select
                       value={selectedZone}
                       onChange={(e) => setSelectedZone(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
                     >
                       <option value="Todas">Todos los cantones</option>
                       {zones.map((z) => (
@@ -708,15 +699,13 @@ export default function Home() {
                       ))}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 4xl:w-6 4xl:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
                   </div>
                 </div>
               </div>
-
-
 
             {/* Categories */}
             <Categories
@@ -727,20 +716,20 @@ export default function Home() {
             {/* Featured Businesses */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-primary flex items-center gap-2">
-                  <Apps sx={{ fontSize: 20 }} />
+                <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary flex items-center gap-2 4xl:gap-3">
+                  <Apps sx={{ fontSize: 24 }} />
                   {selectedCategory === 'Todos' ? 'Emprendimientos' : `Categoría: ${selectedCategory}`}
                 </h2>
               </div>
 
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10">
                   {[...Array(6)].map((_, index) => (
                     <SkeletonEntrepreneurCard key={`skeleton-entrepreneur-${index}`} />
                   ))}
                 </div>
               ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10">
                 {filteredBusinesses.map((business: any) => (
                   (() => {
                     
@@ -759,9 +748,9 @@ export default function Home() {
                               className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             />
                           </div>
-                          <div className="p-4 flex-1 flex flex-col">
+                          <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
                             <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{business.name}</h3>
+                              <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2">{business.name}</h3>
                               <button
                                 className="text-secondary hover:text-brand transition-colors"
                                 onClick={(e) => {
@@ -783,18 +772,18 @@ export default function Home() {
                                 aria-label={favByEntreId.has(Number(business.id)) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                               >
                                 {favByEntreId.has(Number(business.id)) ? (
-                                  <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A]" />
+                                  <Favorite sx={{ fontSize: 22 }} className="text-[#0A5B7A]" />
                                 ) : (
-                                  <FavoriteBorder sx={{ fontSize: 18 }} />
+                                  <FavoriteBorder sx={{ fontSize: 22 }} />
                                 )}
                               </button>
                             </div>
-                            <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
+                            <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2">{business.description}</p>
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex items-center gap-1 text-secondary">
                                 <BusinessStars entrepreneurshipId={Number(business.id)} />
                               </div>
-                              <span className="bg-brand/5 text-secondary px-2 py-1 rounded text-xs">
+                              <span className="bg-brand/5 text-secondary px-2 py-1 4xl:px-3 4xl:py-1.5 rounded text-xs 3xl:text-sm 4xl:text-2xl">
                                 {business.category_relation?.nombre || 'General'}
                               </span>
                             </div>
@@ -807,7 +796,7 @@ export default function Home() {
               </div>
               )}
               {hasNextPage && (
-                <div ref={loadMoreRef} className="mt-6 h-10 flex items-center justify-center text-secondary text-sm">
+                <div ref={loadMoreRef} className="mt-6 h-10 flex items-center justify-center text-secondary text-sm 4xl:text-3xl">
                   {isFetchingNextPage ? 'Cargando más…' : 'Desplázate para cargar más'}
                 </div>
               )}
@@ -823,20 +812,20 @@ export default function Home() {
 
             {/* Popular Products */}
             <AnimatedContainer className="mb-6">
-              <h2 className="text-xl font-semibold text-primary mb-6 flex items-center gap-2">
+              <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2 4xl:gap-3">
                 <FloatingElement>
-                  <Star sx={{ fontSize: 20 }} />
+                  <Star sx={{ fontSize: 24 }} />
                 </FloatingElement>
                 Productos Populares
               </h2>
               {loadingProducts ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10">
                   {[...Array(6)].map((_, index) => (
                     <SkeletonProductCard key={`skeleton-product-${index}`} />
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10 ">
                   {filteredProducts.map((product) => (
                     <Link
                       key={product.id}
