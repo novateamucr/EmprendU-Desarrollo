@@ -1,7 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
-// Get the base URL from environment variables or use the default
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
+const API_BASE_URL = 'https://emprendu-desarrollo-production.up.railway.app/api';
 
 // Create axios instance with base configuration
 export const api = axios.create({
@@ -15,47 +14,59 @@ export const api = axios.create({
   timeout: 10000, // 10 seconds timeout
 });
 
-// Add CORS headers to all responses
-api.interceptors.response.use(
-  (response) => {
-    // Add CORS headers to the response
-    if (response.headers) {
-      response.headers['Access-Control-Allow-Origin'] = window.location.origin;
-      response.headers['Access-Control-Allow-Credentials'] = 'true';
-    }
-    return response;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add request interceptor to include auth token and handle CORS
+// Add request interceptor to include auth token
 api.interceptors.request.use(
-  (config) => {
+  (config: AxiosRequestConfig) => {
+    // Create a new headers object to avoid mutating the original
+    const headers = { ...config.headers };
+    
     const token = localStorage.getItem('token');
-    
-    // Add CORS headers to all requests
-    config.headers = config.headers || {};
-    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
-    config.headers['Access-Control-Allow-Credentials'] = 'true';
-    
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
     
-    // For non-simple requests (like POST with JSON), we need to handle preflight
-    if (config.method !== 'get' && config.method !== 'head') {
-      config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-      config.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With';
+    // For file uploads, let the browser set the Content-Type with the boundary
+    if (config.data instanceof FormData) {
+      delete headers['Content-Type'];
     }
     
-    return config;
+    return {
+      ...config,
+      headers: {
+        ...headers,
+        // Ensure these headers are set for CORS
+        'Access-Control-Allow-Origin': window.location.origin,
+        'Access-Control-Allow-Credentials': 'true',
+      },
+    };
   },
-  (error) => {
+  (error: any) => {
     console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('API Error Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('API Request Error:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('API Error:', error.message);
+    }
+    
+    return Promise.reject(error);
+  }
+);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { cn } from '../../../lib/utils';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Save, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
@@ -25,6 +26,7 @@ interface BusinessFormData {
   category: number | string;
   user_id?: number;
   image_url?: string | null;
+  imageFile?: File | null;
 }
 
 interface BusinessSetupProps {
@@ -51,10 +53,12 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
     name: initialData?.name || '',
     description: initialData?.description || '',
     category: initialData?.category || '',
-    image_url: initialData?.image_url || null
+    image_url: initialData?.image_url || null,
+    imageFile: null
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const businessId = businessIdFromQuery || id || formData.id;
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -124,6 +128,60 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
     }));
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Formato no válido. Por favor sube una imagen válida (JPG, PNG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      // Create a preview URL
+      const imageUrl = URL.createObjectURL(file);
+      
+      // Simulate processing time for better UX (optional)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file,
+        image_url: imageUrl
+      }));
+    } catch (error) {
+      console.error('Error processing image:', error);
+      toast.error('No se pudo procesar la imagen');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    // Revoke the object URL to avoid memory leaks
+    if (formData.image_url && formData.image_url.startsWith('blob:')) {
+      URL.revokeObjectURL(formData.image_url);
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      image_url: ''
+    }));
+    
+    // Reset the file input
+    const fileInput = document.getElementById('business-image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,30 +204,49 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       const currentBusinessId = businessIdFromQuery || id || formData.id;
       let result: any;
 
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Basic business info
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('description', (formData.description || '').trim());
+      formDataToSend.append('category', formData.category.toString());
+      formDataToSend.append('status', 'active');
+      
+      // Add user_id for new businesses
+      if (!isEditMode) {
+        formDataToSend.append('user_id', user.id.toString());
+      }
+      
+      // Handle image file if present
+      if (formData.imageFile) {
+        formDataToSend.append('image', formData.imageFile);
+      } else if (formData.image_url && !formData.image_url.startsWith('blob:')) {
+        // If there's an existing image URL and no new file, keep the existing image
+        formDataToSend.append('image_url', formData.image_url);
+      } else if (isEditMode && !formData.image_url) {
+        // If in edit mode and no image is set, ensure we don't send image_url
+        formDataToSend.append('image_url', '');
+      }
+      
+      // Log the form data for debugging
+      console.log('Submitting form data:', {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        hasImage: !!formData.imageFile,
+        imageUrl: formData.image_url,
+        isEditMode,
+        currentBusinessId
+      });
+      
+      // Make the API request
       if (isEditMode && currentBusinessId) {
-        // Actualizar
-        result = await entrepreneurshipApi.update(String(currentBusinessId), {
-          name: formData.name,
-          description: formData.description || '',
-          category: Number(formData.category),
-          image_url: null as any,
-        } as any);
+        // For updates, use PUT method
+        result = await entrepreneurshipApi.update(String(currentBusinessId), formDataToSend as any);
       } else {
-        // Crear
-        result = await entrepreneurshipApi.create({
-          // campos mínimos usados por el servicio (se enviará como FormData)
-          name: formData.name,
-          description: formData.description,
-          category: Number(formData.category) as any,
-          image_url: (formData.image_url || '') as any,
-          user_id: user.id as any,
-          // completar para satisfacer el tipo local, aunque el backend no los requiere
-          created_at: '' as any,
-          updated_at: '' as any,
-          owner: undefined as any,
-          category_relation: undefined as any,
-          products: [] as any,
-        } as any);
+        // For new businesses, use POST
+        result = await entrepreneurshipApi.create(formDataToSend as any);
       }
 
       toast.success(isEditMode ? 'Emprendimiento actualizado' : 'Emprendimiento creado', {
@@ -277,6 +354,67 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                 placeholder="Describe tu emprendimiento..."
                 rows={4}
               />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Imagen del emprendimiento
+              </label>
+              <div className="mt-1 flex items-center">
+                {formData.image_url ? (
+                  <div className="relative">
+                    <img 
+                      src={formData.image_url} 
+                      alt="Vista previa" 
+                      className="h-32 w-32 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      aria-label="Eliminar imagen"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full">
+                    <label 
+                      className={cn(
+                        'flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer',
+                        'bg-gray-50 hover:bg-gray-100 transition-colors',
+                        isUploading && 'opacity-70 cursor-wait'
+                      )}
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        {isUploading ? (
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mb-4"></div>
+                        ) : (
+                          <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                          </svg>
+                        )}
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG o JPEG (MAX. 5MB)</p>
+                      </div>
+                      <input 
+                        id="business-image"
+                        name="image" 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/png, image/jpeg, image/jpg, image/webp"
+                        onChange={handleImageChange}
+                        disabled={isUploading}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
 
             {error && (
