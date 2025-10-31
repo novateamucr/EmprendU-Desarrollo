@@ -14,6 +14,9 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Mail\UserNotification;
+
+
 
 class UserController extends Controller
 {
@@ -29,7 +32,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         // Include related data needed by frontend (profile and entrepreneur views)
-        $user->load(['roleRelation','interests','entrepreneurships']);
+        $user->load(['roleRelation', 'interests', 'entrepreneurships']);
         return response()->json($user);
     }
 
@@ -42,7 +45,7 @@ class UserController extends Controller
 
 
 
-    // store (registro)
+
     public function store(Request $request, R2FileUploadService $fileUploadService)
     {
         DB::beginTransaction();
@@ -59,59 +62,80 @@ class UserController extends Controller
                 'address' => 'nullable|string',
                 'banned' => 'nullable|boolean',
                 'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-                'avatar_url' => 'nullable|string', // For existing URLs if needed
+                'avatar_url' => 'nullable|string',
             ]);
 
-        // Enviar correo de confirmación directamente con Mail::raw
-       /* $confirmLink = url("/api/confirm?token={$token}");
-        Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
-            $message->to($user->email)
-                    ->subject('Confirma tu correo');
-        });*/
-
             $data['password'] = Hash::make($data['password']);
-            $data['isConfirmed'] = false; // usuario no confirmado al crear
+            $data['confirmation_token'] = Str::random(40);
+            $data['is_confirmed'] = false;
+
+            // Handle avatar upload if provided
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $data['avatar_url'] = $fileUploadService->upload($avatar, 'users/avatars');
+            }
 
             $user = User::create($data);
 
-            // Generar token de confirmación
-            $token = Str::random(60);
-            DB::table('email_tokens')->insert([
-                'user_id' => $user->id,
-                'token' => $token,
-                'created_at' => now(),
-                'expires_at' => Carbon::now()->addDay(), // token válido 24h
-            ]);
+            // Send welcome email with confirmation link
+            $confirmationUrl = url("/api/confirm-email/{$user->confirmation_token}");
 
-            // Enviar correo de confirmación directamente con Mail::raw
-            $confirmLink = url("/api/confirm?token={$token}");
-            Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Confirma tu correo');
-            });
+            Mail::to($user->email)->send(new UserNotification([
+                'subject' => 'Bienvenido a ' . config('app.name'),
+                'greeting' => '¡Gracias por registrarte, ' . $user->name . '!',
+                'content' => 'Tu cuenta ha sido creada exitosamente. Por favor, confirma tu dirección de correo electrónico para activar tu cuenta.',
+                'action_url' => $confirmationUrl,
+                'action_text' => 'Confirmar mi correo'
+            ]));
 
             DB::commit();
-            
+
             return response()->json([
-                'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
-                'user' => $user->load('roleRelation')
+                'message' => 'Usuario registrado exitosamente. Por favor revisa tu correo para confirmar tu cuenta.',
+                'user' => $user
             ], 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating user: ' . $e->getMessage());
+            \Log::error('Error al registrar usuario: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Error al crear el usuario',
+                'message' => 'Error al registrar el usuario',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
+
+
+    public function confirmEmail($token)
+{
+    DB::beginTransaction();
+    try {
+        $user = User::where('confirmation_token', $token)
+            ->whereNull('email_verified_at')
+            ->firstOrFail();
+
+        $user->update([
+            'isConfirmed' => true,
+            'confirmation_token' => null,
+            'email_verified_at' => now(),
+        ]);
+
+        DB::commit();
+
+        // Return the success view instead of JSON
+        return view('emails.confirmation-success');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error confirming email: ' . $e->getMessage());
+        
+        // You might want to create an error view as well
+        return response()->view('emails.confirmation-error', [
+            'message' => 'Enlace de confirmación inválido o expirado'
+        ], 400);
+    }
+}
 
     // confirm email
     public function confirm(Request $request)
@@ -167,7 +191,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
-  
+
     /**
      * Update the specified user in storage.
      *
@@ -178,7 +202,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user, R2FileUploadService $fileUploadService)
     {
-        
+
 
         return $this->updateUserProfile($request, $user, $fileUploadService);
     }
@@ -212,7 +236,7 @@ class UserController extends Controller
     {
         // Get all input data, handling both form data and JSON
         $input = $request->all();
-        
+
         // Validation rules
         $rules = [
             'name' => 'sometimes|string|max:255',
@@ -231,33 +255,33 @@ class UserController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'avatar_url' => 'nullable|string',
         ];
-        
+
         // If _method is present, it's a form submission
         if ($request->has('_method')) {
             $data = $input;
             unset($data['_method']);
             unset($data['id']);
-            
+
             // Handle empty strings as null for optional fields
-            $data = array_map(function($value) {
+            $data = array_map(function ($value) {
                 return $value === '' ? null : $value;
             }, $data);
-            
+
             $validator = Validator::make($data, $rules);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Error de validación',
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $data = $validator->validated();
         } else {
             // For JSON requests
             $data = $request->validate($rules);
         }
-        
+
         Log::info('Update User Request:', [
             'user_id' => $user->id,
             'input_data' => $input,
@@ -292,12 +316,12 @@ class UserController extends Controller
 
             // Update user
             $user->update($data);
-            
+
             // Reload the user with relationships
             $user->load(['roleRelation', 'interests', 'entrepreneurships']);
 
             DB::commit();
-            
+
             return response()->json([
                 'message' => 'Perfil actualizado exitosamente',
                 'user' => $user
@@ -314,5 +338,5 @@ class UserController extends Controller
                 'line' => $e->getLine()
             ], 500);
         }
-}
+    }
 }

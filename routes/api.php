@@ -111,3 +111,7 @@ Route::post('/ContactUs', function (Request $request) {
 
     return response()->json(['message' => '¡Correo enviado exitosamente! Pronto serás contactado.']);
 });
+
+Route::get('/confirm-email/{token}', [UserController::class, 'confirmEmail']);
+
+
