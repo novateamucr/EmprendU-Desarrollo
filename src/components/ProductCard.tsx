@@ -104,50 +104,50 @@ export function ProductCard(props: ProductCardProps) {
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
       </div>
-      <div className="p-4 flex-1 flex flex-col">
+      <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
         {props.categoryName && (
-          <span className="inline-block w-fit self-end mb-1 text-[11px] px-2 py-0.5 rounded-full bg-[#E6F4FA] text-[#0A5B7A]">
+          <span className="inline-block w-fit self-end mb-1 text-[11px] 3xl:text-xs 4xl:text-xl px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full bg-[#E6F4FA] text-[#0A5B7A]">
             {props.categoryName}
           </span>
         )}
-        <h3 className="font-medium text-gray-900 text-sm mb-1">{props.title}</h3>
-        <p className="text-gray-600 text-xs mb-3 line-clamp-2 overflow-hidden text-ellipsis">
+        <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1">{props.title}</h3>
+        <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
-          <p className="text-lg font-semibold text-gray-900 text-center">
+          <p className="text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-gray-900 text-center">
             ₡{props.price.toLocaleString()}
           </p>
           
           {showQuantity ? (
             <div className="flex flex-col gap-2 mt-2">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 4xl:gap-3">
                 <button
                   onClick={(e) => handleQuantityChange(e, -1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  className="w-8 h-8 4xl:w-10 4xl:h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
                   aria-label="Disminuir cantidad"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Minus className="w-3.5 h-3.5 4xl:w-4 4xl:h-4" />
                 </button>
-                <span className="w-8 text-center font-medium">{quantity}</span>
+                <span className="w-8 4xl:w-10 text-center font-medium text-sm 3xl:text-base 4xl:text-lg">{quantity}</span>
                 <button
                   onClick={(e) => handleQuantityChange(e, 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  className="w-8 h-8 4xl:w-10 4xl:h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
                   aria-label="Aumentar cantidad"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 4xl:w-4 4xl:h-4" />
                 </button>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleCancelQuantity}
-                  className="flex-1 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="flex-1 py-1.5 4xl:py-2 text-xs 3xl:text-sm 4xl:text-base font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleConfirmQuantity}
-                  className="flex-1 py-1.5 text-xs font-medium text-white bg-brand rounded-md hover:bg-brandDark"
+                  className="flex-1 py-1.5 4xl:py-2 text-xs 3xl:text-sm 4xl:text-base font-medium text-white bg-brand rounded-md hover:bg-brandDark"
                 >
                   Añadir {quantity}
                 </button>
@@ -156,7 +156,7 @@ export function ProductCard(props: ProductCardProps) {
           ) : (
             <button
               onClick={handleAddToCart}
-              className="mt-1 px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium hover:bg-brandDark transition-colors"
+              className="mt-1 px-3 4xl:px-4 py-1.5 4xl:py-2 rounded-md bg-brand text-white text-xs 3xl:text-sm 4xl:text-base font-medium hover:bg-brandDark transition-colors"
             >
               Hacer pedido
             </button>

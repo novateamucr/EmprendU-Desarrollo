@@ -43,6 +43,10 @@ type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
   };
 };
 
+// Componente principal de "Mis emprendimientos":
+// - Lista los emprendimientos del usuario autenticado.
+// - Permite navegar a crear, editar, ver inventario y eliminar emprendimientos.
+// - Integra datos relacionados (categoría, productos, favoritos, propietario).
 export default function BusinessList() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +59,8 @@ export default function BusinessList() {
   const [showExtraModal, setShowExtraModal] = useState(false);
   const [showCrearEmp, setShowCrearEmp] = useState(false);
 
+  // Carga todos los emprendimientos del usuario actual desde la API.
+  // Mapea las relaciones necesarias para mostrarlas en la UI.
   const loadBusinesses = async () => {
     try {
       setIsLoading(true);
@@ -92,6 +98,7 @@ export default function BusinessList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Solicita confirmación para eliminar un emprendimiento.
   const requestDelete = (id: string) => {
     setPendingDeleteId(id);
     setDeleteModalOpen(true);
@@ -150,7 +157,7 @@ export default function BusinessList() {
   // Show skeleton loaders while loading
   if (isLoading) {
     return (
-      <div className="space-y-6 p-8">
+      <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Skeleton variant="text" width="250px" height={32} />
           <Skeleton variant="rectangular" width={250} height={45} className="rounded-md" />
@@ -163,9 +170,9 @@ export default function BusinessList() {
   }
 
   return (
-    <div className="space-y-6 p-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-full mx-auto">
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-0">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
           {businesses.length > 0 && (
@@ -179,7 +186,7 @@ export default function BusinessList() {
             )}
         </div>
         <Button asChild className="bg-black hover:bg-black/90 text-white">
-          <Link to="/entrepreneur/business/setup">
+          <Link to="/entrepreneur/business/setup" className="inline-flex items-center gap-2 px-3 py-2 rounded-md whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
           </Link>
@@ -211,8 +218,8 @@ export default function BusinessList() {
       </ModalAnimaciones>
 
       {businesses.length === 0 ? (
-        <div className="container mx-auto px-4 py-12">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 text-center max-w-3xl mx-auto">
+        <div className="px-4 py-10 w-full">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-10 text-center max-w-6xl mx-auto">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 mb-6">
               <Package className="h-10 w-10 text-blue-600" />
             </div>
@@ -283,10 +290,10 @@ export default function BusinessList() {
           </ModalAnimaciones>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mx-auto w-full">
           {businesses.map((business) => (
             <Card key={business.id} className="overflow-hidden">
-              <div className="p-6">
+              <div className="p-4">
                 <div className="flex justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
                     <div className="flex-shrink-0 h-14 w-14 rounded-md bg-gray-100 overflow-hidden">
@@ -307,7 +314,7 @@ export default function BusinessList() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-xl font-semibold text-gray-900 truncate">{business.name}</h3>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{business.name}</h3>
                         <Badge variant={business.banned ? 'destructive' : 'success'} className="flex-shrink-0">
                           {business.banned ? 'Inactivo' : 'Activo'}
                         </Badge>
@@ -319,12 +326,15 @@ export default function BusinessList() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between text-sm">
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  {/* Category stays on a single row in mobile (label + value) */}
+                  <div className="flex items-center justify-start text-sm gap-2">
                     <span className="text-gray-500">Categoría</span>
-                    <span className="font-medium">{business.category}</span>
+                    <span className="font-medium truncate">{business.category}</span>
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
+
+                  {/* Products and favorites stack on mobile, and sit side-by-side on sm+ */}
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="flex items-center gap-2 text-gray-700">
                       <Package className="h-4 w-4 text-primary" />
                       <span className="text-sm"><span className="font-semibold">{business.products?.length || 0}</span> productos</span>
@@ -336,7 +346,7 @@ export default function BusinessList() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="text-xs text-gray-500">
                     Actualizado el {formatDate(business.updated_at)}
                   </div>
@@ -371,12 +381,12 @@ export default function BusinessList() {
           ))}
         </div>
       )}
+      {/* Modal de confirmación para eliminar un emprendimiento */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => { if (!isDeleting) { setDeleteModalOpen(false); setPendingDeleteId(null); } }}
         title="Eliminar emprendimiento"
-        variant="danger"
-      >
+        variant="danger">
         <div className="space-y-4">
           <p className="text-gray-700">
             Eliminar tu emprendimiento no se puede deshacer y esto eliminará todos los productos, ventas y registros asociados.

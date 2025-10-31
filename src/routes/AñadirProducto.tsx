@@ -132,6 +132,15 @@ export default function ProductFormUpload({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchedInitial]);
 
+  // Ensure entrepreneurship is selected from initial data when form still has no selection
+  useEffect(() => {
+    const eid = fetchedInitial?.entrepreneurship_id ?? fetchedInitial?.entrepreneurship?.id ?? (businessId ? parseInt(businessId, 10) : 0);
+    if (eid && (form.entrepreneurship_id === 0 || !form.entrepreneurship_id)) {
+      setForm((p) => ({ ...p, entrepreneurship_id: eid }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchedInitial, businessId]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -409,6 +418,20 @@ export default function ProductFormUpload({
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value={"0"}>Selecciona un emprendimiento</option>
+                {/* Render fallback option if the selected entrepreneurship is not in the list */}
+                {(() => {
+                  const selectedId = form.entrepreneurship_id;
+                  const selectedInList = entrepreneurships.some((b) => b.id === selectedId);
+                  const fallbackName = fetchedInitial?.entrepreneurship?.name;
+                  if (selectedId && !selectedInList) {
+                    return (
+                      <option key={`fallback-${selectedId}`} value={String(selectedId)}>
+                        {fallbackName || `Emprendimiento #${selectedId}`}
+                      </option>
+                    );
+                  }
+                  return null;
+                })()}
                 {entrepreneurships.map((b) => (
                   <option key={b.id} value={String(b.id)}>{b.name}</option>
                 ))}

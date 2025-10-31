@@ -9,6 +9,9 @@ import { ProductList } from './components/ProductList';
 import ProductForm from './components/ProductForm';
 import { useToast } from '../../../hooks/useToast';
 
+// Página de Inventario:
+// - Muestra, filtra y ordena productos de un emprendimiento (por businessId en la URL).
+// - Permite crear/editar productos con un formulario modal y refresca la lista.
 export default function InventoryPage() {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get('businessId');
@@ -21,7 +24,7 @@ export default function InventoryPage() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof Product; direction: 'ascending' | 'descending' } | null>(null);
   const { toast } = useToast();
 
-  // Filter and sort products
+  // Filtrar y ordenar productos en memoria (búsqueda y sort configurable)
   const filteredProducts = useMemo(() => {
     let result = [...products];
     
@@ -58,6 +61,7 @@ export default function InventoryPage() {
     return result;
   }, [products, searchTerm, sortConfig]);
   
+  // Cambiar criterio/dirección de ordenamiento
   const requestSort = (key: keyof Product) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -66,6 +70,7 @@ export default function InventoryPage() {
     setSortConfig({ key, direction });
   };
   
+  // Cargar productos desde la API y filtrar por businessId
   const loadProducts = useCallback(async () => {
     if (!businessId) return;
     
@@ -96,6 +101,7 @@ export default function InventoryPage() {
     }
   }, [businessId, toast]);
 
+  // Efecto inicial: valida businessId y carga productos
   useEffect(() => {
     if (!businessId) {
       console.error('No businessId found in URL parameters');
@@ -111,16 +117,19 @@ export default function InventoryPage() {
     loadProducts();
   }, [businessId, loadProducts, toast]);
 
+  // Abrir formulario para agregar producto
   const handleAddProduct = () => {
     setEditingProduct(null);
     setShowProductForm(true);
   };
 
+  // Navegar al editor de producto existente
   const handleEditProduct = (product: Product) => {
     if (!businessId) return;
     navigate(`/emprendimientos/${businessId}/productos/${product.id}/editar`, { state: { product } });
   };
 
+  // Al guardar en el formulario, cerrar y recargar lista
   const handleFormSubmit = async () => {
     setShowProductForm(false);
     await loadProducts(); // Use the same loadProducts function to refresh the list
