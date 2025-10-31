@@ -119,11 +119,14 @@ export default function Dashboard() {
   // Helper to safely extract total from an order record
   const getOrderTotal = (order: any) => {
     if (!order) return 0;
-    if (typeof order.grand_total === 'number') return order.grand_total;
-    const items = typeof order.items_total === 'number' ? order.items_total : 0;
-    const opts = typeof order.options_total === 'number' ? order.options_total : 0;
-    const shipping = typeof order.shipping_total === 'number' ? order.shipping_total : 0;
-    const discount = typeof order.discount_total === 'number' ? order.discount_total : 0;
+    const toNum = (v: any) => (typeof v === 'number' ? v : (typeof v === 'string' ? parseFloat(v) : 0)) || 0;
+    // Prefer grand_total if present
+    const grand = toNum(order.grand_total ?? order.grandTotal);
+    if (grand) return grand;
+    const items = toNum(order.items_total ?? order.itemsTotal);
+    const opts = toNum(order.options_total ?? order.optionsTotal);
+    const shipping = toNum(order.shipping_total ?? order.shippingTotal);
+    const discount = toNum(order.discount_total ?? order.discountTotal);
     return items + opts + shipping - discount;
   };
 
@@ -194,24 +197,26 @@ export default function Dashboard() {
         const salesByMonth: Record<string, number> = Object.fromEntries(last6.map(({ key }) => [key, 0]));
 
         let totalSalesAccum = 0;
-        const customerMap: Record<string, { name: string; email: string; count: number; lastPurchase: string; province?: string | null }> = {};
+  const customerMap: Record<string, { name: string; email: string; phone?: string | null; count: number; lastPurchase: string; province?: string | null }> = {};
 
         ordersList.forEach((order: any) => {
           const createdAt = new Date(order.created_at || order.createdAt || order.date || Date.now());
-          const key = `${createdAt.getFullYear()}-${createdAt.getMonth() + 1}`;
+          const monthKey = `${createdAt.getFullYear()}-${createdAt.getMonth() + 1}`;
           const amount = getOrderTotal(order);
           totalSalesAccum += amount;
-          if (salesByMonth[key] !== undefined) {
-            salesByMonth[key] += amount;
+          if (salesByMonth[monthKey] !== undefined) {
+            salesByMonth[monthKey] += amount;
           }
 
           // Track customers by email
           const email: string = order.customer_email || order.customerEmail || '';
+          const phone: string | null = order.customer_phone || order.customerPhone || null;
           const name: string = order.customer_name || order.customerName || 'Cliente';
-          if (email) {
-            const prev = customerMap[email];
+          const customerKey = email || phone || name; // fallback in case email is missing
+          if (customerKey) {
+            const prev = customerMap[customerKey];
             if (!prev) {
-              customerMap[email] = { name, email, count: 1, lastPurchase: createdAt.toISOString(), province: order.customer_province || null };
+              customerMap[customerKey] = { name, email, phone, count: 1, lastPurchase: createdAt.toISOString(), province: order.customer_province || null };
             } else {
               prev.count += 1;
               if (new Date(prev.lastPurchase) < createdAt) prev.lastPurchase = createdAt.toISOString();
@@ -714,20 +719,14 @@ export default function Dashboard() {
               title="Productos"
               value={totalProducts}
               icon={<Package className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-              trend={{
-                value: `${Math.floor(Math.random() * 15) + 5}% más que el mes pasado`,
-                isPositive: true
-              }}
+              
             />
           </div>
           <StatsCard
             title="Ventas"
             value={new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(totalSales)}
             icon={<ShoppingBag className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-            trend={{
-              value: `${Math.floor(Math.random() * 25) + 5}% más que el mes pasado`,
-              isPositive: true
-            }}
+            
           />
           <div 
             className="cursor-pointer hover:opacity-90 transition-opacity"
@@ -740,10 +739,7 @@ export default function Dashboard() {
               title="Clientes"
               value={uniqueCustomersCount}
               icon={<Users className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-              trend={{
-                value: `${Math.floor(Math.random() * 10) + 2}% más que el mes pasado`,
-                isPositive: true
-              }}
+              
             />
           </div>
         </div>

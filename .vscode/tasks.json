@@ -161,6 +161,20 @@
 			"command": "npm run build",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "lint-eslint-2",
+			"type": "shell",
+			"command": "npm run lint",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "build-vite-2",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
