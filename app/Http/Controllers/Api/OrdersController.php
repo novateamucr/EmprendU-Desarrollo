@@ -17,28 +17,18 @@ class OrdersController extends Controller
 {
     public function index(Request $request)
     {
-        // Return orders for: (a) authenticated user, else (b) user_id param, else (c) customer_email param
+        // Return orders for: (a) authenticated user_id, else (b) user_id param
         $authUserId = optional($request->user())->id;
         $paramUserId = $request->query('user_id');
-        $paramEmail = $request->query('customer_email');
 
         $query = Order::with(['entrepreneurship','items.product','items.orderOptions'])->orderByDesc('id');
 
         if ($authUserId) {
-            $email = strtolower((string) optional($request->user())->email);
-            $query->where(function ($q) use ($authUserId, $email) {
-                $q->where('user_id', $authUserId)
-                  ->orWhereRaw('LOWER(customer_email) = ?', [$email]);
-            });
+            $query->where('user_id', (int) $authUserId);
         } elseif ($paramUserId) {
             $query->where('user_id', (int) $paramUserId);
-            if ($paramEmail) {
-                $query->orWhereRaw('LOWER(customer_email) = ?', [strtolower((string) $paramEmail)]);
-            }
-        } elseif ($paramEmail) {
-            $query->whereRaw('LOWER(customer_email) = ?', [strtolower((string) $paramEmail)]);
         } else {
-            abort(400, 'user_id or customer_email is required');
+            abort(400, 'user_id is required');
         }
 
         // Optional status filter: supports status=draft,requested or status[]=draft&status[]=requested
@@ -184,22 +174,17 @@ class OrdersController extends Controller
 
     public function destroy(Request $request, Order $order)
     {
-        // Authorization: allow if (a) authenticated user matches order's user/email
-        // or (b) matches provided user_id/customer_email query (for non-auth flows)
+        // Authorization: allow if (a) authenticated user matches order's user_id
+        // or (b) matches provided user_id query (for non-auth flows)
         $authUser = optional($request->user());
         $paramUserId = $request->query('user_id');
-        $paramEmail = $request->query('customer_email');
 
         $authorized = false;
         if ($authUser && $authUser->id) {
-            $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id)
-                || (strcasecmp((string)$order->customer_email, (string)$authUser->email) === 0);
+            $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id);
         }
         if (!$authorized && $paramUserId) {
             $authorized = (int)$order->user_id === (int)$paramUserId;
-        }
-        if (!$authorized && $paramEmail) {
-            $authorized = (strcasecmp((string)$order->customer_email, (string)$paramEmail) === 0);
         }
         abort_unless($authorized, 403);
 
@@ -221,6 +206,97 @@ class OrdersController extends Controller
 
         // Other statuses: forbid client-side deletion
         abort(422, 'Only draft orders can be deleted; requested orders are canceled.');
+    }
+
+    public function show(Request $request, Order $order)
+    {
+        $isOwner = false;
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (method_exists($user, 'entrepreneurships')) {
+                $isOwner = $user->entrepreneurships()->whereKey($order->entrepreneurship_id)->exists();
+            }
+        }
+
+        $authorized = $isOwner;
+        if (!$authorized) {
+            $authUser = optional($request->user());
+            $paramUserId = $request->query('user_id');
+            if ($authUser && $authUser->id) {
+                $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id);
+            }
+            if (!$authorized && $paramUserId) {
+                $authorized = (int)$order->user_id === (int)$paramUserId;
+            }
+        }
+
+        abort_unless($authorized, 403);
+
+        $includeItems = filter_var($request->query('include_items', 'true'), FILTER_VALIDATE_BOOLEAN);
+        $relations = ['entrepreneurship'];
+        if ($includeItems) {
+            $relations[] = 'items.orderOptions';
+            $relations[] = 'items.product';
+        }
+        return new OrderResource($order->load($relations));
+    }
+
+    public function forEntrepreneur(Request $request, int $entrepreneurship)
+    {
+        Gate::authorize('manage-entrepreneurship', (int) $entrepreneurship);
+
+        $query = Order::query()
+            ->where('entrepreneurship_id', (int) $entrepreneurship)
+            ->orderByDesc('id');
+
+        // Optional status filter: supports status=draft,requested or status[]=draft&status[]=requested
+        $status = $request->query('status');
+        if ($status) {
+            if (is_string($status)) {
+                $parts = array_filter(array_map('trim', explode(',', $status)));
+                if (!empty($parts)) {
+                    $query->whereIn('status', $parts);
+                }
+            } elseif (is_array($status)) {
+                $query->whereIn('status', $status);
+            }
+        }
+
+        $include = (string) $request->query('include', 'entrepreneurship');
+        $with = [];
+        if (str_contains($include, 'entrepreneurship')) { $with[] = 'entrepreneurship'; }
+        if (str_contains($include, 'items')) { $with[] = 'items.orderOptions'; $with[] = 'items.product'; }
+        if (!empty($with)) { $query->with($with); }
+
+        $orders = $query->paginate(20);
+        return OrderResource::collection($orders);
+    }
+
+    public function table(Request $request)
+    {
+        $eid = (int) $request->query('entrepreneurship_id');
+        abort_if(!$eid, 400, 'entrepreneurship_id is required');
+        Gate::authorize('manage-entrepreneurship', $eid);
+
+        $query = Order::with(['entrepreneurship'])
+            ->where('entrepreneurship_id', $eid)
+            ->orderByDesc('id');
+
+        // Optional status filter
+        $status = $request->query('status');
+        if ($status) {
+            if (is_string($status)) {
+                $parts = array_filter(array_map('trim', explode(',', $status)));
+                if (!empty($parts)) {
+                    $query->whereIn('status', $parts);
+                }
+            } elseif (is_array($status)) {
+                $query->whereIn('status', $status);
+            }
+        }
+
+        $orders = $query->paginate(20);
+        return OrderResource::collection($orders);
     }
 
     protected function recalculateTotals(Order $order): void

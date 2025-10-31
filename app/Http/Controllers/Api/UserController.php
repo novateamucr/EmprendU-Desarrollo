@@ -26,6 +26,8 @@ class UserController extends Controller
 
         public function show(User $user)
     {
+        // Include related data needed by frontend (profile and entrepreneur views)
+        $user->load(['roleRelation','interests','entrepreneurships']);
         return response()->json($user);
     }
 
