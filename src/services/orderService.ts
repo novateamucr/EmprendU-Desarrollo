@@ -58,17 +58,44 @@ export async function updateOrderStatus(orderId: number | string, status: 'draft
   return res.data;
 }
 
-export async function listOrdersByEntrepreneurship(entrepreneurshipId: number | string, page?: number) {
-  const res = await api.get('/orders', { params: { entrepreneurship_id: entrepreneurshipId, page } });
+// Emprendimiento (dueño): lista de pedidos por emprendimiento
+export async function listOrdersByEntrepreneurship(
+  entrepreneurshipId: number | string,
+  opts?: { status?: string | string[]; include?: string; page?: number }
+) {
+  const params: Record<string, any> = {};
+  if (opts?.status) params.status = opts.status;
+  if (opts?.include) params.include = opts.include;
+  if (opts?.page) params.page = opts.page;
+  const res = await api.get(`/entrepreneurships/${entrepreneurshipId}/orders`, { params });
   return res.data;
 }
 
-export async function deleteOrder(orderId: number | string, params?: Record<string, any>) {
-  const res = await api.delete(`/orders/${orderId}`, { params });
+export async function deleteOrder(orderId: number | string) {
+  const res = await api.delete(`/orders/${orderId}`);
   return res.data;
 }
 
-export async function listMyOrders(params?: Record<string, any>) {
+// Cliente autenticado: lista mis pedidos (el backend infiere user_id del token)
+export async function listMyOrders(params?: { status?: string | string[]; page?: number }) {
   const res = await api.get('/orders', { params });
+  return res.data;
+}
+
+// Ver un pedido (incluye items por defecto)
+export async function getOrder(orderId: number | string, includeItems: boolean = true) {
+  const res = await api.get(`/orders/${orderId}`, { params: { include_items: includeItems } });
+  return res.data;
+}
+
+// Dataset para la tabla del emprendedor
+export async function listOrdersTable(
+  entrepreneurshipId: number | string,
+  opts?: { status?: string | string[]; page?: number }
+) {
+  const params: Record<string, any> = { entrepreneurship_id: entrepreneurshipId };
+  if (opts?.status) params.status = opts.status;
+  if (opts?.page) params.page = opts.page;
+  const res = await api.get('/orders-table', { params });
   return res.data;
 }

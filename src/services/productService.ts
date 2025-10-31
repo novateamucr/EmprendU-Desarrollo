@@ -127,9 +127,30 @@ export const createProduct = async (productData: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
       },
+      validateStatus: function (status) {
+        return status < 500; // Resolve only if the status code is less than 500
+      }
     });
 
-    return response.data.data;
+    // Check for success: false in response (422 status with success: false)
+    if (response.status === 422 || response.data.success === false) {
+      if (response.data.reason === 'inappropriate_content' || 
+          (response.data.errors?.image && response.data.errors.image[0]?.includes('content that violates'))) {
+        throw new Error(`image: ${response.data.details || response.data.errors?.image?.[0] || 'The uploaded image contains inappropriate content'}`);
+      }
+      
+      // Handle other validation errors
+      if (response.data.errors) {
+        const errorMessage = Object.entries(response.data.errors)
+          .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+          .join('\n');
+        throw new Error(errorMessage);
+      }
+      
+      throw new Error(response.data.message || 'Error creating product');
+    }
+
+    return response.data.data || response.data;
   } catch (error) {
     console.error('Error creating product:', error);
     if (axios.isAxiosError(error)) {
@@ -192,7 +213,28 @@ export const updateProduct = async (
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
       },
+      validateStatus: function (status) {
+        return status < 500; // Resolve only if status code is less than 500
+      }
     });
+
+    // Check for success: false in response (422 status with success: false)
+    if (response.status === 422 || response.data.success === false) {
+      if (response.data.reason === 'inappropriate_content' || 
+          (response.data.errors?.image && response.data.errors.image[0]?.includes('content that violates'))) {
+        throw new Error(`image: ${response.data.details || response.data.errors?.image?.[0] || 'The uploaded image contains inappropriate content'}`);
+      }
+      
+      // Handle other validation errors
+      if (response.data.errors) {
+        const errorMessage = Object.entries(response.data.errors)
+          .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+          .join('\n');
+        throw new Error(errorMessage);
+      }
+      
+      throw new Error(response.data.message || 'Error updating product');
+    }
 
     return response.data.product || response.data;
 
@@ -200,8 +242,13 @@ export const updateProduct = async (
     console.error(`Error updating product ${id}:`, error);
     
     if (axios.isAxiosError(error)) {
-      // Handle validation errors (422)
+      // Handle validation errors (422) from the server
       if (error.response?.status === 422) {
+        if (error.response.data?.reason === 'inappropriate_content' || 
+            (error.response.data?.errors?.image && error.response.data.errors.image[0]?.includes('content that violates'))) {
+          throw new Error(`image: ${error.response.data.details || error.response.data.errors?.image?.[0] || 'The uploaded image contains inappropriate content'}`);
+        }
+        
         const errorMessage = error.response.data?.message || 'Validation error';
         const validationErrors = error.response.data?.errors 
           ? Object.entries(error.response.data.errors)

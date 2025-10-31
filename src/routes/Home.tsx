@@ -29,7 +29,7 @@ const useReviews = (entrepreneurshipId: string | number) => {
     queryFn: async () => {
       if (!entrepreneurshipId) return [];
       const res = await fetch(
-        `https://emprendu-desarrollo-production.up.railway.app/api/reviews?entrepreneurship_id=${entrepreneurshipId}`,
+        `${import.meta.env.VITE_API_BASE_URL || '/api'}/reviews?entrepreneurship_id=${entrepreneurshipId}`,
         {
           headers: { 
             Authorization: `Bearer ${token}`,
