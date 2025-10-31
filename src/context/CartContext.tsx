@@ -323,22 +323,43 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setPlacedIds(prev => prev.filter(id => id !== groupId));
   };
 
+  // Filter out requested orders from the cart display
+  const activeGroups = React.useMemo(() => 
+    groups.filter(group => group.status === 'draft'),
+    [groups]
+  );
+
   // Create the context value with useMemo to prevent unnecessary re-renders
   const contextValue = React.useMemo(() => ({
-    groups,
+    groups: activeGroups, // Only show draft orders in the cart
+    allGroups: groups, // Keep all groups for other operations
     addItem,
     updateQty,
     removeItem,
-    placeOrder,
+    placeOrder: async (entrepreneurshipId: string) => {
+      const result = await placeOrder(entrepreneurshipId);
+      if (result.success) {
+        // Clear the cart after successful order
+        clearCart();
+      }
+      return result;
+    },
     isPlaced,
     clearCart,
-    getItemCount,
-    getGroupItemCount,
+    getItemCount: () => {
+      return activeGroups.reduce((total, group) => {
+        return total + group.items.reduce((sum, item) => sum + item.quantity, 0);
+      }, 0);
+    },
+    getGroupItemCount: (entrepreneurshipId: string) => {
+      const draft = activeGroups.find(g => g.entrepreneurshipId === entrepreneurshipId);
+      return draft ? draft.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+    },
     showJustAdded,
     cancelOrder,
     isPlacingOrder,
     orderError,
-  }), [groups, showJustAdded]);
+  }), [activeGroups, groups, showJustAdded, isPlacingOrder, orderError]);
 
   return (
     <CartContext.Provider value={contextValue}>
