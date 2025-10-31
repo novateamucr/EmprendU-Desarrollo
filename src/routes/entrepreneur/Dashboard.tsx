@@ -126,6 +126,10 @@ const CHART_COLORS = {
   teal: 'rgb(20, 184, 166)',
 };
 
+// Componente principal del panel de "Mis emprendimientos":
+// - Carga los emprendimientos del usuario y permite seleccionar uno.
+// - Muestra estadísticas (productos, ventas, clientes) y gráficos.
+// - Enlaza a inventario y otras secciones de gestión.
 export default function Dashboard() {
   const { selectedBusiness, setSelectedBusiness } = useBusiness();
   const { user, logout } = useAuth();
@@ -149,7 +153,7 @@ export default function Dashboard() {
     { id: 5, name: 'Sofía Chacón', email: 'sofia.ch@email.com', province: 'San José', totalPurchases: 4, lastPurchase: '2025-09-30' },
   ];
 
-  // Prepare chart data when selected business changes
+  // Prepara los datos de los gráficos cuando cambia el emprendimiento seleccionado
   useEffect(() => {
     if (selectedBusiness) {
       const currentBiz = businesses.find(b => b.id === selectedBusiness.id.toString());
@@ -259,7 +263,7 @@ export default function Dashboard() {
     }
   }, [selectedBusiness, businesses]);
 
-  // Track window width to tweak chart options responsively
+  // Observa el ancho de la ventana para ajustar opciones de gráficos de forma responsiva
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handler = () => setWindowWidth(window.innerWidth);
@@ -267,7 +271,7 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Fetch user's entrepreneurships from the API
+  // Obtiene los emprendimientos del usuario desde la API
   useEffect(() => {
     if (!user?.id) return;
 
@@ -450,7 +454,7 @@ export default function Dashboard() {
     );
   }
 
-  // Convert the selectedBusiness to BusinessOption for the UI
+  // Convierte el objeto seleccionado a la forma usada por el UI (BusinessOption)
   const currentBusiness = selectedBusiness ? {
     ...selectedBusiness,
     id: selectedBusiness.id.toString(),
@@ -472,7 +476,7 @@ export default function Dashboard() {
     updated_at: selectedBusiness.updated_at || new Date().toISOString()
   } as BusinessOption : null;
 
-  // Show loading state
+  // Estado de carga alternativo (skeletons de interface)
   if (isLoading) {
     return (
       <div className="space-y-6 pt-12 px-4 sm:px-6">
@@ -524,7 +528,7 @@ export default function Dashboard() {
     );
   }
 
-  // Early return if no business is selected or no businesses exist
+  // Si no hay emprendimientos o no hay uno seleccionado, se muestra un vacío con CTA
   if (!currentBusiness || businesses.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -592,6 +596,7 @@ export default function Dashboard() {
   }
   return (
     <div className="space-y-6 pt-12 px-4 sm:px-6">
+      {/* Selector de emprendimiento y resumen de KPIs */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
           <div className="w-full max-w-2xl">
@@ -653,7 +658,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        
+        {/* Tarjetas de métricas: Productos, Ventas, Clientes */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div 
             onClick={() => navigate(`/entrepreneur/inventory?businessId=${selectedBusiness?.id || ''}`)}
@@ -700,6 +705,7 @@ export default function Dashboard() {
         </div>
       </div>
       
+      {/* Información del emprendimiento seleccionado */}
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -762,12 +768,12 @@ export default function Dashboard() {
         </div>
       </Card>
 
-      {/* Charts Section */}
+      {/* Sección de gráficos */}
       <div className="mt-8">
         <h3 className="text-lg font-medium mb-6">Estadísticas</h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Products Chart */}
+          {/* Gráfico de productos por categoría */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-medium flex items-center gap-2">
@@ -812,7 +818,7 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          {/* Sales Chart */}
+          {/* Gráfico de ventas mensuales */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-medium flex items-center gap-2">

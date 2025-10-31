@@ -35,6 +35,10 @@ interface BusinessSetupProps {
 
 // Categories will be loaded from the API
 
+// Editor/creador de emprendimientos:
+// - Permite crear o editar un emprendimiento (detecta modo por URL o props).
+// - Carga categorías desde API y, en modo edición, carga datos del emprendimiento.
+// - Envía los cambios a la API y muestra confirmación para salir tras actualizar.
 export default function BusinessSetup({ initialData, onCancel }: BusinessSetupProps) {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
@@ -59,7 +63,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
   const businessId = businessIdFromQuery || id || formData.id;
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Load categories from API
+  // Cargar categorías desde la API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -77,7 +81,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
     fetchCategories();
   }, []);
 
-  // Load business data if in edit mode
+  // Cargar datos del emprendimiento si estamos en modo edición
   useEffect(() => {
     if (isEditMode) {
       const businessId = businessIdFromQuery || id;
@@ -124,7 +128,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
     }));
   };
 
-  // Handle form submission
+  // Manejar envío del formulario (crear/actualizar)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -231,6 +235,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       </div>
 
       <Card className="p-6">
+        {/* Formulario principal del emprendimiento */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             <div>
@@ -315,6 +320,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
         </form>
       </Card>
 
+      {/* Editor de redes/contactos: se habilita cuando existe businessId */}
       <div className="mt-8">
         <Card className="p-6">
           {businessId ? (

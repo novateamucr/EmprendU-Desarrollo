@@ -43,6 +43,10 @@ type Business = Omit<Entrepreneurship, 'id' | 'category'> & {
   };
 };
 
+// Componente principal de "Mis emprendimientos":
+// - Lista los emprendimientos del usuario autenticado.
+// - Permite navegar a crear, editar, ver inventario y eliminar emprendimientos.
+// - Integra datos relacionados (categoría, productos, favoritos, propietario).
 export default function BusinessList() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +59,8 @@ export default function BusinessList() {
   const [showExtraModal, setShowExtraModal] = useState(false);
   const [showCrearEmp, setShowCrearEmp] = useState(false);
 
+  // Carga todos los emprendimientos del usuario actual desde la API.
+  // Mapea las relaciones necesarias para mostrarlas en la UI.
   const loadBusinesses = async () => {
     try {
       setIsLoading(true);
@@ -92,6 +98,7 @@ export default function BusinessList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Solicita confirmación para eliminar un emprendimiento.
   const requestDelete = (id: string) => {
     setPendingDeleteId(id);
     setDeleteModalOpen(true);
@@ -371,12 +378,12 @@ export default function BusinessList() {
           ))}
         </div>
       )}
+      {/* Modal de confirmación para eliminar un emprendimiento */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => { if (!isDeleting) { setDeleteModalOpen(false); setPendingDeleteId(null); } }}
         title="Eliminar emprendimiento"
-        variant="danger"
-      >
+        variant="danger">
         <div className="space-y-4">
           <p className="text-gray-700">
             Eliminar tu emprendimiento no se puede deshacer y esto eliminará todos los productos, ventas y registros asociados.

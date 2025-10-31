@@ -48,6 +48,15 @@ export interface Entrepreneurship {
   banned?: boolean;
 }
 
+// Minimal payload for creation
+export interface CreateEntrepreneurshipPayload {
+  name: string;
+  description: string;
+  category: number;
+  image_url?: string | null;
+  user_id: number;
+}
+
 export interface PaginationLink {
   url: string | null;
   label: string;
@@ -116,7 +125,6 @@ export const categoryApi = {
   },
 };
 
-
 // Entrepreneurship API
 export const entrepreneurshipApi = {
   // Get all entrepreneurships with pagination
@@ -155,17 +163,16 @@ export const entrepreneurshipApi = {
   },
 
   // Create a new entrepreneurship
-  create: async (businessData: Omit<Entrepreneurship, 'id' | 'createdAt' | 'updatedAt'>): Promise<Entrepreneurship> => {
+  create: async (businessData: CreateEntrepreneurshipPayload): Promise<Entrepreneurship> => {
     try {
       const formData = new FormData();
       
-      // Append all business data to formData
-      Object.entries(businessData).forEach(([key, value]) => {
+      // Append only allowed primitive fields to formData
+      const allowed: (keyof CreateEntrepreneurshipPayload)[] = ['name', 'description', 'category', 'image_url', 'user_id'];
+      allowed.forEach((key) => {
+        const value = businessData[key];
         if (value !== undefined && value !== null) {
-          // Convert non-string values to strings for FormData
-          const formValue = typeof value === 'boolean' ? String(value) : 
-                          (value as string | Blob);
-          formData.append(key, formValue);
+          formData.append(key, String(value));
         }
       });
       

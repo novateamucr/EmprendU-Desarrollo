@@ -202,20 +202,26 @@ export default function ProductDetail() {
     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/product/${product.id}`
     : currentUrl;
 
+  // Derive backend base URL from VITE_API_BASE_URL (strip trailing /api)
+  const apiBase = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
+  const backendBase = typeof apiBase === 'string' ? apiBase.replace(/\/?api\/?$/, '') : '';
+
+  const universalShare = product?.id ? `${backendBase}/share/product/${product.id}` : frontendProductUrl;
+
   const shareToFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(frontendProductUrl)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(universalShare)}`;
     window.open(url, '_blank', 'noopener');
   };
 
   const shareToWhatsApp = () => {
-    const text = `Mira este producto: ${product?.name} - ${frontendProductUrl}`;
+    const text = `Mira este producto: ${product?.name} - ${universalShare}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
   };
 
   const shareToTwitter = () => {
     const text = `Mira este producto: ${product?.name}`;
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(frontendProductUrl)}&text=${encodeURIComponent(text)}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(universalShare)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
   };
 
