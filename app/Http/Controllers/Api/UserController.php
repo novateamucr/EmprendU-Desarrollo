@@ -32,6 +32,14 @@ class UserController extends Controller
     }
 
 
+    public function destroy(User $user)
+    {
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully']);
+    }
+
+
+
     // store (registro)
     public function store(Request $request, R2FileUploadService $fileUploadService)
     {
@@ -161,4 +169,153 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
+
+  
+    /**
+     * Update the specified user in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, User $user, R2FileUploadService $fileUploadService)
+    {
+        
+
+        return $this->updateUserProfile($request, $user, $fileUploadService);
+    }
+
+    /**
+     * Update the authenticated user's profile.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    public function updateProfile(Request $request, R2FileUploadService $fileUploadService)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        return $this->updateUserProfile($request, $user, $fileUploadService);
+    }
+
+    /**
+     * Common method to update user profile data.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    protected function updateUserProfile(Request $request, User $user, R2FileUploadService $fileUploadService)
+    {
+        // Get all input data, handling both form data and JSON
+        $input = $request->all();
+        
+        // Validation rules
+        $rules = [
+            'name' => 'sometimes|string|max:255',
+            'email' => [
+                'sometimes',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id)
+            ],
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'province' => 'nullable|string|max:100',
+            'canton' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'avatar_url' => 'nullable|string',
+        ];
+        
+        // If _method is present, it's a form submission
+        if ($request->has('_method')) {
+            $data = $input;
+            unset($data['_method']);
+            unset($data['id']);
+            
+            // Handle empty strings as null for optional fields
+            $data = array_map(function($value) {
+                return $value === '' ? null : $value;
+            }, $data);
+            
+            $validator = Validator::make($data, $rules);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            $data = $validator->validated();
+        } else {
+            // For JSON requests
+            $data = $request->validate($rules);
+        }
+        
+        Log::info('Update User Request:', [
+            'user_id' => $user->id,
+            'input_data' => $input,
+            'processed_data' => $data,
+            'files' => $request->hasFile('avatar') ? 'File present' : 'No file'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Handle avatar upload if a new file is provided
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarUrl = $fileUploadService->upload($avatar, 'users/avatars');
+                if (!$avatarUrl) {
+                    throw new \Exception('Error al subir la imagen de perfil');
+                }
+                $data['avatar_url'] = $avatarUrl;
+            } elseif (isset($data['avatar_url']) && $data['avatar_url'] === '') {
+                // Handle avatar removal if avatar_url is an empty string
+                $data['avatar_url'] = null;
+            } else {
+                // Don't update avatar_url if not provided
+                unset($data['avatar_url']);
+            }
+
+            // Hash password if provided
+            if (!empty($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            } else {
+                unset($data['password']);
+            }
+
+            // Update user
+            $user->update($data);
+            
+            // Reload the user with relationships
+            $user->load(['roleRelation', 'interests', 'entrepreneurships']);
+
+            DB::commit();
+            
+            return response()->json([
+                'message' => 'Perfil actualizado exitosamente',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating user: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'message' => 'Error al actualizar el perfil',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
+}
 }
