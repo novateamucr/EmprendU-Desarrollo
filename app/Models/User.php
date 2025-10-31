@@ -39,7 +39,7 @@ protected $casts = [
     // Add this to your User model
     public function getIsConfirmedAttribute()
     {
-        return (bool) $this->attributes['is_confirmed'];
+        return (bool) $this->attributes['isConfirmed'];
     }
     public function interests()
     {
