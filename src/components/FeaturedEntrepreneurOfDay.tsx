@@ -135,10 +135,10 @@ export default function FeaturedEntrepreneurOfDay({  loading }: FeaturedEntrepre
 
             <div className="flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-primary line-clamp-2">
+                <h3 className="text-base font-semibold text-primary line-clamp-2">
                   {businessOfDay.business.name}
                 </h3>
-                <p className="text-secondary text-sm mb-3 line-clamp-3">
+                <p className="text-secondary font-medium text-sm mb-3 line-clamp-3">
                   {businessOfDay.business.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
                 </p>
               </div>

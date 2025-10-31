@@ -14,7 +14,7 @@ export default function FAQ() {
     {
       question: "¿Puedo comprar desde la aplicación web?",
       answer:
-        "Desde la plataforma de EmprendU puedes realizar pedidos a los emprendimientos, ponerte en contacto con ellos, y más.",
+        "Desde la plataforma de EmpowerUp puedes realizar pedidos a los emprendimientos, ponerte en contacto con ellos, y más.",
     },
     {
       question: "¿Puedo contactar a un emprendimiento?",
@@ -31,7 +31,7 @@ export default function FAQ() {
       answer: "No es una funcionalidad disponible actualmente.",
     },
     {
-      question: "¿Tiene algún costo usar EmprendU?",
+      question: "¿Tiene algún costo usar EmpowerUp?",
       answer:
         "No, el registro y la exploración de emprendimientos son completamente gratuitos.",
     },
@@ -54,8 +54,8 @@ export default function FAQ() {
   return (
     <div className="flex flex-col h-[96vh] mt-6">
       <main className="flex-1">
-        <div className="flex items-center justify-center mt-16 md:mt-0 h-full">
-          <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center px-20 pt-10 mt-4">
+        <div className="flex items-center justify-center md:mt-16 mt-0 h-full">
+          <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center px-2 sm:px-8 md:px-20  pt-10 mt-4">
             <div className="flex flex-col gap-3 p-6" style={{ minWidth: 260 }}>
               <h1 className="text-5xl md:text-6xl font-bold text-blue-400 leading-tight">
                 Preguntas

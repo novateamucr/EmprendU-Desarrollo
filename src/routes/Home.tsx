@@ -586,7 +586,7 @@ export default function Home() {
                     <select
                       value={selectedProvince || 'Todos'}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (
@@ -605,7 +605,7 @@ export default function Home() {
                     <select
                       value={selectedZone}
                       onChange={(e) => setSelectedZone(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"        
                     >
                       <option value="Todas">Todos los cantones</option>
                       {zones.map((z) => (
@@ -784,7 +784,7 @@ export default function Home() {
                 <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
               </div>
             </div>
-            <p className="text-sm text-center mt-4">© 2025 EmprendU. Todos los derechos reservados.</p>
+            <p className="text-sm text-center mt-4">© 2025 EmpowerUp. Todos los derechos reservados.</p>
           </div>
         </footer>
       </div>
