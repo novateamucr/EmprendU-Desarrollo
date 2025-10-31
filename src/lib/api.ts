@@ -16,9 +16,20 @@ export const api = axios.create({
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
-    // Create a new headers object to avoid mutating the original
-    const headers = { ...config.headers };
+  (config) => {
+    let token = localStorage.getItem('token');
+    if (!token && typeof document !== 'undefined') {
+      // Fallback: try to read token from cookies (e.g., set by login)
+      const match = document.cookie.split('; ').find((c) => c.startsWith('token='));
+      if (match) {
+        token = decodeURIComponent(match.split('=')[1]);
+      }
+    }
+    
+    // Add CORS headers to all requests
+    config.headers = config.headers || {};
+    config.headers['Access-Control-Allow-Origin'] = window.location.origin;
+    config.headers['Access-Control-Allow-Credentials'] = 'true';
     
     const token = localStorage.getItem('token');
     if (token) {
