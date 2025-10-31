@@ -201,7 +201,7 @@ export default function MyOrders() {
           />
         </div>
 
-  <div className="mt-6">
+  <div className="mt-6 md:bg-white md:rounded-lg md:border md:border-border md:shadow-sm md:overflow-hidden">
           <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-secondary text-center">
             <div className="col-span-2">Emprendimiento</div>
             <div className="col-span-2">Código</div>
@@ -213,7 +213,38 @@ export default function MyOrders() {
           {filtered.length === 0 && (
             <div className="p-6 text-center text-secondary text-sm">No hay pedidos para mostrar</div>
           )}
-          <div className="space-y-4">
+
+          {/* Desktop / tablet: show table rows */}
+          <ul className="hidden md:block">
+            {paged.map((o) => (
+              <li
+                key={o.id}
+                className="px-4 py-4 hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/orders/${o.id}`)}
+                title="Ver detalle de pedido"
+              >
+                <div className="grid grid-cols-12 gap-4 items-center text-center">
+                  <div className="col-span-2">
+                    <div className="font-medium text-primary">{o.entrepreneurshipName}</div>
+                  </div>
+                  <div className="col-span-2 text-sm">{o.id}</div>
+                  <div className="col-span-2 text-sm text-secondary">
+                    {new Date(o.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="col-span-2 text-sm">{o.items}</div>
+                  <div className="col-span-2 text-sm font-semibold text-primary">
+                    ₡{o.total.toLocaleString()}
+                  </div>
+                  <div className="col-span-2 flex items-center justify-center gap-2">
+                    <StatusBadge status={o.status} />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Mobile: show cards (one per order) */}
+          <div className="space-y-4 block md:hidden">
             {paged.map((o) => (
               <div
                 key={o.id}

@@ -110,8 +110,8 @@ export function ProductCard(props: ProductCardProps) {
             {props.categoryName}
           </span>
         )}
-        <h3 className="font-medium text-gray-900 text-sm mb-1">{props.title}</h3>
-        <p className="text-gray-600 text-xs mb-3 line-clamp-2 overflow-hidden text-ellipsis">
+        <h3 className="font-semibold text-gray-900 text-sm mb-1">{props.title}</h3>
+        <p className="text-gray-600 font-medium text-xs mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
