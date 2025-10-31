@@ -651,7 +651,7 @@ export default function Home() {
                           </div>
                           <div className="p-4 flex-1 flex flex-col">
                             <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{business.name}</h3>
+                              <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{business.name}</h3>
                               <button
                                 className="text-secondary hover:text-brand transition-colors"
                                 onClick={(e) => {
@@ -679,7 +679,7 @@ export default function Home() {
                                 )}
                               </button>
                             </div>
-                            <p className="text-gray-600 text-xs mb-3 line-clamp-2">{business.description}</p>
+                            <p className="text-gray-600 font-medium text-xs mb-3 line-clamp-2">{business.description}</p>
                             <div className="flex items-center justify-between mt-auto">
                               <div className="flex items-center gap-1 text-secondary">
                                 <BusinessStars entrepreneurshipId={Number(business.id)} />
