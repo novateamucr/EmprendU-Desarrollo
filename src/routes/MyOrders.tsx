@@ -201,7 +201,7 @@ export default function MyOrders() {
           />
         </div>
 
-        <div className="mt-6 bg-white rounded-lg border border-border shadow-sm overflow-hidden">
+  <div className="mt-6">
           <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-secondary text-center">
             <div className="col-span-2">Emprendimiento</div>
             <div className="col-span-2">Código</div>
@@ -213,36 +213,81 @@ export default function MyOrders() {
           {filtered.length === 0 && (
             <div className="p-6 text-center text-secondary text-sm">No hay pedidos para mostrar</div>
           )}
-          <ul className="divide-y">
+          <div className="space-y-4">
             {paged.map((o) => (
-              <li
+              <div
                 key={o.id}
-                className="px-4 py-4 hover:bg-gray-50 cursor-pointer"
                 onClick={() => navigate(`/orders/${o.id}`)}
                 title="Ver detalle de pedido"
+                className="mb-4 bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
               >
-                <div className="grid grid-cols-12 gap-4 items-center text-center">
-                  <div className="col-span-12 md:col-span-2">
-                    <div className="font-medium text-primary">{o.entrepreneurshipName}</div>
-                    <div className="md:hidden text-xs text-secondary mt-0.5">{o.id}</div>
+                <div className="p-4 border-b border-gray-200 bg-gray-50">
+                  <div className="flex justify-between items-center">
+                    <div className="text-lg font-semibold text-gray-900">{o.entrepreneurshipName}</div>
+                    <div>
+                      <StatusBadge status={o.status} />
+                    </div>
                   </div>
-                  <div className="hidden md:block col-span-2 text-sm">{o.id}</div>
-                  <div className="col-span-6 md:col-span-2 text-sm text-secondary">
-                    {new Date(o.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="col-span-3 md:col-span-2 text-sm">{o.items}</div>
-                  <div className="col-span-3 md:col-span-2 text-sm font-semibold text-primary">
-                    ₡{o.total.toLocaleString()}
-                  </div>
-                  <div className="col-span-12 md:col-span-2 flex items-center justify-center gap-2 mt-2 md:mt-0">
-                    <StatusBadge status={o.status} />
-                  </div>
+                  <div className="md:hidden text-xs text-secondary mt-1">Código: {o.id}</div>
                 </div>
-              </li>
+
+                <div className="p-4">
+                  {o.itemsSnapshot && o.itemsSnapshot.length > 0 ? (
+                    <div className="space-y-3">
+                      {o.itemsSnapshot.map((it) => (
+                        <div key={it.productId} className="p-3 bg-white rounded-md border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                          <div className="flex items-start md:items-center gap-3 min-w-0">
+                            <img
+                              src={it.imageUrl || 'https://placehold.co/100x100?text=Producto'}
+                              alt={it.name}
+                              className="w-16 h-16 object-cover rounded flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <h4 className="font-medium text-sm line-clamp-2">{it.name}</h4>
+                              <p className="text-sm text-gray-600">₡{it.price.toLocaleString()}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto mt-2 md:mt-0">
+                            <div className="text-sm text-secondary">Cantidad</div>
+                            <div className="text-sm font-medium">{it.quantity}</div>
+                            <div className="text-right font-medium text-sm">₡{(it.price * it.quantity).toLocaleString()}</div>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="p-3 border-t pt-4">
+                        <div className="flex items-center justify-between text-sm text-gray-600">
+                          <div>{o.items} {o.items === 1 ? 'producto' : 'productos'}</div>
+                          <div className="font-semibold text-primary">₡{o.total.toLocaleString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-12 gap-4 items-start">
+                      <div className="col-span-6">
+                        <div className="text-sm text-secondary">Fecha</div>
+                        <div className="text-sm">{new Date(o.createdAt).toLocaleDateString()}</div>
+                      </div>
+                      <div className="col-span-3">
+                        <div className="text-sm text-secondary">Artículos</div>
+                        <div className="text-sm">{o.items}</div>
+                      </div>
+                      <div className="col-span-3 text-right">
+                        <div className="text-sm text-secondary">Total</div>
+                        <div className="text-sm font-semibold text-primary">₡{o.total.toLocaleString()}</div>
+                      </div>
+                      <div className="hidden md:block col-span-12">
+                        <div className="text-xs text-secondary mt-2">Código: {o.id}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
           {filtered.length > 0 && (
-            <div className="flex flex-col md:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white rounded-b-lg border-border">
               <div className="flex items-center gap-2 text-sm text-secondary">
                 <span>Filas por página:</span>
                 <select

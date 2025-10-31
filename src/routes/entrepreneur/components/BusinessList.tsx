@@ -171,7 +171,7 @@ export default function BusinessList() {
 
   return (
     <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-full mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-0">
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
           <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
