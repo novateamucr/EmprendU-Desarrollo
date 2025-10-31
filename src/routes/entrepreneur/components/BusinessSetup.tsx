@@ -218,7 +218,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="px-2 sm:px-4 lg:px-6 py-6 w-full max-w-full mx-auto">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-2">
@@ -308,16 +308,17 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
               </div>
             )}
 
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onCancel || (() => navigate(-1))}
                 disabled={isLoading}
+                className="w-full sm:w-auto px-4 py-2"
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="w-full sm:w-auto px-4 py-2">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -335,19 +336,30 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
         </form>
       </Card>
 
-      {/* Editor de redes/contactos: se habilita cuando existe businessId */}
-      <div className="mt-8">
-        <Card className="p-6">
+      <div className="mt-6">
+  <Card className="p-4 sm:p-6 w-full">
           {businessId ? (
             <ChannelsEditor entrepreneurshipId={Number(businessId)} />
           ) : (
-            <div className="space-y-2">
-              <div>
+            <div className="flex flex-col gap-3">
+              {/* Order explicit for mobile: 1) title+desc, 2) admin box, 3) add button */}
+              <div className="order-1">
                 <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
                 <p className="text-sm text-muted-foreground">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
               </div>
-              <div className="p-4 rounded border bg-gray-50 text-sm text-gray-600">
+
+              <div className="order-2 p-4 rounded border bg-gray-50 text-sm text-gray-600">
                 Una vez crees el emprendimiento, podrás añadir WhatsApp, Teléfono, Maps, Sitio web, Email y más.
+              </div>
+
+              <div className="order-3">
+                <Button
+                  type="button"
+                  onClick={() => toast('Guarda primero el emprendimiento para habilitar esta acción', { icon: 'ℹ️' })}
+                  className="w-full sm:w-auto px-4 py-2"
+                >
+                  Agregar
+                </Button>
               </div>
             </div>
           )}

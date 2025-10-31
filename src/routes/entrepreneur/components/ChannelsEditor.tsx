@@ -624,12 +624,13 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
+      {/* Stack header on mobile: title (top), description, then button below; keep row on sm+ */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="w-full sm:w-auto">
           <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
           <p className="text-sm text-muted-foreground">Administra tus canales, elige un destacado y controla qué es público u oculto.</p>
         </div>
-        <Button type="button" onClick={addDraft}>Agregar red</Button>
+        <Button type="button" onClick={addDraft} className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2">Agregar red</Button>
       </div>
 
       {list.isLoading && (
