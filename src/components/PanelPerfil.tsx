@@ -7,9 +7,10 @@ interface PanelPerfilProps {
   onContactInfoClick: () => void;
   onLocationInfoClick: () => void;
   hideEdit?: boolean;
+  onDeleteAccount?: () => void;
 }
 
-export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hideEdit = false }: PanelPerfilProps) {
+export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hideEdit = false, onDeleteAccount }: PanelPerfilProps) {
   const navigate = useNavigate();
   // Helper to derive initial for placeholder avatar
   const initial = (user.name || (user as any)?.email || 'U').trim().charAt(0).toUpperCase();
@@ -127,6 +128,17 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
           )}
         </div>
       </div>
+      {/* Optional delete account action placed at the bottom of the panel so it's always visible */}
+      {onDeleteAccount && (
+        <div className="mt-6">
+          <button
+            onClick={onDeleteAccount}
+            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Eliminar mi cuenta
+          </button>
+        </div>
+      )}
     </div>
   );
 }
