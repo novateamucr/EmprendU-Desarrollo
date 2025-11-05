@@ -30,7 +30,7 @@ interface ProfileData extends Omit<UserProfile, 'interests'> {
 
 export function Perfil() {
   const navigate = useNavigate();
-  const { user: authUser, token } = useAuth(); // Get user and token from context
+  const { user: authUser, token, logout } = useAuth(); // Get user, token and optional logout from context
   const queryClient = useQueryClient();
 
   const [user, setUser] = useState<ProfileData | null>(null);
@@ -39,6 +39,9 @@ export function Perfil() {
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  // Modal + loading for account deletion
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
   // Eliminación directa desde el botón del corazón (sin modal)
   const [favPendingById, setFavPendingById] = useState<Record<number, boolean>>({});
   // Confirmación para eliminar favorito desde el perfil
@@ -394,6 +397,31 @@ export function Perfil() {
     }
   };
 
+  // Función para eliminar la cuenta del usuario
+  const deleteAccount = async () => {
+    if (!authUser) return;
+    setDeletePending(true);
+    setError(null);
+    try {
+      await api.delete(`/users/${authUser.id}`);
+      // Limpiar sesión local / context
+      if (typeof logout === 'function') {
+        try { logout(); } catch (_) { /* ignore */ }
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      queryClient.clear();
+      navigate('/login');
+    } catch (err: any) {
+      console.error('Error eliminando cuenta:', err);
+      setError(new Error(err?.response?.data?.message || 'No se pudo eliminar la cuenta'));
+    } finally {
+      setDeletePending(false);
+      setShowDeleteModal(false);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -479,6 +507,7 @@ export function Perfil() {
               onContactInfoClick={() => setShowContactModal(true)}
               onLocationInfoClick={() => setShowLocationModal(true)}
               hideEdit
+              onDeleteAccount={() => setShowDeleteModal(true)}
             />
           </div>
         </div>
@@ -553,6 +582,7 @@ export function Perfil() {
             user={user}
             onContactInfoClick={() => setShowContactModal(true)}
             onLocationInfoClick={() => setShowLocationModal(true)}
+            onDeleteAccount={() => setShowDeleteModal(true)}
           />
         </div>
 
@@ -760,6 +790,35 @@ export function Perfil() {
               No se encontraron categorías disponibles.
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Modal confirmar eliminar cuenta */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Eliminar cuenta"
+        variant="danger"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary">
+            Esta acción eliminará tu cuenta de forma permanente y no se podrá deshacer. ¿Deseas continuar?
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={deleteAccount}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              disabled={deletePending}
+            >
+              {deletePending ? 'Eliminando...' : 'Eliminar cuenta'}
+            </button>
+          </div>
         </div>
       </Modal>
 

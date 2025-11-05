@@ -20,7 +20,7 @@ import {
 } from "../domain/profile/queries";
 import type { UserProfile } from "../domain/profile/types";
 import { useAuth } from "../context/AuthContext";
-import { categoryIconUrl } from "../utils/categoryIcons";
+import { categoryIconUrl, categoryColor } from "../utils/categoryIcons";
 import { Modal } from "../components/Modal";
 import FeaturedEntrepreneurOfDay from "../components/FeaturedEntrepreneurOfDay";
 import {
@@ -272,18 +272,6 @@ export default function Home() {
       number,
       { name: string; color: string }
     >();
-    const colors = [
-      "#4F46E5", // indigo-600
-      "#059669", // emerald-600
-      "#D97706", // amber-600
-      "#DC2626", // red-600
-      "#7C3AED", // violet-600
-      "#DB2777", // pink-600
-      "#2563EB", // blue-600
-      "#EA580C", // orange-600
-      "#16A34A", // green-600
-      "#9333EA", // purple-600
-    ];
 
     // Process each entrepreneurship to extract category information
     entrepreneurships.forEach((biz: any) => {
@@ -318,13 +306,8 @@ export default function Home() {
         categoryName = category.nombre || categoryName;
       }
 
-      // Generate a unique key for this category
-      const categoryKey =
-        categoryId !== null ? `id_${categoryId}` : `name_${categoryName}`;
-
-      // Assign a color based on the category
-      const colorIndex = Math.abs(hashCode(categoryKey)) % colors.length;
-      const color = colors[colorIndex];
+      // Assign a color using centralized categoryColor util (keeps colors consistent with ProductCard)
+      const color = categoryColor(categoryName || "General");
 
       // Map this business to its category info
       businessCategoryMap.set(biz.id, {
@@ -1076,7 +1059,7 @@ export default function Home() {
                               </div>
                               <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
+                                  <h3 className=" text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
                                     {business.name}
                                   </h3>
                                   <button
@@ -1123,7 +1106,7 @@ export default function Home() {
                                     )}
                                   </button>
                                 </div>
-                                <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2">
+                                <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2 font-medium">
                                   {business.description}
                                 </p>
                                 <div className="flex items-center justify-between mt-auto">

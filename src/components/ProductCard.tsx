@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProductOptions, getCustomForms } from '../services/productConfigService';
 import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
+import { categoryColor } from '../utils/categoryIcons';
 
 export interface ProductCardProps {
   title: string;
@@ -92,6 +93,8 @@ export function ProductCard(props: ProductCardProps) {
     setShowQuantity(false);
   };
 
+  const categoryColorHex = props.categoryName ? categoryColor(props.categoryName) : undefined;
+
   return (
     <div 
       className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full relative"
@@ -106,12 +109,19 @@ export function ProductCard(props: ProductCardProps) {
       </div>
       <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
         {props.categoryName && (
-          <span className="inline-block w-fit self-end mb-1 text-[11px] 3xl:text-xs 4xl:text-xl px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full bg-[#E6F4FA] text-[#0A5B7A]">
+          <span
+            className="inline-block w-fit self-end mb-1 text-[11px] 3xl:text-xs 4xl:text-xl px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full"
+            style={{
+              backgroundColor: categoryColorHex ? `${categoryColorHex}1a` : '#E6F4FA',
+              color: categoryColorHex || '#0A5B7A',
+              border: categoryColorHex ? `1px solid ${categoryColorHex}33` : undefined,
+            }}
+          >
             {props.categoryName}
           </span>
         )}
-        <h3 className="font-medium text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1 font-bold">{props.title}</h3>
-        <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
+        <h3 className="font-semibold text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1 ">{props.title}</h3>
+        <p className="font-medium text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
