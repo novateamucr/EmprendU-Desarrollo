@@ -23,11 +23,15 @@ use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
 use App\Http\Controllers\Api\SocialPlatformController;
+use App\Http\Controllers\Api\PublicShareController;
 
 use App\Mail\ContactUsMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
+
+// Public share metadata endpoint (no auth)
+Route::get('public/share/product/{id}', [PublicShareController::class, 'productMeta']);
 
 
 // Protected routes (authentication required)
