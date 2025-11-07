@@ -1,275 +1,483 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import BusinessFeedbackPopup from '../components/ui/BusinessFeedback';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Dialog } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { Modal } from '../components/Modal';
+import { getOrder, cancelOrder } from '../services/orderService';
+import { getProductsByIds } from '../services/productService';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import toast from 'react-hot-toast';
 
-// Keep types in sync with MyOrders.tsx
-export type OrderStatus = 'pedido_solicitado' | 'pedido_aceptado' | 'pedido_completado' | 'pedido_calificado';
+// Types
+type OrderStatus = 'requested' | 'accepted' | 'completed' | 'canceled' | 'rated';
 
-export type Order = {
-  id: string;
-  createdAt: string;
-  entrepreneurshipName: string;
-  entrepreneurshipId: number;
-  items: number;
-  total: number;
-  status: OrderStatus;
-  itemsSnapshot?: Array<{
-    productId: string;
+type OrderItem = {
+  id: number;
+  order_id: number;
+  product_id: number;
+  product_name: string | null;
+  product_details?: {
+    id: number;
     name: string;
+    description: string;
     price: number;
-    quantity: number;
-    imageUrl?: string;
-  }>;
-};
-
-const STATUS_LABEL: Record<OrderStatus, string> = {
-  pedido_solicitado: 'Pedido solicitado',
-  pedido_aceptado: 'Pedido aceptado',
-  pedido_completado: 'Pedido completado',
-  pedido_calificado: 'Pedido calificado',
-};
-
-function StatusBadge({ status }: { status: OrderStatus }) {
-  const styles: Record<OrderStatus, string> = {
-    pedido_solicitado: 'bg-gray-100 text-gray-700 border-gray-200',
-    pedido_aceptado: 'bg-blue-100 text-blue-700 border-blue-200',
-    pedido_completado: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    pedido_calificado: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    image_url: string;
+    entrepreneurship?: {
+      id: number;
+      name: string;
+    };
   };
+  quantity: number;
+  unit_price: number;
+  options_total: number;
+  subtotal: number;
+  order_options: any[];
+};
+
+type Order = {
+  id: number;
+  entrepreneurship_id: number;
+  entrepreneurship_name: string;
+  entrepreneurship: {
+    id: number;
+    name: string;
+  };
+  customer_name: string;
+  customer_phone_8: string;
+  customer_email: string;
+  status: OrderStatus;
+  items_total: number;
+  options_total: number;
+  shipping_total: number;
+  discount_total: number;
+  grand_total: number;
+  currency: string;
+  notes: string | null;
+  items: OrderItem[];
+  created_at: string;
+  updated_at: string;
+};
+
+const StatusBadge = ({ status }: { status: OrderStatus }) => {
+  const statusMap = {
+    requested: { label: 'Solicitado', color: 'bg-yellow-100 text-yellow-800' },
+    accepted: { label: 'Aceptado', color: 'bg-blue-100 text-blue-800' },
+    completed: { label: 'Completado', color: 'bg-green-100 text-green-800' },
+    canceled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' },
+    rated: { label: 'Calificado', color: 'bg-purple-100 text-purple-800' },
+  };
+
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${styles[status]}`}>
-      {STATUS_LABEL[status]}
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        statusMap[status]?.color || 'bg-gray-100 text-gray-800'
+      }`}
+    >
+      {statusMap[status]?.label || status}
     </span>
   );
-}
+};
 
-const STORAGE_KEY = 'mock_orders_history';
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return 'Fecha no disponible';
+  
+  try {
+    // Handle ISO 8601 format with timezone
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date');
+    }
+    
+    return format(date, "d 'de' MMMM 'de' yyyy 'a las' hh:mm a", { locale: es });
+  } catch (error) {
+    console.error('Error formatting date:', dateString, error);
+    return 'Fecha inválida';
+  }
+};
 
 export default function MyOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [showPopup, setShowPopup] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const { token, user } = useAuth();
-  const { cancelOrder } = useCart();
+  const { user } = useAuth();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
+
+  const fetchProductsForOrder = async (items: OrderItem[]) => {
+    if (!items || items.length === 0) return [];
+    
+    try {
+      setProductsLoading(true);
+      const productIds = items.map(item => item.product_id);
+      const products = await getProductsByIds(productIds);
+      return products;
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+      return [];
+    } finally {
+      setProductsLoading(false);
+    }
+  };
 
   useEffect(() => {
+  let isMounted = true;
+  
+  const fetchOrder = async () => {
+    if (!id) return;
+    
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      setOrders(raw ? JSON.parse(raw) : []);
-    } catch {
-      setOrders([]);
+      setLoading(true);
+      const response = await getOrder(id);
+      
+      if (!isMounted) return;
+      
+      const orderData = response.data.data;
+      setOrder(orderData);
+      
+      if (orderData.items?.length > 0) {
+        const products = await fetchProductsForOrder(orderData.items);
+        
+        if (!isMounted) return;
+        
+        const updatedItems = orderData.items.map((item: OrderItem) => ({
+          ...item,
+          product_details: products.find((p: Product) => p.id === item.product_id)
+        }));
+        
+        setOrder(prev => prev ? { ...prev, items: updatedItems } : null);
+      }
+    } catch (err) {
+      if (!isMounted) return;
+      console.error('Error fetching order:', err);
+      setError('No se pudo cargar la información del pedido');
+    } finally {
+      if (isMounted) {
+        setLoading(false);
+      }
     }
-  }, []);
+  };
 
-  const order = useMemo(() => orders.find((o) => o.id === id), [orders, id]);
+  fetchOrder();
+  
+  return () => {
+    isMounted = false;
+  };
+}, [id]);
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Show loading toast
+      const toastId = toast.loading('Cancelando pedido...');
+      
+      // Call the API to cancel the order
+      await cancelOrder(String(order.id));
+      
+      // Update the local state to reflect the cancellation
+      setOrder(prev => prev ? { 
+        ...prev, 
+        status: 'canceled',
+        updated_at: new Date().toISOString()
+      } : null);
+      
+      // Close the confirmation dialog
+      setCancelOpen(false);
+      
+      // Update toast to show success
+      toast.success('El pedido ha sido cancelado exitosamente.', {
+        id: toastId,
+        duration: 5000,
+      });
+      
+    } catch (error) {
+      console.error('Error canceling order:', error);
+      
+      // Show error toast
+      toast.error('No se pudo cancelar el pedido. Por favor, intente nuevamente.', {
+        duration: 5000,
+      });
+      
+      setError('No se pudo cancelar el pedido. Por favor, intente nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  if (!order) {
+  if (loading) {
     return (
-      <div className="pt-24 pb-8">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-white border border-border rounded-lg p-6 text-center">
-            <p className="text-secondary mb-4">No se encontró el pedido.</p>
-            <button
-              className="px-4 py-2 rounded-md border border-border text-sm hover:bg-gray-50"
-              onClick={() => navigate('/orders')}
-            >
-              Volver a mis pedidos
-            </button>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-lg text-gray-600">Cargando información del pedido...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  if (error || !order) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Error</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                {error || 'No se encontró el pedido solicitado'}
+              </p>
+              <button
+                onClick={() => navigate(-1)}
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Volver atrás
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const canCancelOrder = order.status === 'requested' && order.items?.length > 0;
+
   return (
     <div className="pt-24 pb-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedido {order.id}</h1>
-            <p className="text-secondary text-sm">{new Date(order.createdAt).toLocaleString()}</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary">
+              Pedido #{order.id}
+            </h1>
+            <p className="text-lg text-gray-600">
+              {formatDate(order.created_at)}
+            </p>
           </div>
           <Link
             to="/orders"
-            className="px-3 py-1.5 rounded-md border border-border text-sm hover:bg-gray-50"
+            className="px-3 py-1.5 rounded-md border border-gray-300 text-sm hover:bg-gray-50"
           >
-            Volver
+            Volver a mis pedidos
           </Link>
         </div>
 
-        <div className="bg-white border border-border rounded-lg p-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          {/* Order Status */}
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">Estado del pedido</h2>
+                <div className="mt-1">
+                  <StatusBadge status={order.status} />
+                </div>
+              </div>
+              {canCancelOrder && (
+                <button
+                  onClick={() => setCancelOpen(true)}
+                  className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Cancelar pedido
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <div>
-              <p className="text-sm text-secondary">Emprendimiento</p>
-              <p className="font-medium text-primary">{order.entrepreneurshipName}</p>
+              <h3 className="text-sm font-medium text-gray-500">Emprendimiento</h3>
+              <p className="mt-1 text-sm text-gray-900">{order.entrepreneurship_name}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-secondary">Estado</p>
-              <StatusBadge status={order.status} />
+            <div className="mt-4 sm:mt-0">
+              <h3 className="text-sm font-medium text-gray-500">Cliente</h3>
+              <p className="mt-1 text-sm text-gray-900">{order.customer_name}</p>
+              <p className="text-sm text-gray-600">{order.customer_email}</p>
+              <p className="text-sm text-gray-600">Tel: {order.customer_phone_8}</p>
             </div>
-          </div>
-
-          {order.status === 'pedido_solicitado' && (
-            <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2">
-              El emprendedor ya sabe de tu pedido, espera a que lo acepte o se contacte con usted.
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Artículos</p>
-              <p className="text-lg font-semibold text-primary">{order.items}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Total</p>
-              <p className="text-lg font-semibold text-primary">₡{order.total.toLocaleString()}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Fecha</p>
-              <p className="text-lg font-semibold text-primary">{new Date(order.createdAt).toLocaleDateString()}</p>
+            <div className="mt-4 sm:mt-0">
+              <h3 className="text-sm font-medium text-gray-500">Detalles del pago</h3>
+              <p className="mt-1 text-sm text-gray-900">Efectivo al recoger</p>
             </div>
           </div>
 
-          <div className="text-sm text-secondary">
-            <p>
-              Este es un detalle mock del pedido. Una vez el backend esté listo, aquí mostraremos los productos,
-              direcciones, contacto, y acciones según el estado.
-            </p>
-          </div>
-
-          {order.status === 'pedido_solicitado' && order.itemsSnapshot && order.itemsSnapshot.length > 0 && (
-            <div className="pt-2">
-              <h2 className="text-lg font-semibold text-primary mb-3">Productos del pedido</h2>
-              <div className="divide-y rounded-lg border border-border overflow-hidden bg-white">
-                {order.itemsSnapshot.map((it) => (
-                  <div key={it.productId} className="p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={it.imageUrl || 'https://placehold.co/64x64?text=Producto'}
-                        alt={it.name}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-primary">{it.name}</div>
-                        <div className="text-xs text-secondary">Cantidad: {it.quantity}</div>
+          {/* Order Items */}
+          <div className="border-t border-gray-200">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg font-medium text-gray-900">Productos</h3>
+            </div>
+            <div className="border-t border-gray-200 divide-y divide-gray-200">
+              {order.items && Array.isArray(order.items) && order.items.length > 0 ? (
+                order.items.map((item) => {
+                  console.log('Order item:', item); // Debug log
+                  const totalPrice = (item.unit_price * item.quantity) + (item.options_total || 0);
+                  
+                  return (
+                    <div key={item.id} className="px-4 py-4 sm:px-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start">
+                            <div className="h-16 w-16 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+                              {item.product_details?.image_url ? (
+                                <img
+                                  src={item.product_details.image_url}
+                                  alt={item.product_details.name}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.onerror = null;
+                                    target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiA5Q0EwQjkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1wYWNrYWdlIj48cGF0aCBkPSJNMTYuNSA5LjQgNy41IDRjLTEgLjU3Ni0xLjYxNiAxLjQyLTEuNjE2IDIuNnY2LjgxYzAgMS4xOCAuNjE2IDIuMDI0IDEuNjE2IDIuNmw5IDUuNGMxIC41NzYgMi42MTYuNTc2IDMuNjE2IDBsOS01LjRjMS0uNTc2IDEuNjE2LTEuNDIgMS42MTYtMi42di02LjgxYzAtMS4xOC0uNjE2LTIuMDI0LTEuNjE2LTIuNmwtOS01LjRhMS44MTUgMS44MTUgMCAwIDAtMS44MzggMGwtLjE2Mi4wOTciLz48cGF0aCBkPSJtMTYuNSA5LjQtOS01LjQiLz48cGF0aCBkPSJNMTYuNSA5LjR2Ni44MWMwIDEuMTgtLjYxNiAyLjAyNC0xLjYxNiAyLjZsLTkgNS40Ii8+PHBhdGggZD0ibTE2LjUgOS40LTkgNS40Ii8+PC9zdmc+'
+                                  }}
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                                  <svg
+                                    className="h-8 w-8 text-gray-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={1}
+                                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          <div className="ml-4">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-900">
+                                {item.product_details?.name || item.product_name || `Producto #${item.product_id}`}
+                              </h4>
+                              {item.product_details?.description && (
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                  {item.product_details.description}
+                                </p>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              Cantidad: {item.quantity} × ₡{item.unit_price?.toLocaleString()}
+                            </p>
+                            {item.product_details && (
+                              <Link
+                                to={`/product/${item.product_id}`}
+                                className="inline-flex items-center mt-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                Ver producto
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </Link>
+                            )}
+                            
+                            {/* Display options if they exist */}
+                            {item.order_options && item.order_options.length > 0 && (
+                              <div className="mt-1 text-xs text-gray-500">
+                                {item.order_options.map((option, idx) => (
+                                  <div key={idx}>
+                                    {option.option_name}: {option.option_value}
+                                    {option.price_delta > 0 && ` (+₡${option.price_delta.toLocaleString()})`}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {item.options_total > 0 && (
+                              <p className="text-xs text-gray-500">
+                                Opciones: ₡{item.options_total.toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            ₡{totalPrice.toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-primary">₡{(it.price * it.quantity).toLocaleString()}</div>
-                  </div>
-                ))}
-              </div>
+                  );
+                })
+              ) : (
+                <div className="px-4 py-4 sm:px-6 text-center text-gray-500">
+                  No hay productos en este pedido
+                </div>
+              )}
             </div>
-          )}
-
-          {order.status === 'pedido_completado' && (
-            <div className="pt-2">
-              <button
-                className="px-4 py-2 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors"
-                onClick={() => setShowPopup(true)}
-                disabled={submitting}
-              >
-                Calificar emprendimiento
-              </button>
-            </div>
-          )}
-
-          {order.status === 'pedido_solicitado' && String(order.id).startsWith('CART-') && (
-            <div className="pt-2">
-              <button
-                className="px-4 py-2 rounded-md border border-red-300 text-red-600 text-sm hover:bg-red-50"
-                onClick={() => setCancelOpen(true)}
-                disabled={submitting}
-              >
-                Cancelar pedido
-              </button>
-            </div>
-          )}
-
-          {showPopup && (
-            <BusinessFeedbackPopup
-              show={showPopup}
-              title="¡Califica tu experiencia!"
-              entrepreneurshipName={order.entrepreneurshipName}
-              imageUrl={''}
-              onSubmit={async (rating: number, comments: string) => {
-                if (!order) return;
-                setSubmitting(true);
-                try {
-                  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/reviews`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                    },
-                    body: JSON.stringify({
-                      rating,
-                      review: comments,
-                      user_id: user?.id,
-                      entrepreneurship_id: order.entrepreneurshipId,
-                    }),
-                  });
-                  if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || 'Error al enviar el review');
-                  }
-                  // Update local storage to reflect calificado state
-                  const updated = orders.map(o => o.id === order.id ? { ...o, status: 'pedido_calificado' as OrderStatus } : o);
-                  setOrders(updated);
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-                  setShowPopup(false);
-                } catch (e) {
-                  alert((e as Error).message);
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-              onCancel={() => setShowPopup(false)}
-            />
-          )}
-
-        </div>
-      </div>
-
-      <Modal
-        isOpen={cancelOpen}
-        onClose={() => setCancelOpen(false)}
-        title="Cancelar pedido"
-        variant="warning"
-      >
-        <div className="space-y-3 text-secondary text-sm">
-          <p>¿Seguro que deseas cancelar este pedido? Esta acción eliminará el pedido de forma permanente.</p>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={() => setCancelOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              No, volver
-            </button>
-            <button
-              onClick={async () => {
-                if (!order) return;
-                const groupId = String(order.id).replace('CART-', '');
-                await cancelOrder(groupId);
-                // Remove from local storage history as well
-                const updated = orders.filter(o => o.id !== order.id);
-                setOrders(updated);
-                localStorage.setItem('mock_orders_history', JSON.stringify(updated));
-                setCancelOpen(false);
-                navigate('/orders');
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Sí, cancelar
-            </button>
           </div>
+
+          {/* Order Totals */}
+          <div className="bg-gray-50 px-4 py-5 sm:px-6">
+            <div className="flex justify-between text-base font-medium text-gray-900">
+              <p>Subtotal</p>
+              <p>₡{order.items_total?.toLocaleString() || '0'}</p>
+            </div>
+            <div className="mt-2 flex justify-between text-sm text-gray-500">
+              <p>Envío</p>
+              <p>₡{order.shipping_total?.toLocaleString() || '0'}</p>
+            </div>
+            {order.discount_total > 0 && (
+              <div className="mt-2 flex justify-between text-sm text-green-600">
+                <p>Descuento</p>
+                <p>-₡{order.discount_total?.toLocaleString() || '0'}</p>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between text-lg font-medium text-gray-900">
+              <p>Total</p>
+              <p>₡{order.grand_total?.toLocaleString() || '0'}</p>
+            </div>
+          </div>
+
+          {/* Order Notes */}
+          {order.notes && (
+            <div className="px-4 py-4 sm:px-6 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-900">Notas del pedido</h3>
+              <p className="mt-1 text-sm text-gray-600">{order.notes}</p>
+            </div>
+          )}
         </div>
-      </Modal>
+
+        {/* Cancel Order Dialog */}
+        <Dialog open={cancelOpen} onClose={() => !isSubmitting && setCancelOpen(false)} className="relative z-50">
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6">
+              <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                ¿Estás seguro de que deseas cancelar este pedido?
+              </Dialog.Title>
+              <p className="text-sm text-gray-600 mb-6">
+                Esta acción no se puede deshacer. El pedido se marcará como cancelado.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setCancelOpen(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  No, mantener el pedido
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelOrder}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Cancelando...' : 'Sí, cancelar pedido'}
+                </button>
+              </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+      </div>
     </div>
   );
 }

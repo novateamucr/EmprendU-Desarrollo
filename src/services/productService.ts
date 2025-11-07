@@ -286,17 +286,34 @@ export const uploadProductImage = async (file: File): Promise<{ url: string }> =
   const formData = new FormData();
   formData.append('image', file);
 
-  const response = await axios.post(`${API_URL}/products/upload-image`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
-
-  if (response.status !== 200) {
-    throw new Error('Failed to upload image');
+  try {
+    const response = await axios.post<{ url: string }>(`${API_URL}/products/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading product image:', error);
+    throw error;
   }
+};
 
-  return response.data;
+// Get products by their IDs
+// POST /api/products/by-ids
+export const getProductsByIds = async (ids: number[]): Promise<Product[]> => {
+  try {
+    const response = await axios.post<{ success: boolean; data: Product[] }>(`${API_URL}/products/by-ids`, { ids });
+    
+    if (response.data.success) {
+      return response.data.data || [];
+    }
+    
+    throw new Error('Failed to fetch products by IDs');
+  } catch (error) {
+    console.error('Error fetching products by IDs:', error);
+    throw error;
+  }
 };

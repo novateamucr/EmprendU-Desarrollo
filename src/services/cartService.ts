@@ -19,6 +19,7 @@ export interface CreateOrderRequest {
   customer_name: string;
   customer_phone_8: string;
   customer_email: string;
+  user_id: number;  // Added user_id as required field
   status: 'draft' | 'requested' | 'confirmed' | 'processing' | 'completed' | 'cancelled';
   notes?: string;
   shipping_total?: number;
@@ -80,15 +81,39 @@ export interface OrderResponse {
 
 export const cartApi = {
   // Step 1: Create the order
-  async createDraftOrder(orderData: Omit<CreateOrderRequest, 'status'>): Promise<OrderResponse> {
+  async createDraftOrder(orderData: Omit<CreateOrderRequest, 'status' | 'user_id'>, userId: number): Promise<OrderResponse> {
     try {
-      console.log('Creating draft order with data:', orderData);
-      const response = await api.post('orders', {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No se encontró el token de autenticación');
+      }
+      
+      // Validate the provided userId
+      if (!userId) {
+        console.error('No se proporcionó un ID de usuario válido');
+        throw new Error('No se pudo obtener el ID de usuario. Por favor, inicie sesión nuevamente.');
+      }
+      
+      console.log('Creating draft order with data:', {
         ...orderData,
+        user_id: userId,
         status: 'draft',
         shipping_total: orderData.shipping_total || 0,
         discount_total: orderData.discount_total || 0,
       });
+      
+      const payload = {
+        ...orderData,
+        user_id: userId,
+        status: 'draft' as const,
+        shipping_total: orderData.shipping_total || 0,
+        discount_total: orderData.discount_total || 0,
+      };
+      
+      console.log('Sending order payload:', payload);
+      const response = await api.post('orders', payload);
       
       console.log('Draft order response:', response);
       
