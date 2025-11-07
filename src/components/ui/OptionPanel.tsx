@@ -13,13 +13,15 @@ export default function OptionPanel(props: OptionPanelProps) {
       className={`relative flex flex-col justify-center items-center px-16 py-20 gap-6 shadow-lg w-[600px] max-w-full rounded-tr-2xl rounded-br-2xl bg-gradient-to-b  from-[#76b0cd] to-[#417895] ${props.style || ""}`}
     >
       {props.imgSrc && (
-        <img
-          src={props.imgSrc}
-          alt="logo"
-          className={`absolute top-6 animate-float ${
-            props.imgPosition === "left" ? "left-6" : "right-6"
-          } w-12 h-12`}
-        />
+        <a href="/">
+          <img
+            src={props.imgSrc}
+            alt="logo"
+            className={`absolute top-6 animate-float ${
+              props.imgPosition === "left" ? "left-6" : "right-6"
+            } w-12 h-12`}
+          />
+        </a>
       )}
 
       <h1 className="text-4xl font-extrabold text-white mb-4 text-center">
