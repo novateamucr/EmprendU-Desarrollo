@@ -76,9 +76,7 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-primary">Información de contacto</h3>
           <button
-            onMouseEnter={onContactInfoClick}
-            onFocus={onContactInfoClick}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onContactInfoClick(); }}
+            onClick={onContactInfoClick}
             className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre contacto"
           >
@@ -103,9 +101,7 @@ export function PanelPerfil({ user, onContactInfoClick, onLocationInfoClick, hid
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-primary">Ubicación</h3>
           <button
-            onMouseEnter={onLocationInfoClick}
-            onFocus={onLocationInfoClick}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onLocationInfoClick(); }}
+            onClick={onLocationInfoClick}
             className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
             aria-label="Más información sobre ubicación"
           >
