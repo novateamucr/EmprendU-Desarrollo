@@ -296,31 +296,37 @@ class OpenAIService
             }
         }
 
-        $prompt = "Eres un experto en validación de emprendimientos para una plataforma de emprendedores.\n\n" .
-                 "TAREA: Analiza el siguiente emprendimiento y determina si es apropiado y cumple con las reglas.\n\n" .
+        // First, do basic validation
+        $description = trim(preg_replace('/\s+/', ' ', $data['description'] ?? ''));
+        if (strlen($description) < 50) {
+            return [
+                'message' => 'Error de validación',
+                'errors' => [
+                    'description' => ['La descripción debe tener al menos 50 caracteres']
+                ]
+            ];
+        }
+
+        // If basic validation passes, check for inappropriate content
+        $prompt = "Eres un validador de contenido para una plataforma de emprendedores. " .
+                 "Tu tarea es verificar que el contenido sea apropiado.\n\n" .
+                 "INSTRUCCIONES:\n" .
+                 "1. Analiza el NOMBRE y DESCRIPCIÓN proporcionados\n" .
+                 "2. Si el contenido es APROPIADO, responde EXACTAMENTE con: {\"accepted\": true}\n" .
+                 "3. Si el contenido es INAPROPIADO, responde con: {\"accepted\": false, \"reason\": \"Razón específica\"}\n\n" .
                  "REGLAS DE VALIDACIÓN:\n" .
-                 "1. NOMBRE:\n" .
-                 "   - Debe ser claro, descriptivo y profesional\n" .
-                 "   - Mínimo 5 caracteres, máximo 100\n" .
-                 "   - Sin lenguaje ofensivo o inapropiado\n\n" .
-                 "2. DESCRIPCIÓN:\n" .
-                 "   - Debe describir claramente el emprendimiento\n" .
-                 "   - Mínimo 50 caracteres\n" . 
-                 "   - Sin enlaces o información de contacto directa\n\n" .
-                 "3. CONTENIDO INAPROPIADO:\n" .
-                 "   - Rechaza cualquier contenido sexual, violento o ofensivo\n" .
-                 "   - Rechaza lenguaje inapropiado o grosero\n" .
-                 "   - Rechaza contenido ilegal o que promueva actividades peligrosas\n\n" .
-                 "DATOS DEL EMPRENDIMIENTO:\n" .
+                 "- Acepta el contenido a menos que sea inapropiado, ofensivo o ilegal\n" .
+                 "- No rechaces por formato o estilo a menos que sea ofensivo\n" .
+                 "- No rechaces nombres de negocios a menos que sean ofensivos\n\n" .
+                 "EJEMPLO DE RESPUESTA VÁLIDA (copia y pega solo uno):\n" .
+                 "{\"accepted\": true}\n\n" .
+                 "O si es inapropiado:\n" .
+                 "{\"accepted\": false, \"reason\": \"El contenido contiene lenguaje inapropiado\"}\n\n" .
+                 "CONTENIDO A VALIDAR:\n" .
                  "NOMBRE: " . ($data['name'] ?? 'No proporcionado') . "\n" .
                  "DESCRIPCIÓN: " . ($data['description'] ?? 'No proporcionada') . "\n" .
-                 $categoryInfo . "\n" .
-                 "Responde SOLO con un JSON en este formato exacto:\n" .
-                 '{"accepted": true, ' .
-                 '"reason": "El emprendimiento cumple con todas las reglas", ' .
-                 '"suggestions": ["Sugerencia de mejora opcional"], ' .
-                 '"inappropriate": false, ' .
-                 '"fields_with_issues": ["name", "description"]}';
+                 ($categoryInfo ? "CATEGORÍA: $categoryInfo\n" : "") . 
+                 "\nRESPONDE SOLO CON EL JSON, SIN TEXTO ADICIONAL.";
 
         return $this->makeValidationRequest($prompt);
     }
@@ -385,68 +391,93 @@ class OpenAIService
                 'response' => $responseContent
             ]);
 
-            // Try to find JSON in the response
-            $jsonStart = strpos($responseContent, '{');
-            $jsonEnd = strrpos($responseContent, '}');
+            // Clean the response to extract just the JSON
+            $cleanedResponse = trim($responseContent);
             
-            if ($jsonStart === false || $jsonEnd === false) {
-                throw new \Exception('No se encontró un JSON válido en la respuesta');
-            }
+            // Try to parse the response as JSON
+            $result = json_decode($cleanedResponse, true);
             
-            $jsonString = substr($responseContent, $jsonStart, $jsonEnd - $jsonStart + 1);
-            $result = json_decode($jsonString, true);
-            
+            // If parsing fails, try to extract JSON from the response
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Formato de respuesta inválido de OpenAI: ' . json_last_error_msg());
+                // Try to find JSON in the response
+                $jsonStart = strpos($cleanedResponse, '{');
+                $jsonEnd = strrpos($cleanedResponse, '}');
+                
+                if ($jsonStart !== false && $jsonEnd !== false) {
+                    $jsonString = substr($cleanedResponse, $jsonStart, $jsonEnd - $jsonStart + 1);
+                    $result = json_decode($jsonString, true);
+                }
+                
+                // If still not valid JSON, log the error and return a generic error
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    // Handle the response from OpenAI
+                    if (isset($result['accepted'])) {
+                        if ($result['accepted'] === true) {
+                            return [
+                                'accepted' => true,
+                                'message' => 'Validación exitosa'
+                            ];
+                        } else {
+                            return [
+                                'accepted' => false,
+                                'reason' => $result['reason'] ?? 'El contenido no cumple con los requisitos de la plataforma',
+                                'errors' => [
+                                    'general' => [$result['reason'] ?? 'Error en la validación']
+                                ]
+                            ];
+                        }
+                    }
+                    
+                    // If we get here, the response format is unexpected
+                    \Log::error('Unexpected response format from OpenAI', [
+                        'response' => $result
+                    ]);
+                    
+                    return [
+                        'accepted' => false,
+                        'reason' => 'Formato de respuesta inesperado del servicio de validación',
+                        'errors' => [
+                            'general' => ['Error en el servicio de validación']
+                        ]
+                    ];
+                }
             }
 
-            // Ensure required fields exist in the response
-            $defaultResponse = [
-                'accepted' => false,
-                'reason' => 'Error en la validación',
-                'suggestions' => [],
-                'inappropriate' => false,
-                'fields_with_issues' => []
-            ];
-
+            // Otherwise, use the old format
             $validatedResponse = array_merge($defaultResponse, $result);
             
-            // Ensure boolean fields are actually booleans
-            $validatedResponse['accepted'] = (bool)($validatedResponse['accepted'] ?? false);
-            $validatedResponse['inappropriate'] = (bool)($validatedResponse['inappropriate'] ?? false);
-            
-            // Ensure arrays are actually arrays
-            if (!is_array($validatedResponse['suggestions'] ?? null)) {
-                $validatedResponse['suggestions'] = [];
-            }
-            if (!is_array($validatedResponse['fields_with_issues'] ?? null)) {
-                $validatedResponse['fields_with_issues'] = [];
+            // If we have a direct error message, return it in the new format
+            if (isset($validatedResponse['message']) && isset($validatedResponse['errors'])) {
+                return [
+                    'message' => $validatedResponse['message'],
+                    'errors' => $validatedResponse['errors']
+                ];
             }
 
-            return [
-                'accepted' => $validatedResponse['accepted'],
-                'reason' => $validatedResponse['reason'],
-                'suggestions' => $validatedResponse['suggestions'],
-                'inappropriate' => $validatedResponse['inappropriate'],
-                'fields_with_issues' => $validatedResponse['fields_with_issues']
-            ];
-            // Ensure the response has the correct structure
-            return [
-                'accepted' => (bool)($validatedResponse['accepted'] ?? false),
-                'reason' => $validatedResponse['reason'] ?? 'Error en la validación',
-                'suggestions' => $validatedResponse['suggestions'] ?? [],
-                'inappropriate' => (bool)($validatedResponse['inappropriate'] ?? false)
-            ];
-            // Ensure boolean fields are actually booleans
-            $validatedResponse['accepted'] = (bool)($validatedResponse['accepted'] ?? false);
-            $validatedResponse['inappropriate'] = (bool)($validatedResponse['inappropriate'] ?? false);
-            
-            // Ensure suggestions is an array
-            if (!is_array($validatedResponse['suggestions'] ?? null)) {
-                $validatedResponse['suggestions'] = [];
+            // Convert old format to new format
+            $errors = [];
+            if (!empty($validatedResponse['fields_with_issues'])) {
+                foreach ($validatedResponse['fields_with_issues'] as $field) {
+                    $fieldName = strtolower($field);
+                    $errors[$fieldName] = [$validatedResponse['reason'] ?? 'Error en la validación'];
+                }
+            } else if (isset($validatedResponse['reason'])) {
+                $errors['general'] = [$validatedResponse['reason']];
             }
 
-            return $validatedResponse;
+            // If we have errors, return them in the new format
+            if (!empty($errors)) {
+                return [
+                    'message' => $validatedResponse['message'] ?? 'Error de validación',
+                    'errors' => $errors
+                ];
+            }
+
+            // If no errors, return success with accepted: true
+            return [
+                'accepted' => true,
+                'message' => 'Validación exitosa'
+            ];
 
         } catch (\Exception $e) {
             $errorMessage = 'Error en la petición de validación: ' . $e->getMessage();

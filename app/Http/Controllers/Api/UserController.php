@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Services\R2FileUploadService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Mail\UserNotification;
+
+
 
 class UserController extends Controller
 {
@@ -24,57 +29,113 @@ class UserController extends Controller
     }
 
 
-        public function show(User $user)
+    public function show(User $user)
     {
         // Include related data needed by frontend (profile and entrepreneur views)
-        $user->load(['roleRelation','interests','entrepreneurships']);
+        $user->load(['roleRelation', 'interests', 'entrepreneurships']);
         return response()->json($user);
     }
 
 
-    // store (registro)
-    public function store(Request $request)
+    public function destroy(User $user)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6',
-            'role' => 'required|integer|exists:user_roles,id',
-            'phone' => 'nullable|string|max:20',
-            'province' => 'nullable|string|max:100',
-            'canton' => 'nullable|string|max:100',
-            'district' => 'nullable|string|max:100',
-            'address' => 'nullable|string',
-            'banned' => 'nullable|boolean',
-            'avatar_url' => 'nullable|url|max:500',
-        ]);
-
-        $data['password'] = Hash::make($data['password']);
-        $data['isConfirmed'] = false; // usuario no confirmado al crear
-
-        $user = User::create($data);
-
-        // Generar token de confirmación
-        $token = Str::random(60);
-        DB::table('email_tokens')->insert([
-            'user_id' => $user->id,
-            'token' => $token,
-            'created_at' => now(),
-            'expires_at' => Carbon::now()->addDay(), // token válido 24h
-        ]);
-
-        // Enviar correo de confirmación directamente con Mail::raw
-       /* $confirmLink = url("/api/confirm?token={$token}");
-        Mail::raw("Hola {$user->name},\n\nHaz clic aquí para confirmar tu correo: $confirmLink\n\nSi no creaste esta cuenta, ignora este mensaje.", function ($message) use ($user) {
-            $message->to($user->email)
-                    ->subject('Confirma tu correo');
-        });*/
-
-        return response()->json([
-            'message' => 'Usuario registrado. Revisa tu correo para confirmar tu cuenta.',
-            'user' => $user->load('roleRelation'),
-        ], 201);
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully']);
     }
+
+
+
+
+    public function store(Request $request, R2FileUploadService $fileUploadService)
+    {
+        DB::beginTransaction();
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email',
+                'password' => 'required|string|min:6',
+                'role' => 'required|integer|exists:user_roles,id',
+                'phone' => 'nullable|string|max:20',
+                'province' => 'nullable|string|max:100',
+                'canton' => 'nullable|string|max:100',
+                'district' => 'nullable|string|max:100',
+                'address' => 'nullable|string',
+                'banned' => 'nullable|boolean',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+                'avatar_url' => 'nullable|string',
+            ]);
+
+            $data['password'] = Hash::make($data['password']);
+            $data['confirmation_token'] = Str::random(40);
+            $data['is_confirmed'] = false;
+
+            // Handle avatar upload if provided
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $data['avatar_url'] = $fileUploadService->upload($avatar, 'users/avatars');
+            }
+
+            $user = User::create($data);
+
+            // Send welcome email with confirmation link
+            $confirmationUrl = url("/api/confirm-email/{$user->confirmation_token}");
+
+            Mail::to($user->email)->send(new UserNotification([
+                'subject' => 'Bienvenido a ' . config('app.name'),
+                'greeting' => '¡Gracias por registrarte, ' . $user->name . '!',
+                'content' => 'Tu cuenta ha sido creada exitosamente. Por favor, confirma tu dirección de correo electrónico para activar tu cuenta.',
+                'action_url' => $confirmationUrl,
+                'action_text' => 'Confirmar mi correo'
+            ]));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Usuario registrado exitosamente. Por favor revisa tu correo para confirmar tu cuenta.',
+                'user' => $user
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al registrar usuario: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al registrar el usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function confirmEmail($token)
+{
+    DB::beginTransaction();
+    try {
+        $user = User::where('confirmation_token', $token)
+            ->whereNull('email_verified_at')
+            ->firstOrFail();
+
+        $user->update([
+            'isConfirmed' => true,
+            'confirmation_token' => null,
+            'email_verified_at' => now(),
+        ]);
+
+        DB::commit();
+
+        // Return the success view instead of JSON
+        return view('emails.confirmation-success');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error confirming email: ' . $e->getMessage());
+        
+        // You might want to create an error view as well
+        return response()->view('emails.confirmation-error', [
+            'message' => 'Enlace de confirmación inválido o expirado'
+        ], 400);
+    }
+}
 
     // confirm email
     public function confirm(Request $request)
@@ -128,5 +189,154 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+
+    /**
+     * Update the specified user in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, User $user, R2FileUploadService $fileUploadService)
+    {
+
+
+        return $this->updateUserProfile($request, $user, $fileUploadService);
+    }
+
+    /**
+     * Update the authenticated user's profile.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    public function updateProfile(Request $request, R2FileUploadService $fileUploadService)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        return $this->updateUserProfile($request, $user, $fileUploadService);
+    }
+
+    /**
+     * Common method to update user profile data.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @param  \App\Services\R2FileUploadService  $fileUploadService
+     * @return \Illuminate\Http\Response
+     */
+    protected function updateUserProfile(Request $request, User $user, R2FileUploadService $fileUploadService)
+    {
+        // Get all input data, handling both form data and JSON
+        $input = $request->all();
+
+        // Validation rules
+        $rules = [
+            'name' => 'sometimes|string|max:255',
+            'email' => [
+                'sometimes',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id)
+            ],
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'province' => 'nullable|string|max:100',
+            'canton' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'avatar_url' => 'nullable|string',
+        ];
+
+        // If _method is present, it's a form submission
+        if ($request->has('_method')) {
+            $data = $input;
+            unset($data['_method']);
+            unset($data['id']);
+
+            // Handle empty strings as null for optional fields
+            $data = array_map(function ($value) {
+                return $value === '' ? null : $value;
+            }, $data);
+
+            $validator = Validator::make($data, $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $data = $validator->validated();
+        } else {
+            // For JSON requests
+            $data = $request->validate($rules);
+        }
+
+        Log::info('Update User Request:', [
+            'user_id' => $user->id,
+            'input_data' => $input,
+            'processed_data' => $data,
+            'files' => $request->hasFile('avatar') ? 'File present' : 'No file'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Handle avatar upload if a new file is provided
+            if ($request->hasFile('avatar')) {
+                $avatar = $request->file('avatar');
+                $avatarUrl = $fileUploadService->upload($avatar, 'users/avatars');
+                if (!$avatarUrl) {
+                    throw new \Exception('Error al subir la imagen de perfil');
+                }
+                $data['avatar_url'] = $avatarUrl;
+            } elseif (isset($data['avatar_url']) && $data['avatar_url'] === '') {
+                // Handle avatar removal if avatar_url is an empty string
+                $data['avatar_url'] = null;
+            } else {
+                // Don't update avatar_url if not provided
+                unset($data['avatar_url']);
+            }
+
+            // Hash password if provided
+            if (!empty($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            } else {
+                unset($data['password']);
+            }
+
+            // Update user
+            $user->update($data);
+
+            // Reload the user with relationships
+            $user->load(['roleRelation', 'interests', 'entrepreneurships']);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Perfil actualizado exitosamente',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating user: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'message' => 'Error al actualizar el perfil',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 }
