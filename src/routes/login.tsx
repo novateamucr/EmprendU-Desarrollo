@@ -19,6 +19,7 @@ export default function Login() {
   
   const { login, loading: isLoading, error } = useUserLogin();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
@@ -105,14 +106,40 @@ export default function Login() {
       value={formValues.email}
       onChange={handleChange("email")}
     />,
-    <Input
-     
-      key="password"
-      type="password"
-      placeholder="Contraseña"
-      value={formValues.password}
-      onChange={handleChange("password")}
-    />,
+
+      <div key="password" className="relative w-full">
+        <Input
+          type={showPassword ? "text" : "password"}
+          placeholder="Contraseña"
+          value={formValues.password}
+          onChange={handleChange("password")}
+          aria-label="Campo de contraseña"
+          autoComplete="current-password"
+          className="w-full pr-10"
+        />
+        <button
+          type="button"
+          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          onClick={() => setShowPassword((s) => !s)}
+          className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+        >
+          {showPassword ? (
+            // Eye Off Icon
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+              <path d="M3 3l18 18" />
+              <path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.23 13.23 0 0 1-4.36 5.36M6.61 6.61A13.23 13.23 0 0 0 2 12s3 7 10 7a10.94 10.94 0 0 0 1.94-.17" />
+              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+            </svg>
+          ) : (
+            // Eye Icon
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
+      </div>
+
   ];
 
 
@@ -144,7 +171,7 @@ export default function Login() {
       title="¡Inicia ahora!"
       text="Ingresa tus datos y comienza a explorar emprendimientos en tu zona"
       button={registerBtn}
-      imgSrc="/small_white_logo.png" 
+      imgSrc="/small_white_logo.png"
       imgPosition="left"
     />
   );

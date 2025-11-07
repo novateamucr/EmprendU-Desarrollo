@@ -23,6 +23,8 @@ export default function RouteComponent() {
 
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   
   // ✅ Nuevo estado para mostrar mensaje de confirmación
   const [confirmationSent, setConfirmationSent] = useState(false);
@@ -164,12 +166,36 @@ export default function RouteComponent() {
                 onChange={handleChange("correo")}
               />,
               <div key="password" className="w-full">
-                <Input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={formValues.password}
-                  onChange={handleChange("password")}
-                />
+                <div className="relative w-full">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Contraseña"
+                    value={formValues.password}
+                    onChange={handleChange("password")}
+                    className="w-full pr-10"
+                    aria-label="Campo de contraseña"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.23 13.23 0 0 1-4.36 5.36M6.61 6.61A13.23 13.23 0 0 0 2 12s3 7 10 7a10.94 10.94 0 0 0 1.94-.17" />
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 {passwordMessage && (
                   <p
                     className={`text-sm mt-1 ${
@@ -183,12 +209,36 @@ export default function RouteComponent() {
                 )}
               </div>,
               <div key="confirm" className="w-full">
-                <Input
-                  type="password"
-                  placeholder="Confirmar contraseña"
-                  value={formValues.confirm}
-                  onChange={handleChange("confirm")}
-                />
+                <div className="relative w-full">
+                  <Input
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirmar contraseña"
+                    value={formValues.confirm}
+                    onChange={handleChange("confirm")}
+                    className="w-full pr-10"
+                    aria-label="Campo de confirmación de contraseña"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showConfirm ? "Ocultar confirmación" : "Mostrar confirmación"}
+                    onClick={() => setShowConfirm((s) => !s)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+                  >
+                    {showConfirm ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                        <path d="M3 3l18 18" />
+                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.23 13.23 0 0 1-4.36 5.36M6.61 6.61A13.23 13.23 0 0 0 2 12s3 7 10 7a10.94 10.94 0 0 0 1.94-.17" />
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 {confirmMessage && (
                   <p
                     className={`text-sm mt-1 ${
