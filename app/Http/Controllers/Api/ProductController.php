@@ -412,4 +412,27 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Get multiple products by their IDs
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProductsByIds(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:products,id'
+        ]);
+
+        $products = Product::whereIn('id', $request->ids)
+            ->with('entrepreneurship')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    }
+
 }
