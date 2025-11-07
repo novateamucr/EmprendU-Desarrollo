@@ -33,6 +33,7 @@ Route::post('login', [UserController::class, 'login']);
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
 
 Route::apiResource('products', ProductController::class);
+Route::post('products/by-ids', [ProductController::class, 'getProductsByIds']);
 Route::apiResource('fairs', FairController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);
@@ -79,6 +80,12 @@ Route::post('products/{product}/custom-forms', [ProductCustomFormController::cla
 Route::get('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'show']);
 Route::put('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'update']);
 Route::delete('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'destroy']);
+
+// Test logging
+Route::get('test-log', function() {
+    \Log::info('This is a test log message', ['test' => 'value']);
+    return response()->json(['message' => 'Check your logs for the test message']);
+});
 
 // Orders
 Route::get('orders', [OrdersController::class, 'index'])->middleware('auth:sanctum'); // infer user from token
