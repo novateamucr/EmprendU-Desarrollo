@@ -22,11 +22,16 @@ use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
+use App\Http\Controllers\Api\SocialPlatformController;
+use App\Http\Controllers\Api\PublicShareController;
 
 use App\Mail\ContactUsMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
+
+// Public share metadata endpoint (no auth)
+Route::get('public/share/product/{id}', [PublicShareController::class, 'productMeta']);
 
 
 // Protected routes (authentication required)
@@ -49,6 +54,10 @@ Route::apiResource('reviews', ReviewController::class);
 Route::get('/fairs', [FairController::class, 'index']);
 Route::get('/featured-business/today', [FeaturedBusinessController::class, 'today']);
 Route::get('/featured-business/history', [FeaturedBusinessController::class, 'history']);
+
+// Social platforms (redes)
+Route::get('social-platforms', [SocialPlatformController::class, 'index']);
+Route::get('social-platforms/{platform}', [SocialPlatformController::class, 'show']);
 
 // Secure password update route (expects current_password, password, password_confirmation)
 Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
