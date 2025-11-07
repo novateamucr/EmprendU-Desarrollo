@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuenta Confirmada - {{ config('app.name') }}</title>
+    <title>Cuenta Confirmada - EmpowerUp</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -37,13 +37,6 @@
             margin-bottom: 2rem;
             color: #4b5563;
         }
-
-        .success-icon {
-            font-size: 4rem;
-            color: #10b981;
-            margin-bottom: 1.5rem;
-        }
-
         .btn {
             display: inline-block;
             background-color: #1a56db;
@@ -62,7 +55,11 @@
 </head>
 
 <body>
-
+    <div class="container">
+        <h1>¡Cuenta Confirmada!</h1>
+        <p>Tu cuenta en EmpowerUp ha sido confirmada exitosamente. Ahora puedes iniciar sesión y comenzar a explorar todas las funcionalidades que ofrecemos.</p>
+        <a href=https://emprendu-desarrollo-production-1bce.up.railway.app/login class="btn">Iniciar Sesión</a>
+    </div>
 </body>
 
 </html>

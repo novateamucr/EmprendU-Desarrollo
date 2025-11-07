@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShareController;
+use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,3 +21,4 @@ Route::get('/', function () {
 
 // Share endpoints (HTML with Open Graph metadata for scrapers)
 Route::get('/share/product/{id}', [ShareController::class, 'product'])->name('share.product');
+//Route::get('/confirm-email/{token}', [UserController::class, 'confirmEmail']);//esta ruta era de prueba para ver las vistas de confirmacion de correo
