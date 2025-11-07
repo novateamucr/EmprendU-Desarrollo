@@ -62,15 +62,32 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 
 // Map backend status -> local status keys
 function mapStatus(status: string): OrderStatus {
+  if (!status) return 'solicitado';
+  
   const statusMap: Record<string, OrderStatus> = {
+    // Frontend statuses (already mapped)
     'solicitado': 'solicitado',
     'aceptado': 'aceptado',
     'en_proceso': 'en_proceso',
     'completado': 'completado',
     'calificado': 'calificado',
-    'cancelado': 'cancelado'
+    'cancelado': 'cancelado',
+    // Backend statuses (add any variations here)
+    'requested': 'solicitado',
+    'accepted': 'aceptado',
+    'in_progress': 'en_proceso',
+    'completed': 'completado',
+    'rated': 'calificado',
+    'canceled': 'cancelado',
+    // Add any other variations here
+    'pending': 'solicitado',
+    'processing': 'en_proceso',
+    'delivered': 'completado',
+    'shipped': 'en_proceso'
   };
-  return statusMap[status.toLowerCase()] || 'solicitado';
+  
+  const normalizedStatus = status.toLowerCase().trim();
+  return statusMap[normalizedStatus] || 'solicitado';
 }
 
 export default function MyOrders() {

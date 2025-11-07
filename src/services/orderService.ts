@@ -22,6 +22,7 @@ export type CreateOrderPayload = {
   customer_name: string;
   customer_phone_8: string;
   customer_email: string;
+  user_id?: number;  // Make it optional for backward compatibility
   notes?: string | null;
   shipping_total?: number | null;
   discount_total?: number | null;
@@ -29,8 +30,42 @@ export type CreateOrderPayload = {
 };
 
 export async function createOrder(payload: CreateOrderPayload) {
-  const res = await api.post('/orders', payload);
-  return res.data;
+  // Get the auth token from localStorage
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('No se encontró el token de autenticación');
+  }
+  
+  // Decode the token to get user info (assuming it's a JWT)
+  // Note: This is a simplified example - you might need to adjust based on your token format
+  const tokenParts = token.split('.');
+  if (tokenParts.length !== 3) {
+    throw new Error('Token inválido');
+  }
+  
+  try {
+    const decoded = JSON.parse(atob(tokenParts[1]));
+    const userId = decoded?.user_id || decoded?.sub;
+    
+    if (!userId) {
+      throw new Error('No se pudo obtener el ID de usuario del token');
+    }
+    
+    // Create the request payload with the user_id
+    const requestPayload = {
+      ...payload,
+      user_id: userId
+    };
+    
+    console.log('Creating order with payload:', requestPayload);
+    
+    const res = await api.post('/orders', requestPayload);
+    return res.data;
+  } catch (error) {
+    console.error('Error creating order:', error);
+    throw new Error('Error al crear la orden. Por favor, intente de nuevo.');
+  }
 }
 
 export type AddOrderItemOption = {
@@ -103,17 +138,19 @@ export interface OrdersTableResponse {
 export async function listMyOrders(userId: number): Promise<OrdersTableResponse> {
   try {
     if (!userId) {
-      throw new Error('No se pudo obtener el ID de usuario');
+      throw new Error('User ID is required');
     }
 
-    console.log('Fetching orders for user:', userId);
+    console.log('Fetching orders for user ID:', userId);
     
+    // Using the orders endpoint with user_id parameter
     const res = await api.get('/orders', {
       params: {
         user_id: userId
       },
-      paramsSerializer: {
-        indexes: null // Prevents array indices in query params
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
     });
     
@@ -153,8 +190,16 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
 
 // Ver un pedido (incluye items por defecto)
 export async function getOrder(orderId: number | string, includeItems: boolean = true) {
-  const res = await api.get(`/orders/${orderId}`, { params: { include_items: includeItems } });
-  return res.data;
+  const response = await api.get(`/orders/${orderId}`, {
+    params: { include_items: includeItems },
+  });
+  return response;
+}
+
+export async function cancelOrder(orderId: number | string) {
+  return api.patch(`/orders/${orderId}/status`, {
+    status: 'canceled'
+  });
 }
 
 // Dataset para la tabla del emprendedor

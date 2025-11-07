@@ -21,7 +21,7 @@ export type CartGroup = {
   entrepreneurshipId: string;
   entrepreneurshipName: string;
   groupId: string;
-  status: 'draft' | 'requested';
+  status: 'requested';
   orderId?: number;
   items: CartItem[];
   notes?: string;
@@ -202,15 +202,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const placeOrder = useCallback(async (entrepreneurshipId: string) => {
-    if (!user) {
-      setOrderError('Debes iniciar sesión para realizar un pedido');
-      return { success: false, error: 'Debes iniciar sesión para realizar un pedido' };
+    // Check if user is authenticated and has a valid ID
+    const token = localStorage.getItem('token');
+    if (!token) {
+      const errorMsg = 'No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.';
+      setOrderError(errorMsg);
+      console.error('Auth error:', errorMsg);
+      return { success: false, error: errorMsg };
+    }
+
+    if (!user || !user.id) {
+      const errorMsg = 'No se pudo obtener la información del usuario. Por favor, inicie sesión nuevamente.';
+      setOrderError(errorMsg);
+      console.error('User error:', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     const group = groups.find(g => g.entrepreneurshipId === entrepreneurshipId);
     if (!group || group.items.length === 0) {
-      setOrderError('No hay productos en el carrito');
-      return { success: false, error: 'No hay productos en el carrito' };
+      const errorMsg = 'No hay productos en el carrito';
+      setOrderError(errorMsg);
+      console.error('Cart error:', errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     setIsPlacingOrder(true);
@@ -220,13 +233,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Step 1: Create draft order
       const phone = user.phone?.replace(/\D/g, '').slice(-8) || '00000000';
       
-      const order = await cartApi.createDraftOrder({
+      console.log('Creating order with user ID:', user.id);
+      console.log('Order details:', {
         entrepreneurship_id: parseInt(entrepreneurshipId, 10),
         customer_name: user.name || 'Cliente',
         customer_phone_8: phone,
         customer_email: user.email || '',
-        notes: group.notes
+        notes: group.notes,
+        user_id: user.id
       });
+
+      const order = await cartApi.createDraftOrder(
+        {
+          entrepreneurship_id: parseInt(entrepreneurshipId, 10),
+          customer_name: user.name || 'Cliente',
+          customer_phone_8: phone,
+          customer_email: user.email || '',
+          notes: group.notes
+        },
+        user.id
+      );
 
       // Validate order ID
       if (!order?.id) {
@@ -235,10 +261,43 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const orderId = order.id;
       console.log('Created order with ID:', orderId);
 
-      // Skip adding items for now
-      console.log('Skipping item addition as requested');
+      // Step 2: Add all items to the order
+      console.log('Adding items to order:', group.items);
+      
+      for (const item of group.items) {
+        try {
+          // Prepare order item options from selections
+          const options = item.selections?.options?.flatMap(option => {
+            if (!option.optionId || !option.valueIds?.length) return [];
+            return option.valueIds.map(valueId => ({
+              option_id: option.optionId,
+              value_ids: [valueId]
+            }));
+          }) || [];
+          
+          // Prepare custom fields from selections
+          const customFields = item.selections?.customs?.map(custom => ({
+            form_id: custom.formId,
+            value: custom.value
+          })) || [];
+          
+          // Add the item to the order
+          await cartApi.addOrderItem(orderId, {
+            product_id: parseInt(item.productId, 10),
+            quantity: item.quantity,
+            unit_price: item.price,
+            options,
+            custom_fields: customFields
+          });
+          
+          console.log(`Added item ${item.productId} to order ${orderId}`);
+        } catch (error) {
+          console.error(`Failed to add item ${item.productId} to order:`, error);
+          throw new Error(`Error al agregar el producto ${item.name} al pedido`);
+        }
+      }
 
-      // Step 3: Update order status to 'requested'
+      // Step 3: Update order status to 'requested' after all items are added
       console.log('Updating order status to requested for order ID:', orderId);
       const updatedOrder = await cartApi.updateOrderStatus(orderId, 'requested');
       
