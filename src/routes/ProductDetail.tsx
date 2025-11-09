@@ -221,7 +221,7 @@ export default function ProductDetail() {
 
   const shareToTwitter = () => {
     const text = `Mira este producto: ${product?.name}`;
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(universalShare)}&text=${encodeURIComponent(text)}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(frontendProductUrl)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
   };
 
