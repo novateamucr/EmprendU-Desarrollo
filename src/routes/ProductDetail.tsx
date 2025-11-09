@@ -214,7 +214,7 @@ export default function ProductDetail() {
   };
 
   const shareToWhatsApp = () => {
-    const text = `Mira este producto: ${product?.name} - ${universalShare}`;
+    const text = `Mira este producto: ${product?.name} - ${frontendProductUrl}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
   };
@@ -505,6 +505,14 @@ export default function ProductDetail() {
                         title="Compartir en Facebook"
                       >
                         <Facebook sx={{ fontSize: 18 }} />
+                      </button>
+                      <button
+                        onClick={shareToTwitter}
+                        aria-label="Compartir en Twitter"
+                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        title="Compartir en Twitter"
+                      >
+                        <Twitter sx={{ fontSize: 18 }} />
                       </button>
                       <button
                         onClick={shareToWhatsApp}
