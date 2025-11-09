@@ -67,6 +67,11 @@ class ShareController extends Controller
 
         return response()->view('share.product', $data, 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
+            // Prevent stale caches in scrapers/CDNs and separate bot/non-bot variants
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            'Vary' => 'User-Agent',
         ]);
     }
 }

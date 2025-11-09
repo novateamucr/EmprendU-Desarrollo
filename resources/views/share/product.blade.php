@@ -17,8 +17,6 @@
         <meta property="og:image" content="{{ $image }}">
         <meta property="og:image:secure_url" content="{{ $image }}">
         <meta property="og:image:type" content="image/jpeg">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
     @endif
     <meta property="og:site_name" content="{{ $site_name ?? 'EmprendU' }}">
 
@@ -30,10 +28,7 @@
         <meta name="twitter:image" content="{{ $image }}">
     @endif
 
-    @unless(!empty($is_bot) && $is_bot)
-        <!-- Fallback redirect for non-JS environments (give bots time to read OG) -->
-        <meta http-equiv="refresh" content="8;url={{ $redirect_url }}">
-    @endunless
+    <!-- No meta refresh to ensure scrapers do not follow redirects before reading OG -->
 </head>
 <body>
     <noscript>
