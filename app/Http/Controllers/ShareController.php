@@ -39,14 +39,30 @@ class ShareController extends Controller
             }
         }
 
+        // Share page absolute URL (used as og:url)
+        $shareUrl = $request->fullUrl();
+
+        // Detect common crawler User-Agents to avoid redirecting them
+        $ua = strtolower($request->userAgent() ?? '');
+        $botSignatures = [
+            'facebookexternalhit', 'facebot', 'twitterbot', 'whatsapp', 'telegrambot',
+            'slackbot', 'linkedinbot', 'pinterest', 'discordbot', 'googlebot'
+        ];
+        $isBot = false;
+        foreach ($botSignatures as $sig) {
+            if ($ua !== '' && strpos($ua, $sig) !== false) { $isBot = true; break; }
+        }
+
         $data = [
             'title' => $title,
             'description' => $description,
             'image' => $imageAbsolute ?: '',
-            'url' => $frontendProductUrl,
+            // Use the share URL as og:url to avoid inferred properties on SPA pages
+            'url' => $shareUrl,
             'type' => 'product',
             'redirect_url' => $frontendProductUrl,
             'site_name' => 'EmprendU',
+            'is_bot' => $isBot,
         ];
 
         return response()->view('share.product', $data, 200, [
