@@ -19,6 +19,9 @@
         <meta property="og:image:type" content="image/jpeg">
     @endif
     <meta property="og:site_name" content="{{ $site_name ?? 'EmprendU' }}">
+    @if(!empty($fb_app_id))
+        <meta property="fb:app_id" content="{{ $fb_app_id }}">
+    @endif
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">

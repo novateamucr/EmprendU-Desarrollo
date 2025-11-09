@@ -63,6 +63,7 @@ class ShareController extends Controller
             'redirect_url' => $frontendProductUrl,
             'site_name' => 'EmprendU',
             'is_bot' => $isBot,
+            'fb_app_id' => env('FB_APP_ID'),
         ];
 
         return response()->view('share.product', $data, 200, [
