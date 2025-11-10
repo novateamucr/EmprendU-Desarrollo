@@ -33,7 +33,8 @@ export function ConfirmationPopup({ onClose, onConfirmar, fair = null, entrepren
 
           <div className="pb-4">
             <h3 className="text-gray-800 font-semibold text-base md:text-lg 3xl:text-xl 4xl:text-2xl">Fecha y hora</h3>
-                <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-600">{fair?.time ?? 'Sábado 5 de Octubre · 10:00 am - 6:00 pm'}</p>
+                <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-600">{fair?.date ?? 'Sábado 5 de Octubre'}</p>
+                <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-600">{fair?.time ?? '10:00 am - 6:00 pm'}</p>
           </div>
 
           <div>
@@ -41,9 +42,9 @@ export function ConfirmationPopup({ onClose, onConfirmar, fair = null, entrepren
             <div className="flex items-center gap-3 mt-2">
               <img src="img/Frame 11.jpg" alt="Logo emprendimiento" className="w-12 h-12 3xl:w-14 3xl:h-14 4xl:w-16 4xl:h-16 rounded-lg object-cover" />
               <div>
-                    <p className="text-sm text-gray-700 font-medium">{entrepreneurship?.name ?? '—'}</p>
+                    
                     <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-700 font-medium">{entrepreneurship?.name ?? '—'}</p>
-                    <p className="text-xs md:text-sm 3xl:text-base 4xl:text-lg text-gray-500">{entrepreneurship?.description ?? ''}</p>
+                    
               </div>
             </div>
           </div>
