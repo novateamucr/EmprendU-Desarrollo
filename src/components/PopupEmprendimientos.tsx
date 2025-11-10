@@ -62,9 +62,9 @@ export function PopupEmprendimientos({ onClose, onSiguiente, entrepreneurships =
               >
                 <img src={e.image_url || 'img/Frame 11.jpg'} alt={e.name || 'Emprendimiento'} className="w-12 h-12 3xl:w-14 3xl:h-14 4xl:w-16 4xl:h-16 rounded-lg object-cover mr-4" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{e.name}</h3>
+                 
                   <h3 className="font-semibold text-gray-900 text-sm md:text-base 3xl:text-lg 4xl:text-xl">{e.name}</h3>
-                  <p className="text-xs md:text-sm 3xl:text-base 4xl:text-lg text-gray-500">{e.description}</p>
+                  
                 </div>
               </label>
             </div>

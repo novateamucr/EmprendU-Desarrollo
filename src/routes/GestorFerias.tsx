@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from '../components/Modal';
+import { inscripcionesApi } from '../services/inscripcionesService';
 import { Link } from "react-router-dom";
 import useFairs from "../hooks/useFairs";
 import { deleteFair } from '../services/fairService';
@@ -38,6 +39,10 @@ export default function Gestorferias() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fairToDelete, setFairToDelete] = useState<any | null>(null);
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [selectedFairForParticipants, setSelectedFairForParticipants] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -82,6 +87,28 @@ export default function Gestorferias() {
       return;
     }
     setOpenMenuId(null);
+  };
+
+  const handleViewParticipants = async (id: number) => {
+    const f = fairs.find(e => e.id === id) || null;
+    if (!f) return;
+    setSelectedFairForParticipants(f);
+    setParticipants([]);
+    setParticipantsLoading(true);
+    setOpenMenuId(null);
+    try {
+      const res = await inscripcionesApi.getByFair(id);
+      const data = res && (res.data ?? res);
+      const list = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+      setParticipants(list);
+      setShowParticipantsModal(true);
+    } catch (err) {
+      console.error('Error obteniendo participantes de la feria', err);
+      setParticipants([]);
+      setShowParticipantsModal(true); // abrir modal vacío para mostrar mensaje
+    } finally {
+      setParticipantsLoading(false);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -164,6 +191,7 @@ export default function Gestorferias() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Link to={`/admin/añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
+                        <button onClick={() => handleViewParticipants(f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Ver Participantes</button>
                         <button onClick={() => handleOptionClick("Eliminar", f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
                       </div>
                     )}
@@ -198,6 +226,7 @@ export default function Gestorferias() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link to={`/admin/añadirferias/${f.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
+                    <button onClick={() => handleViewParticipants(f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Ver Participantes</button>
                     <button onClick={() => handleOptionClick("Eliminar", f.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
                   </div>
                 )}
@@ -254,6 +283,49 @@ export default function Gestorferias() {
                 No
               </button>
             </div>
+          </div>
+        </Modal>
+        {/* Modal de participantes */}
+        <Modal
+          isOpen={showParticipantsModal}
+          onClose={() => { setShowParticipantsModal(false); setParticipants([]); setSelectedFairForParticipants(null); }}
+          title={`Participantes${selectedFairForParticipants ? ` - ${selectedFairForParticipants.title}` : ''}`}
+        >
+          <div className="min-w-[320px] max-w-[800px]">
+            {participantsLoading ? (
+              <p className="py-6 text-center">Cargando participantes...</p>
+            ) : participants.length === 0 ? (
+              <p className="py-6 text-center text-gray-500">No hay participantes registrados para esta feria.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead>
+                    <tr className="text-xs text-gray-600">
+                      <th className="py-2 px-3">Nombre</th>
+                      <th className="py-2 px-3">Emprendimiento</th>
+                      <th className="py-2 px-3">Contacto</th>
+                      <th className="py-2 px-3">Fecha inscripción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participants.map((ins) => {
+                      const nombre = ins?.user?.name ?? ins?.user_name ?? ins?.nombre ?? (ins?.first_name && ins?.last_name ? `${ins.first_name} ${ins.last_name}` : '-');
+                      const emp = ins?.emprendimiento?.name ?? ins?.emprendimiento_name ?? ins?.entrepreneurship?.name ?? '-';
+                      const contacto = ins?.email ?? ins?.contact ?? ins?.telefono ?? ins?.phone ?? '-';
+                      const fecha = formatDate(ins?.created_at ?? ins?.date ?? ins?.fecha ?? null);
+                      return (
+                        <tr key={ins.id ?? `${ins.user_id}-${ins.emprendimiento_id}-${Math.random()}`} className="border-t">
+                          <td className="py-2 px-3 align-top">{nombre}</td>
+                          <td className="py-2 px-3 align-top">{emp}</td>
+                          <td className="py-2 px-3 align-top">{contacto}</td>
+                          <td className="py-2 px-3 align-top">{fecha}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </Modal>
       </div>
