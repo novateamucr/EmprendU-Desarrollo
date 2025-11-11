@@ -47,8 +47,7 @@
 <body>
     <div class="modal">
         <h1>¡Ups! Ocurrió un error</h1>
-        <p>Intenta confirmar de nuevo tu correo<br>
-        No se pudo validar tu correo electrónico</p>
+        <p>Este link ya fue utilizado</p>
     </div>
 </body>
 </html>

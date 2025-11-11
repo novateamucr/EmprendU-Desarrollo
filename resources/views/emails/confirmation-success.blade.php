@@ -29,7 +29,7 @@
         }
 
         h1 {
-            color: #1a56db;
+            color: #76B0CD;
             margin-bottom: 1.5rem;
         }
 
@@ -39,7 +39,7 @@
         }
         .btn {
             display: inline-block;
-            background-color: #1a56db;
+            background-color: #76B0CD;
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 5px;
@@ -49,7 +49,7 @@
         }
 
         .btn:hover {
-            background-color: #1e40af;
+            background-color: #76B0CD;
         }
     </style>
 </head>
