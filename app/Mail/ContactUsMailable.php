@@ -31,7 +31,7 @@ class ContactUsMailable extends Mailable
     {
         return new Envelope(
             to: 'novateamucr@gmail.com',
-            subject: 'Contact Us Mailable',
+            subject: 'Contact Us Form',
         );
     }
 
