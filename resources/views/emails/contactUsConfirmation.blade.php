@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correos de Formulario</title>
+    <title>Confirmación de Correo - Correos de Formulario</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -45,6 +45,13 @@
             border-left: 4px solid #76B0CD;
             padding: 15px;
             border-radius: 8px;
+            line-height: 1.6;
+        }
+        .messageUser{
+            background-color: #f0f4ff;
+            line-height: 1.6;
+            padding: 15px;
+            border-radius: 8px;
         }
         .footer {
             text-align: center;
@@ -61,6 +68,7 @@
             <h2>Nuevo mensaje desde el formulario de contacto</h2>
         </div>
         <div class="content">
+            <p class="messageUser">¡Gracias por contactarnos! <br> Recibimos tu mensaje y pronto te responderemos. <br>Aquí encontrarás una copia de tu mensaje ingresado al formulario de contacto. </p>
             <p><strong>Correo:</strong> {{ $data['email'] }}</p>
             <p><strong>Asunto:</strong> {{ $data['subject'] }}</p>
             <p><strong>Mensaje:</strong></p>

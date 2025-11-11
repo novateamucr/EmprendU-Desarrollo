@@ -5,21 +5,19 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ContactUsMailable extends Mailable
+class ContactUsConfirmationMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $data;
-
     /**
      * Create a new message instance.
      */
-    public function __construct($data)
+    public function __construct()
     {
          $this->data = $data;
     }
@@ -30,18 +28,25 @@ class ContactUsMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-
-            subject: 'Formulario de Contacto',
+            subject: 'Contact Us Confirmation Mailable',
         );
     }
 
+    public function build()
+    {
+        return $this->from('novateamucr@gmail.com', 'EmpowerUp')
+                    ->to($this->data['email'])
+                    ->subject('Hemos recibido tu mensaje - EmpowerUp')
+                    ->view('emails.contactUsConfirmation')
+                    ->with('data', $this->data);
+    }
     /**
      * Get the message content definition.
      */
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contactUs',
+            view: 'view.name',
         );
     }
 
@@ -53,15 +58,5 @@ class ContactUsMailable extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-
-    public function build()
-    {
-        return $this->from('novateamucr@gmail.com', 'EmpowerUp')
-                    ->to('novateamucr@gmail.com') 
-                    ->cc($this->data['email']) 
-                    ->subject('Nuevo mensaje desde formulario de contacto')
-                    ->view('emails.contactUs')
-                    ->with('data', $this->data);
     }
 }

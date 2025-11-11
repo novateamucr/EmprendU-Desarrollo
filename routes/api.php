@@ -108,6 +108,7 @@ Route::post('/ContactUs', function (Request $request) {
     ]);
 
     Mail::to('novateamucr@gmail.com')->send(new ContactUsMailable($data));
+    Mail::to($data['email'])->send(new ContactUsConfirmationMailable($data));
 
     return response()->json(['message' => '¡Correo enviado exitosamente! Pronto serás contactado.']);
 });
