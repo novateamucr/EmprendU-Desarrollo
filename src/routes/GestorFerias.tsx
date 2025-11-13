@@ -303,7 +303,7 @@ export default function Gestorferias() {
                     <tr className="text-xs text-gray-600">
                       <th className="py-2 px-3">Nombre</th>
                       <th className="py-2 px-3">Emprendimiento</th>
-                      <th className="py-2 px-3">Contacto</th>
+                      
                       <th className="py-2 px-3">Fecha inscripción</th>
                     </tr>
                   </thead>
@@ -311,13 +311,12 @@ export default function Gestorferias() {
                     {participants.map((ins) => {
                       const nombre = ins?.user?.name ?? ins?.user_name ?? ins?.nombre ?? (ins?.first_name && ins?.last_name ? `${ins.first_name} ${ins.last_name}` : '-');
                       const emp = ins?.emprendimiento?.name ?? ins?.emprendimiento_name ?? ins?.entrepreneurship?.name ?? '-';
-                      const contacto = ins?.email ?? ins?.contact ?? ins?.telefono ?? ins?.phone ?? '-';
                       const fecha = formatDate(ins?.created_at ?? ins?.date ?? ins?.fecha ?? null);
                       return (
                         <tr key={ins.id ?? `${ins.user_id}-${ins.emprendimiento_id}-${Math.random()}`} className="border-t">
                           <td className="py-2 px-3 align-top">{nombre}</td>
                           <td className="py-2 px-3 align-top">{emp}</td>
-                          <td className="py-2 px-3 align-top">{contacto}</td>
+                          
                           <td className="py-2 px-3 align-top">{fecha}</td>
                         </tr>
                       );
