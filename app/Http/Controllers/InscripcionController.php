@@ -72,7 +72,7 @@ class InscripcionController extends Controller
 public function getByFair($fairId)
 {
     $inscripciones = Inscripcion::where('fair_id', $fairId)
-        ->with(['usuario', 'emprendimiento'])
+        ->with(['user', 'emprendimiento'])
         ->get();
 
     return response()->json($inscripciones);
