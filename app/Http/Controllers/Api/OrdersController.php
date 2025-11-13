@@ -17,59 +17,47 @@ class OrdersController extends Controller
 {
     public function index(Request $request)
     {
-        // Return orders for: (a) authenticated user, else (b) user_id param, else (c) customer_email param
-        $authUserId = optional($request->user())->id;
-        $paramUserId = $request->query('user_id');
-        $paramEmail = $request->query('customer_email');
+        $userId = $request->query('user_id');
 
-        $query = Order::with(['entrepreneurship','items.product','items.orderOptions'])->orderByDesc('id');
-
-        if ($authUserId) {
-            $email = strtolower((string) optional($request->user())->email);
-            $query->where(function ($q) use ($authUserId, $email) {
-                $q->where('user_id', $authUserId)
-                  ->orWhereRaw('LOWER(customer_email) = ?', [$email]);
-            });
-        } elseif ($paramUserId) {
-            $query->where('user_id', (int) $paramUserId);
-            if ($paramEmail) {
-                $query->orWhereRaw('LOWER(customer_email) = ?', [strtolower((string) $paramEmail)]);
-            }
-        } elseif ($paramEmail) {
-            $query->whereRaw('LOWER(customer_email) = ?', [strtolower((string) $paramEmail)]);
-        } else {
-            abort(400, 'user_id or customer_email is required');
+        if (!$userId) {
+            return response()->json(['error' => 'User ID is required'], 400);
         }
 
-        // Optional status filter: supports status=draft,requested or status[]=draft&status[]=requested
-        $status = $request->query('status');
-        if ($status) {
-            if (is_string($status)) {
-                $parts = array_filter(array_map('trim', explode(',', $status)));
-                if (!empty($parts)) {
-                    $query->whereIn('status', $parts);
-                }
-            } elseif (is_array($status)) {
-                $query->whereIn('status', $status);
-            }
-        }
+        $orders = Order::with(['entrepreneurship', 'items.product', 'items.orderOptions'])
+            ->where('user_id', (int) $userId)
+            ->orderByDesc('created_at')
+            ->get();
 
-        $orders = $query->paginate(20);
-        return OrderResource::collection($orders);
+        return response()->json($orders);
     }
-
     public function store(StoreOrderRequest $request)
     {
+
+        
         $data = $request->validated();
-        // Permitir que cualquier usuario cree pedidos, excepto si administra ese emprendimiento (auto-pedido)
+        \Log::info('Order creation request data:', $data);
+
+        // Get the authenticated user's ID
+        $userId = $request->user()?->id;
+        \Log::info('Authenticated user ID:', ['user_id' => $userId]);
+
+        // If user is not authenticated but we have a user_id in the request, use it
+        if (!$userId && isset($data['user_id'])) {
+            $userId = $data['user_id'];
+            \Log::info('Using user_id from request:', ['user_id' => $userId]);
+        } else {
+            \Log::info('No user_id available from request or authentication');
+        }
+
+        // Allow any user to create orders, except if they manage the entrepreneurship (self-order)
         $eid = (int) $data['entrepreneurship_id'];
-        if (\Illuminate\Support\Facades\Auth::check() && Gate::allows('manage-entrepreneurship', $eid)) {
+        if ($userId && Gate::allows('manage-entrepreneurship', $eid)) {
             abort(403, 'No puedes hacer pedidos a tu propio emprendimiento.');
         }
 
-        $order = Order::create([
+        $orderData = [
             'entrepreneurship_id' => $data['entrepreneurship_id'],
-            'user_id' => optional($request->user())->id, // associate to current user
+            'user_id' => $userId,
             'customer_name' => $data['customer_name'],
             'customer_phone_8' => $data['customer_phone_8'],
             'customer_email' => $data['customer_email'],
@@ -81,25 +69,31 @@ class OrdersController extends Controller
             'grand_total' => 0,
             'currency' => 'CRC',
             'notes' => $data['notes'] ?? null,
-        ]);
+        ];
+        
+        \Log::info('Creating order with data:', $orderData);
+        $order = Order::create($orderData);
 
         $this->recalculateTotals($order);
 
-        return new OrderResource($order->load(['entrepreneurship','items.orderOptions']));
+        return new OrderResource($order->load(['entrepreneurship', 'items.product', 'items.orderOptions']));
     }
-
     public function addItem(StoreOrderItemRequest $request, Order $order)
     {
-        // Permitir agregar ítems a la orden para clientes; bloquear si el usuario administra el emprendimiento (evitar flujo de auto-pedido)
-        if (\Illuminate\Support\Facades\Auth::check() && Gate::allows('manage-entrepreneurship', $order->entrepreneurship_id)) {
-            abort(403, 'No puedes modificar pedidos de tu propio emprendimiento en este flujo.');
+        // Verify if the order can be modified
+        if (!in_array($order->status, ['pending', 'draft'])) {
+            return response()->json([
+                'message' => 'Cannot modify order. Order must be in draft or pending status.'
+            ], 403);
         }
 
         $data = $request->validated();
         $product = Product::findOrFail($data['product_id']);
 
+        // Calculate options total
         $optionsDeltaSum = 0.0;
         $optionsInput = $data['order_item_options'] ?? [];
+        
         foreach ($optionsInput as $opt) {
             $optionsDeltaSum += (float) $opt['price_delta'];
         }
@@ -107,33 +101,48 @@ class OrdersController extends Controller
         $unitBase = (float) $data['unit_price'];
         $qty = (int) $data['quantity'];
         $unitWithOptions = $unitBase + $optionsDeltaSum;
-        $itemOptionsTotal = $optionsDeltaSum * $qty;
-        $subtotal = $unitWithOptions * $qty;
+        $totalPrice = $unitWithOptions * $qty;
 
-        $item = OrderItem::create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'quantity' => $qty,
-            'unit_price' => $unitBase,
-            'options_total' => $itemOptionsTotal,
-            'subtotal' => $subtotal,
-        ]);
-
-        foreach ($optionsInput as $opt) {
-            OrderItemOption::create([
-                'order_item_id' => $item->id,
-                'product_option_id' => $opt['product_option_id'] ?? null,
-                'product_option_value_id' => $opt['product_option_value_id'] ?? null,
-                'option_name' => $opt['option_name'],
-                'option_value' => $opt['option_value'] ?? null,
-                'price_delta' => $opt['price_delta'],
+        // Start a database transaction
+        return \DB::transaction(function () use ($order, $product, $qty, $unitBase, $totalPrice, $optionsInput) {
+            // Create the order item
+            $item = OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'product_name' => $product->name, // Store product name at the time of order
+                'quantity' => $qty,
+                'unit_price' => $unitBase,
+                'total_price' => $totalPrice,
+                'notes' => request('notes', '') // Add notes if provided
             ]);
-        }
 
-        $this->recalculateTotals($order->refresh());
+            // Add options if any
+            if (!empty($optionsInput)) {
+                $options = [];
+                foreach ($optionsInput as $opt) {
+                    $options[] = [
+                        'order_item_id' => $item->id,
+                        'product_option_id' => $opt['product_option_id'] ?? null,
+                        'product_option_value_id' => $opt['product_option_value_id'] ?? null,
+                        'option_name' => $opt['option_name'],
+                        'option_value' => $opt['option_value'] ?? null,
+                        'price_delta' => $opt['price_delta'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }
+                OrderItemOption::insert($options);
+            }
 
-        return new OrderResource($order->load(['items.orderOptions']));
+            // Recalculate order totals
+            $this->recalculateTotals($order);
+            $order->refresh();
+
+            return response()->json([
+                'message' => 'Item added to order successfully',
+                'order' => $order->load(['items.product', 'items.orderOptions'])
+            ], 201);
+        });
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -167,13 +176,36 @@ class OrdersController extends Controller
             }
         }
 
-        if (!$isOwner) {
-            // Customer path: only allow draft -> requested (customer submits order)
-            if ($currentKey === Order::STATUS_DRAFT && $next === Order::STATUS_REQUESTED) {
+        // Check if the authenticated user is the one who placed the order
+        $isOrderUser = false;
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $isOrderUser = $order->user_id === $user->id;
+        }
+
+        if (!$isOwner && !$isOrderUser) {
+            abort(403, 'No autorizado para cambiar el estado del pedido.');
+        }
+
+        // If user is the order owner, allow canceling the order if it's not already completed/rated
+        if ($isOrderUser && $next === Order::STATUS_CANCELED) {
+            // Only allow canceling if order is in a cancelable state
+            if (in_array($currentKey, [Order::STATUS_DRAFT, Order::STATUS_REQUESTED, Order::STATUS_ACCEPTED])) {
                 $order->update(['status' => $next]);
                 return new OrderResource($order->load(['items.orderOptions']));
             }
-            abort(403, 'No autorizado para cambiar el estado del pedido.');
+            abort(422, 'No se puede cancelar un pedido en su estado actual.');
+        }
+
+        // Allow customer to submit order (draft -> requested)
+        if ($isOrderUser && $currentKey === Order::STATUS_DRAFT && $next === Order::STATUS_REQUESTED) {
+            $order->update(['status' => $next]);
+            return new OrderResource($order->load(['items.orderOptions']));
+        }
+
+        // If we reach here and it's not the owner, deny the action
+        if (!$isOwner) {
+            abort(403, 'No autorizado para realizar esta acción.');
         }
 
         // Entrepreneur path: full transition set (validated below)
@@ -184,22 +216,17 @@ class OrdersController extends Controller
 
     public function destroy(Request $request, Order $order)
     {
-        // Authorization: allow if (a) authenticated user matches order's user/email
-        // or (b) matches provided user_id/customer_email query (for non-auth flows)
+        // Authorization: allow if (a) authenticated user matches order's user_id
+        // or (b) matches provided user_id query (for non-auth flows)
         $authUser = optional($request->user());
         $paramUserId = $request->query('user_id');
-        $paramEmail = $request->query('customer_email');
 
         $authorized = false;
         if ($authUser && $authUser->id) {
-            $authorized = ($order->user_id && (int)$order->user_id === (int)$authUser->id)
-                || (strcasecmp((string)$order->customer_email, (string)$authUser->email) === 0);
+            $authorized = ($order->user_id && (int) $order->user_id === (int) $authUser->id);
         }
         if (!$authorized && $paramUserId) {
-            $authorized = (int)$order->user_id === (int)$paramUserId;
-        }
-        if (!$authorized && $paramEmail) {
-            $authorized = (strcasecmp((string)$order->customer_email, (string)$paramEmail) === 0);
+            $authorized = (int) $order->user_id === (int) $paramUserId;
         }
         abort_unless($authorized, 403);
 
@@ -221,6 +248,104 @@ class OrdersController extends Controller
 
         // Other statuses: forbid client-side deletion
         abort(422, 'Only draft orders can be deleted; requested orders are canceled.');
+    }
+
+    public function show(Request $request, Order $order)
+    {
+        $isOwner = false;
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (method_exists($user, 'entrepreneurships')) {
+                $isOwner = $user->entrepreneurships()->whereKey($order->entrepreneurship_id)->exists();
+            }
+        }
+
+        $authorized = $isOwner;
+        if (!$authorized) {
+            $authUser = optional($request->user());
+            $paramUserId = $request->query('user_id');
+            if ($authUser && $authUser->id) {
+                $authorized = ($order->user_id && (int) $order->user_id === (int) $authUser->id);
+            }
+            if (!$authorized && $paramUserId) {
+                $authorized = (int) $order->user_id === (int) $paramUserId;
+            }
+        }
+
+        abort_unless($authorized, 403);
+
+        $includeItems = filter_var($request->query('include_items', 'true'), FILTER_VALIDATE_BOOLEAN);
+        $relations = ['entrepreneurship'];
+        if ($includeItems) {
+            $relations[] = 'items.orderOptions';
+            $relations[] = 'items.product';
+        }
+        return new OrderResource($order->load($relations));
+    }
+
+    public function forEntrepreneur(Request $request, int $entrepreneurship)
+    {
+        Gate::authorize('manage-entrepreneurship', (int) $entrepreneurship);
+
+        $query = Order::query()
+            ->where('entrepreneurship_id', (int) $entrepreneurship)
+            ->orderByDesc('id');
+
+        // Optional status filter: supports status=draft,requested or status[]=draft&status[]=requested
+        $status = $request->query('status');
+        if ($status) {
+            if (is_string($status)) {
+                $parts = array_filter(array_map('trim', explode(',', $status)));
+                if (!empty($parts)) {
+                    $query->whereIn('status', $parts);
+                }
+            } elseif (is_array($status)) {
+                $query->whereIn('status', $status);
+            }
+        }
+
+        $include = (string) $request->query('include', 'entrepreneurship');
+        $with = [];
+        if (str_contains($include, 'entrepreneurship')) {
+            $with[] = 'entrepreneurship';
+        }
+        if (str_contains($include, 'items')) {
+            $with[] = 'items.orderOptions';
+            $with[] = 'items.product';
+        }
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        $orders = $query->paginate(20);
+        return OrderResource::collection($orders);
+    }
+
+    public function table(Request $request)
+    {
+        $eid = (int) $request->query('entrepreneurship_id');
+        abort_if(!$eid, 400, 'entrepreneurship_id is required');
+        Gate::authorize('manage-entrepreneurship', $eid);
+
+        $query = Order::with(['entrepreneurship'])
+            ->where('entrepreneurship_id', $eid)
+            ->orderByDesc('id');
+
+        // Optional status filter
+        $status = $request->query('status');
+        if ($status) {
+            if (is_string($status)) {
+                $parts = array_filter(array_map('trim', explode(',', $status)));
+                if (!empty($parts)) {
+                    $query->whereIn('status', $parts);
+                }
+            } elseif (is_array($status)) {
+                $query->whereIn('status', $status);
+            }
+        }
+
+        $orders = $query->paginate(20);
+        return OrderResource::collection($orders);
     }
 
     protected function recalculateTotals(Order $order): void

@@ -9,31 +9,38 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable; // 👈 AGREGA HasApiTokens
+    use HasApiTokens, HasFactory, Notifiable;
+protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'role',
+    'phone',
+    'province',
+    'canton',
+    'district',
+    'address',
+    'banned',
+    'avatar_url',
+    'confirmation_token',
+    'isConfirmed'  // Changed from is_confirmed
+];
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'phone',
-        'province',
-        'canton',
-        'district',
-        'address',
-        'banned',
-        'avatar_url'
-    ];
-
-    protected $casts = [
-        'banned' => 'boolean',
-    ];
-
+protected $casts = [
+    'banned' => 'boolean',
+    'isConfirmed' => 'boolean',  // Changed from is_confirmed
+];
+    // Relaciones existentes
     public function roleRelation()
     {
         return $this->belongsTo(UserRole::class, 'role');
     }
 
+    // Add this to your User model
+    public function getIsConfirmedAttribute()
+    {
+        return (bool) $this->attributes['isConfirmed'];
+    }
     public function interests()
     {
         return $this->hasMany(UserInterest::class);
@@ -52,5 +59,15 @@ class User extends Authenticatable
     public function fairs()
     {
         return $this->hasMany(Fair::class);
+    }
+
+    // Helper opcional para verificar si el usuario está confirmado
+    public function isConfirmed(): bool
+    {
+        return $this->isConfirmed;
+    }
+    public function setIsConfirmedAttribute($value)
+    {
+        $this->attributes['isConfirmed'] = (bool) $value;
     }
 }

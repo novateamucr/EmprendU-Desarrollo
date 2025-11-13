@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\Api\EntrepreneurshipController;
 use App\Http\Controllers\Api\ProductController;
@@ -19,23 +22,43 @@ use App\Http\Controllers\Api\ProductCustomFormController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
+use App\Http\Controllers\Api\SocialPlatformController;
+use App\Http\Controllers\Api\PublicShareController;
+
+use App\Mail\ContactUsMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
 
+// Public share metadata endpoint (no auth)
+Route::get('public/share/product/{id}', [PublicShareController::class, 'productMeta']);
+
+
 // Protected routes (authentication required)
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
+
 Route::apiResource('products', ProductController::class);
+Route::post('products/by-ids', [ProductController::class, 'getProductsByIds']);
 Route::apiResource('fairs', FairController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
+// User routes
 Route::apiResource('users', UserController::class);
+
+// Profile route for the authenticated user
+Route::middleware('auth:api')->group(function () {
+    Route::put('profile', [UserController::class, 'updateProfile']);
+});
 Route::apiResource('reviews', ReviewController::class);
 Route::get('/fairs', [FairController::class, 'index']);
 Route::get('/featured-business/today', [FeaturedBusinessController::class, 'today']);
 Route::get('/featured-business/history', [FeaturedBusinessController::class, 'history']);
+
+// Social platforms (redes)
+Route::get('social-platforms', [SocialPlatformController::class, 'index']);
+Route::get('social-platforms/{platform}', [SocialPlatformController::class, 'show']);
 
 // Secure password update route (expects current_password, password, password_confirmation)
 Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
@@ -67,12 +90,21 @@ Route::get('products/{product}/custom-forms/{custom_form}', [ProductCustomFormCo
 Route::put('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'update']);
 Route::delete('products/{product}/custom-forms/{custom_form}', [ProductCustomFormController::class, 'destroy']);
 
+// Test logging
+Route::get('test-log', function() {
+    \Log::info('This is a test log message', ['test' => 'value']);
+    return response()->json(['message' => 'Check your logs for the test message']);
+});
+
 // Orders
-Route::get('orders', [OrdersController::class, 'index']); // ?entrepreneurship_id=
+Route::get('orders', [OrdersController::class, 'index'])->middleware('auth:sanctum'); // infer user from token
 Route::post('orders', [OrdersController::class, 'store']);
 Route::post('orders/{order}/items', [OrdersController::class, 'addItem']);
-Route::patch('orders/{order}/status', [OrdersController::class, 'updateStatus']);
-Route::delete('orders/{order}', [OrdersController::class, 'destroy']);
+Route::patch('orders/{order}/status', [OrdersController::class, 'updateStatus'])->middleware('auth:sanctum');
+Route::delete('orders/{order}', [OrdersController::class, 'destroy'])->middleware('auth:sanctum');
+Route::get('orders/{order}', [OrdersController::class, 'show'])->middleware('auth:sanctum');
+Route::get('entrepreneurships/{entrepreneurship}/orders', [OrdersController::class, 'forEntrepreneur'])->middleware('auth:sanctum');
+Route::get('orders-table', [OrdersController::class, 'table'])->middleware('auth:sanctum');
 
 
 // AI Assistant routes
@@ -83,3 +115,20 @@ Route::post('assistant/validate/product', [AIAssistantController::class, 'valida
 
 Route::post('/inscripciones', [InscripcionController::class, 'store']);
 Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
+
+Route::post('/ContactUs', function (Request $request) {
+    $data = $request->validate([
+        'email' => 'required|email',
+        'subject' => 'required|string',
+        'message' => 'required|string',
+    ]);
+
+    Mail::to('novateamucr@gmail.com')->send(new ContactUsMailable($data));
+    Mail::to($data['email'])->send(new ContactUsConfirmationMailable($data));
+
+    return response()->json(['message' => '¡Correo enviado exitosamente! Pronto serás contactado.']);
+});
+
+Route::get('/confirm-email/{token}', [UserController::class, 'confirmEmail']);
+
+

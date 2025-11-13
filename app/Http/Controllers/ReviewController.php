@@ -35,25 +35,47 @@ class ReviewController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-         $data = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'review' => 'nullable|string',
-            'user_id' => 'nullable|exists:users,id',
-            'entrepreneurship_id' => 'nullable|exists:entrepreneurships,id',
+    public function store(Request $request, R2FileUploadService $fileUploadService)
+{
+    DB::beginTransaction();
+    try {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|integer|exists:user_roles,id',
+            'phone' => 'nullable|string|max:20',
+            'province' => 'nullable|string|max:100',
+            'canton' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+            'banned' => 'nullable|boolean',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'avatar_url' => 'nullable|string',
         ]);
 
-        $review = Review::create($data);
+        $data['password'] = Hash::make($data['password']);
+        $data['confirmation_token'] = Str::random(40);
+        $data['isConfirmed'] = false; // Changed from is_confirmed to isConfirmed
 
+        // Handle avatar upload if provided
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $data['avatar_url'] = $fileUploadService->upload($avatar, 'users/avatars');
+        }
+
+        $user = User::create($data);
+
+        // Rest of your code...
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error al registrar usuario: ' . $e->getMessage());
         return response()->json([
-            'message' => 'Reseña creada exitosmente',
-            'review' => $review->load(['user', 'entrepreneurship']),
-        ], 201);
+            'message' => 'Error al registrar el usuario',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Display the specified resource.
