@@ -71,11 +71,19 @@ class InscripcionController extends Controller
 // Obtener inscripciones por feria (participantes)
 public function getByFair($fairId)
 {
-    $inscripciones = Inscripcion::where('fair_id', $fairId)
-        ->with(['user', 'emprendimiento'])
-        ->get();
+    try {
+        $inscripciones = Inscripcion::where('fair_id', $fairId)
+            ->with(['user', 'emprendimiento']) 
+            ->get();
 
-    return response()->json($inscripciones);
+        return response()->json($inscripciones);
+    } catch (\Throwable $e) {
+        \Log::error('Error en getByFair: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Error al obtener inscripciones por feria',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
 
     
