@@ -68,4 +68,15 @@ class InscripcionController extends Controller
 
         return response()->json($inscripciones);
     }
+// Obtener inscripciones por feria (participantes)
+public function getByFair($fairId)
+{
+    $inscripciones = Inscripcion::where('fair_id', $fairId)
+        ->with(['usuario', 'emprendimiento'])
+        ->get();
+
+    return response()->json($inscripciones);
+}
+
+    
 }

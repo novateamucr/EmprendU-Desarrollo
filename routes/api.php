@@ -115,6 +115,8 @@ Route::post('assistant/validate/product', [AIAssistantController::class, 'valida
 
 Route::post('/inscripciones', [InscripcionController::class, 'store']);
 Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
+Route::get('/inscripciones/feria/{fairId}', [InscripcionController::class, 'getByFair']);
+
 
 Route::post('/ContactUs', function (Request $request) {
     $data = $request->validate([
