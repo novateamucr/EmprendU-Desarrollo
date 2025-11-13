@@ -24,6 +24,7 @@ use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
 use App\Http\Controllers\Api\SocialPlatformController;
 use App\Http\Controllers\Api\PublicShareController;
+use App\Http\Controllers\Api\UbicacionController;
 
 use App\Mail\ContactUsMailable;
 
@@ -44,6 +45,9 @@ Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
+Route::apiResource('ubicaciones', UbicacionController::class)->parameters([
+    'ubicaciones' => 'ubicacion'
+]);
 // User routes
 Route::apiResource('users', UserController::class);
 
