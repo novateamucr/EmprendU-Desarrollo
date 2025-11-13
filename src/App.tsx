@@ -114,7 +114,7 @@ function App() {
                   </Route>
                   
                   {/* Admin Routes (role 3) */}
-                  <Route element={<RoleBasedRoute allowedRoles={[3]} redirectTo="/home"> <Outlet /> </RoleBasedRoute>}>
+                  <Route element={<RoleBasedRoute allowedRoles={[3]} redirectTo="/admin/dashboard"> <Outlet /> </RoleBasedRoute>}>
                     <Route path="/admin/usuarios" element={<GestorUsuarios />} />
                     <Route path="/admin/usuarios/nuevo" element={<AñadirUsuario />} />
                     <Route path="/admin/emprendimientos" element={<GestorEmprendimientos />} />

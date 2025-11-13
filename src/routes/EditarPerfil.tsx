@@ -14,11 +14,14 @@ import { ImageUpload } from '../components/ImageUpload';
 import { useProfile, useProfileById, useUpdateProfile, useUpdatePassword, useUploadAvatar, useUpdateProfileById, useUploadAvatarById, useAdminResetPasswordById } from '../domain/profile/queries';
 import { profileFormSchema, passwordSchema, adminPasswordSchema } from '../domain/profile/schema';
 import type { ProfileFormData, PasswordFormData, AdminPasswordFormData } from '../domain/profile/schema';
+import { getProfile } from '../domain/profile/service';
+import { useAuth } from '../context/AuthContext';
 // TODO: reactivar cuando el equipo de auth dé el flujo final
 // import { getToken } from '../domain/auth';
 
 export function EditarPerfil() {
   const navigate = useNavigate();
+  const { token, login } = useAuth();
   const { id } = useParams();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -216,10 +219,38 @@ export function EditarPerfil() {
       safeData.role = 'administrador' as any;
     }
     updateProfileMutation.mutate(safeData, {
-      onSuccess: () => {
+      onSuccess: async () => {
         // Bandera para celebrar en Perfil solo para self-edit
         if (!isEditingOther) {
           localStorage.setItem('celebrate', 'profile_saved');
+          try {
+            // Recargar la sesión con los datos actualizados
+            const updated = await getProfile();
+            if (token && updated) {
+              // Adaptar a la forma esperada por AuthContext
+              const mappedUser = {
+                id: updated.id,
+                name: updated.name,
+                email: updated.email,
+                role: typeof updated.role === 'number' ? updated.role : 1,
+                phone: updated.phone,
+                province: updated.province,
+                canton: updated.canton,
+                district: updated.district,
+                address: updated.address,
+                avatar_url: (updated as any).avatar_url,
+                created_at: '',
+                updated_at: '',
+                role_relation: updated.roleRelation ? { id: updated.roleRelation.id, name: updated.roleRelation.name } : null,
+                interests: Array.isArray(updated.interests) ? updated.interests : [],
+                entrepreneurships: Array.isArray(updated.entrepreneurships) ? updated.entrepreneurships : []
+              } as any;
+              // Re-login para actualizar contexto y localStorage
+              login({ token, user: mappedUser });
+            }
+          } catch (_) {
+            // En caso de falla, continuar navegación igualmente
+          }
           navigate('/profile');
         } else {
           navigate('/admin/usuarios');
