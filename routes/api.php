@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\PublicShareController;
 use App\Http\Controllers\Api\UbicacionController;
 
 use App\Mail\ContactUsMailable;
+use App\Mail\ContactUsConfirmationMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
