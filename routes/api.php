@@ -19,6 +19,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Api\ProductOptionController;
 use App\Http\Controllers\Api\ProductOptionValueController;
 use App\Http\Controllers\Api\ProductCustomFormController;
+use App\Http\Controllers\Api\ProductBuilderController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
@@ -41,6 +42,10 @@ Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
 
 Route::apiResource('products', ProductController::class);
 Route::post('products/by-ids', [ProductController::class, 'getProductsByIds']);
+
+// Product builder (batch edit of options/values/custom forms)
+Route::get('products/{product}/builder', [ProductBuilderController::class, 'show']);
+Route::put('products/{product}/builder', [ProductBuilderController::class, 'update']);
 Route::apiResource('fairs', FairController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);

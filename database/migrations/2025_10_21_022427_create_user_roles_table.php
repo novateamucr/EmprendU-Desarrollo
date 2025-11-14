@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('user_roles')) {
+            Schema::create('user_roles', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('description')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
@@ -24,6 +26,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_roles');
+        if (Schema::hasTable('user_roles')) {
+            Schema::dropIfExists('user_roles');
+        }
     }
 };

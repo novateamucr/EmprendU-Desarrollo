@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('entrepreneurship_categories')) {
         Schema::create('entrepreneurship_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->timestamps();
         });
+    }
     }
 
     /**
