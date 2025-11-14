@@ -22,8 +22,6 @@ import {
   type ProductOptionValue,
   type ProductCustomForm,
 } from '../../../services/productConfigService';
-import { ModalAnimaciones } from '../../../components/ui/ModalAnimaciones';
-import { set } from 'zod';
 
 function AddFieldDropdown({
   onSelect,
@@ -947,37 +945,6 @@ export default function EditProductPage() {
 
             
           </div>
-          <div className='text-sm text-gray-500 font-medium flex items-center gap-1'>
-              <h3>Sabes como funcionan los</h3>
-          <button
-            onClick={() => setShowModalSelectores(true)}
-            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
-            aria-label="Abrir información"
-          >Selectores ,
-          </button>
-
-          <button
-            onClick={() => setShowModalTextos(true)}
-            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
-            aria-label="Abrir información"
-          >Textos ,
-          </button>
-
-          <button
-            onClick={() => setShowModalNumeros(true)}
-            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
-            aria-label="Abrir información"
-          >el Número ,
-          </button>
-
-          <button
-            onClick={() => setShowModalInterruptor(true)}
-            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
-            aria-label="Abrir información"
-          >y el Interruptor?
-          </button>
-          </div>
-          
 
           {isBuilderLoading ? (
               <div className="mt-4 space-y-4">
