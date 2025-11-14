@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{{  $data['subject'] | 'Notificación - EmpowerUp' }}</title>
+    <title>{{ $data['subject'] ?? 'Bienvenido a EmpowerUp' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
