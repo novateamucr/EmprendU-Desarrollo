@@ -200,7 +200,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                   </div>
                 </TableCell>
                 <TableCell className="text-center font-medium">
-                  ${Number(product.price).toFixed(2)}
+                  ₡{Number(product.price).toFixed(2)}
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center">
