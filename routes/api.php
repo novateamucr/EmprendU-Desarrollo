@@ -122,3 +122,4 @@ Route::post('/ContactUs', function (Request $request) {
 Route::get('/confirm-email/{token}', [UserController::class, 'confirmEmail']);
 
 
+Route::post('password/reset', [UserController::class, 'sendPasswordReset']);

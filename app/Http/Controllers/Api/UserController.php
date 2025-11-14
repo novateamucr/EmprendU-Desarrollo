@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Mail\UserNotification;
 
+use App\Mail\PasswordResetMail;
+use App\Http\Requests\PasswordResetRequest;
 
 
 class UserController extends Controller
@@ -36,7 +38,54 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    // Add these methods to the UserController class
 
+
+    /**
+     * Send password reset email with temporary password
+     *
+     * @param  \App\Http\Requests\PasswordResetRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendPasswordReset(PasswordResetRequest $request)
+    {
+        try {
+            \Log::info('Password reset requested for: ' . $request->email);
+
+            // Find the user by email
+            $user = User::where('email', $request->email)->firstOrFail();
+            \Log::info('User found: ' . $user->id);
+
+            // Generate a random temporary password
+            $temporaryPassword = Str::random(12);
+            \Log::info('Temporary password generated');
+
+            // Hash and update the user's password
+            $user->password = Hash::make($temporaryPassword);
+            $user->save();
+            \Log::info('Password updated in database');
+
+            // Send email with the temporary password
+            \Log::info('Sending password reset email to: ' . $user->email);
+            Mail::to($user->email)->send(new PasswordResetMail($temporaryPassword));
+            \Log::info('Password reset email sent successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Se ha enviado una nueva contraseña temporal a tu correo electrónico.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in sendPasswordReset: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
     public function destroy(User $user)
     {
         $user->delete();
@@ -108,34 +157,34 @@ class UserController extends Controller
 
 
     public function confirmEmail($token)
-{
-    DB::beginTransaction();
-    try {
-        $user = User::where('confirmation_token', $token)
-            ->whereNull('email_verified_at')
-            ->firstOrFail();
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::where('confirmation_token', $token)
+                ->whereNull('email_verified_at')
+                ->firstOrFail();
 
-        $user->update([
-            'isConfirmed' => true,
-            'confirmation_token' => null,
-            'email_verified_at' => now(),
-        ]);
+            $user->update([
+                'isConfirmed' => true,
+                'confirmation_token' => null,
+                'email_verified_at' => now(),
+            ]);
 
-        DB::commit();
+            DB::commit();
 
-        // Return the success view instead of JSON
-        return view('emails.confirmation-success');
+            // Return the success view instead of JSON
+            return view('emails.confirmation-success');
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::error('Error confirming email: ' . $e->getMessage());
-        
-        // You might want to create an error view as well
-        return response()->view('emails.confirmation-error', [
-            'message' => 'Enlace de confirmación inválido o expirado'
-        ], 400);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error confirming email: ' . $e->getMessage());
+
+            // You might want to create an error view as well
+            return response()->view('emails.confirmation-error', [
+                'message' => 'Enlace de confirmación inválido o expirado'
+            ], 400);
+        }
     }
-}
 
     // confirm email
     public function confirm(Request $request)
@@ -254,6 +303,7 @@ class UserController extends Controller
             'address' => 'nullable|string',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'avatar_url' => 'nullable|string',
+            'role' => 'nullable|exists:roles,id',
         ];
 
         // If _method is present, it's a form submission
