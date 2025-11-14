@@ -348,7 +348,7 @@ export default function AñadirFeria() {
 
 								{/* Owner */}
 								<div>
-									<label htmlFor="user_id" className="block text-sm font-medium mb-1">Usuario creador *</label>
+									<label htmlFor="user_id" className="block text-sm font-medium mb-1">Usuario dueño *</label>
 									<select
 										id="user_id"
 										name="user_id"
