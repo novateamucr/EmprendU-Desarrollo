@@ -25,6 +25,8 @@ import {
   type ProductOptionValue,
   type ProductCustomForm,
 } from '../../../services/productConfigService';
+import { ModalAnimaciones } from '../../../components/ui/ModalAnimaciones';
+import { set } from 'zod';
 
 export default function EditProductPage() {
   const { productId, businessId } = useParams();
@@ -34,6 +36,11 @@ export default function EditProductPage() {
   const queryClient = useQueryClient();
   const pid = Number(productId);
   const stateProduct = (location.state as any)?.product as Product | undefined;
+
+  const [showModalSelectores, setShowModalSelectores] = useState(false);
+  const [showModalTextos, setShowModalTextos] = useState(false);
+  const [showModalNumeros, setShowModalNumeros] = useState(false);
+  const [showModalInterruptor, setShowModalInterruptor] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'general'|'form'>('general');
   // Removed options/custom states
@@ -719,6 +726,37 @@ export default function EditProductPage() {
               }}>+ Interruptor</Button>
             </div>
           </div>
+          <div className='text-sm text-gray-500 font-medium flex items-center gap-1'>
+              <h3>Sabes como funcionan los</h3>
+          <button
+            onClick={() => setShowModalSelectores(true)}
+            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
+            aria-label="Abrir información"
+          >Selectores ,
+          </button>
+
+          <button
+            onClick={() => setShowModalTextos(true)}
+            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
+            aria-label="Abrir información"
+          >Textos ,
+          </button>
+
+          <button
+            onClick={() => setShowModalNumeros(true)}
+            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
+            aria-label="Abrir información"
+          >el Número ,
+          </button>
+
+          <button
+            onClick={() => setShowModalInterruptor(true)}
+            className="p-1.5 sm:p-1 hover:underline hover:text-brand transition-colors text-gray-500 font-medium"
+            aria-label="Abrir información"
+          >y el Interruptor?
+          </button>
+          </div>
+          
 
           {formForbidden ? (
             <div className="p-4 rounded bg-red-50 text-red-700 text-sm">
@@ -946,7 +984,69 @@ export default function EditProductPage() {
           })()}
         </div>
       )}
+        <ModalAnimaciones
+            isOpen={showModalSelectores}
+            onClose={() => setShowModalSelectores(false)}
+            title="¿Para qué sirven los selectores y multiselectores?"
+            //pointerGifSrc={pointerGifSrc}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Selectores</p>
+                <p>Funcionan para obtener un dato de un producto para la realización de un pedido. Por ejemplo, si quieres saber la talla de un producto, puedes agregar un selector con la pregunta de “Talla” y los posibles valores “S”, “M” y “L” para que el usuario selecione. </p>
+              </div>
+              <div>
+                <p className="font-semibold">Multiselectores</p>
+                <p>Similar al selector, pero con múltiples opciones. Funcionan para preguntarle al cliente por múltiples datos de un producto. Por ejemplo, si quieres saber la talla y el color de un producto, puedes agregar un multiselector con las preguntas de “Talla” y “Color” y los posibles valores de cada pregunta. </p>
+              </div>
+            </div>
+          </ModalAnimaciones>
 
+          <ModalAnimaciones
+            isOpen={showModalTextos}
+            onClose={() => setShowModalTextos(false)}
+            title="¿Para qué sirven los textos cortos y amplios?"
+            //pointerGifSrc={pointerGifSrc}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Texto Corto</p>
+                <p>Esta opción es para realizarle al cliente una pregunta sobre el pedido del producto que requiera una respuesta corta </p>
+              </div>
+              <div>
+                <p className="font-semibold">Texto Amplio</p>
+                <p>Esta opcion es para realizarle al cliente una pregunta sobre el pedido del producto que requiera una respuesta más amplia.</p>
+              </div>
+            </div>
+          </ModalAnimaciones>
+
+          <ModalAnimaciones
+            isOpen={showModalNumeros}
+            onClose={() => setShowModalNumeros(false)}
+            title="¿Para qué sirve el campo Número?"
+            //pointerGifSrc={pointerGifSrc}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Número</p>
+                <p>Este funciona para preguntarle al cliente sobre un dato numérico en un pedido del producto. Por ejemplo, si es un negocio de pizzas, puedes preguntarle al cliente cuantas pizzas quiere </p>
+              </div>
+            </div>
+          </ModalAnimaciones>
+
+          <ModalAnimaciones
+            isOpen={showModalInterruptor}
+            onClose={() => setShowModalInterruptor(false)}
+            title="¿Para qué sirve el campo Interruptor?"
+            //pointerGifSrc={pointerGifSrc}
+          >
+            <div className="space-y-4 text-gray-700 text-sm">
+              <div>
+                <p className="font-semibold">Interruptor</p>
+                <p>Este funciona para para preguntarle al cliente sobre una opción u otra en un pedido del producto. Por ejemplo, si es un negocio de pizzas, puedes preguntarle al cliente si quieren la pizza con chile o sin chile. </p>
+              </div>
+            </div>
+          </ModalAnimaciones>
       
     </div>
   );
