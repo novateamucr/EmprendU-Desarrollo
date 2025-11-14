@@ -247,11 +247,13 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id)
             ],
             'password' => 'nullable|string|min:6',
+            'role' => 'integer|exists:user_roles,id',
             'phone' => 'nullable|string|max:20',
             'province' => 'nullable|string|max:100',
             'canton' => 'nullable|string|max:100',
             'district' => 'nullable|string|max:100',
             'address' => 'nullable|string',
+            'banned' => 'boolean',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'avatar_url' => 'nullable|string',
         ];
