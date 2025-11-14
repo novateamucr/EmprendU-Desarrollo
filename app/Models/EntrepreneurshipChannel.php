@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EntrepreneurshipChannel extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    protected $table = 'entrepreneurship_channels';
+    use SoftDeletes;
 
     protected $fillable = [
         'entrepreneurship_id',
@@ -18,29 +15,22 @@ class EntrepreneurshipChannel extends Model
         'url',
         'handle',
         'is_primary',
-        'is_public'
+        'is_public',
+        'display_order',
     ];
 
     protected $casts = [
-        'is_primary' => 'boolean',
-        'is_public' => 'boolean'
+        'is_primary' => 'bool',
+        'is_public'  => 'bool',
     ];
-    
-    protected static function booted()
+
+    public function platform()
     {
-        static::addGlobalScope('ordered', function ($builder) {
-            $builder->orderBy('is_primary', 'desc')
-                   ->orderBy('id', 'asc');
-        });
+        return $this->belongsTo(SocialPlatform::class, 'platform_code', 'code');
     }
 
     public function entrepreneurship()
     {
         return $this->belongsTo(Entrepreneurship::class);
-    }
-
-    public function platform()
-    {
-        return $this->belongsTo(SocialPlatform::class, 'platform_code', 'code');
     }
 }
