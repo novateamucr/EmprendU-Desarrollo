@@ -662,7 +662,7 @@ export default function Home() {
     ),
   ];
 
-  // Filter businesses by category, search query, and selected zone (backend data)
+  // Filter businesses by category, search query, selected province and selected zone/canton
   const filteredBusinesses = useMemo(() => {
     return entrepreneurships.filter((business: any) => {
       // Get the category name from bizCategoryInfo which has the correct mapping
@@ -694,13 +694,20 @@ export default function Home() {
         ) ||
         normalizedCat.includes(normalizedSearch);
 
-      // Match by selected zone (if any)
-      const matchesZone =
+      // Match by selected province (if any)
+      const matchesProvince =
         selectedProvince === "Todos" ||
         (business.owner?.province || "").toLowerCase() ===
           selectedProvince.toLowerCase();
 
-      return matchesCategory && matchesSearch && matchesZone;
+      // Match by selected zone/canton (if any)
+      // Note: selectedZone default value is "Todas"
+      const matchesCanton =
+        selectedZone === "Todas" ||
+        (business.owner?.canton || "").toLowerCase() ===
+          selectedZone.toLowerCase();
+
+      return matchesCategory && matchesSearch && matchesProvince && matchesCanton;
     });
   }, [
     entrepreneurships,
