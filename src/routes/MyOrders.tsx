@@ -1,13 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { listMyOrders } from '../services/orderService';
-import { Clock, CheckCircle2, BadgeCheck, Star, XCircle, Search } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { listMyOrders } from "../services/orderService";
+import {
+  Clock,
+  CheckCircle2,
+  BadgeCheck,
+  Star,
+  XCircle,
+  Search,
+} from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 // Types for orders shown in MyOrders
-type OrderStatus = 'solicitado' | 'aceptado' | 'cancelado' | 'completado' | 'calificado' | 'en_proceso';
+type OrderStatus =
+  | "solicitado"
+  | "aceptado"
+  | "cancelado"
+  | "completado"
+  | "calificado"
+  | "en_proceso";
 
 type Order = {
   id: string;
@@ -18,28 +31,42 @@ type Order = {
   entrepreneurshipId: number;
   itemsCount: number;
   total: number;
+  grand_total: string;
   status: OrderStatus;
-  logoUrl?: string;
   status_key: string;
+  logoUrl?: string;
+  items: Array<{
+    id: number;
+    product: {
+      id: number;
+      name: string;
+      description: string;
+      price: string;
+      image_url: string;
+    };
+    quantity: number;
+    unit_price: string;
+    total_price: string;
+  }>;
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  solicitado: 'Solicitado',
-  aceptado: 'Aceptado',
-  en_proceso: 'En proceso',
-  completado: 'Completado',
-  calificado: 'Calificado',
-  cancelado: 'Cancelado'
+  solicitado: "Solicitado",
+  aceptado: "Aceptado",
+  en_proceso: "En proceso",
+  completado: "Completado",
+  calificado: "Calificado",
+  cancelado: "Cancelado",
 };
 
 function StatusBadge({ status }: { status: OrderStatus }) {
   const styles: Record<OrderStatus, string> = {
-    solicitado: 'bg-sky-50 text-sky-700 border-sky-200',
-    aceptado: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    en_proceso: 'bg-purple-50 text-purple-700 border-purple-200',
-    completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    calificado: 'bg-amber-50 text-amber-700 border-amber-200',
-    cancelado: 'bg-rose-50 text-rose-700 border-rose-200',
+    solicitado: "bg-sky-50 text-sky-700 border-sky-200",
+    aceptado: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    en_proceso: "bg-purple-50 text-purple-700 border-purple-200",
+    completado: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    calificado: "bg-amber-50 text-amber-700 border-amber-200",
+    cancelado: "bg-rose-50 text-rose-700 border-rose-200",
   };
   const icons: Record<OrderStatus, JSX.Element> = {
     solicitado: <Clock size={14} className="shrink-0" />,
@@ -62,91 +89,109 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 
 // Map backend status -> local status keys
 function mapStatus(status: string): OrderStatus {
-  if (!status) return 'solicitado';
-  
+  if (!status) return "solicitado";
+
   const statusMap: Record<string, OrderStatus> = {
     // Frontend statuses (already mapped)
-    'solicitado': 'solicitado',
-    'aceptado': 'aceptado',
-    'en_proceso': 'en_proceso',
-    'completado': 'completado',
-    'calificado': 'calificado',
-    'cancelado': 'cancelado',
+    solicitado: "solicitado",
+    aceptado: "aceptado",
+    en_proceso: "en_proceso",
+    completado: "completado",
+    calificado: "calificado",
+    cancelado: "cancelado",
     // Backend statuses (add any variations here)
-    'requested': 'solicitado',
-    'accepted': 'aceptado',
-    'in_progress': 'en_proceso',
-    'completed': 'completado',
-    'rated': 'calificado',
-    'canceled': 'cancelado',
+    requested: "solicitado",
+    accepted: "aceptado",
+    in_progress: "en_proceso",
+    completed: "completado",
+    rated: "calificado",
+    canceled: "cancelado",
     // Add any other variations here
-    'pending': 'solicitado',
-    'processing': 'en_proceso',
-    'delivered': 'completado',
-    'shipped': 'en_proceso'
+    pending: "solicitado",
+    processing: "en_proceso",
+    delivered: "completado",
+    shipped: "en_proceso",
   };
-  
+
   const normalizedStatus = status.toLowerCase().trim();
-  return statusMap[normalizedStatus] || 'solicitado';
+  return statusMap[normalizedStatus] || "solicitado";
 }
 
 export default function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
-  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const handleOrderClick = (orderId: string) => {
+    navigate(`/orders/${orderId}`);
+  };
+
   // Fetch orders from the API
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user?.id) {
-        setError('Usuario no autenticado');
-        setIsLoading(false);
-        return;
-      }
-      
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await listMyOrders(user.id);
-        
-        // Map the response data to match our Order type
-        const mappedOrders: Order[] = response.data.map((order: any) => ({
+ useEffect(() => {
+  const fetchOrders = async () => {
+    if (!user?.id) {
+      setError("Usuario no autenticado");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await listMyOrders(user.id);
+
+      // Map the simplified API response to our Order type
+      const mappedOrders: Order[] = response.data.map((order: any) => {
+        return {
           id: String(order.id),
-          orderNumber: order.order_number,
+          orderNumber: `#${order.order_number || order.id}`,
           createdAt: order.created_at,
           updatedAt: order.updated_at,
-          entrepreneurshipName: order.entrepreneurship?.name || 'Emprendimiento',
+          entrepreneurshipName: order.entrepreneurship?.name || "Emprendimiento",
           entrepreneurshipId: order.entrepreneurship?.id || 0,
-          itemsCount: order.items?.length || 0,
+          itemsCount: order.items_count || 0,
           total: parseFloat(order.total) || 0,
+          grand_total: order.total?.toString() || '0',
           status: mapStatus(order.status),
           status_key: order.status,
-          logoUrl: order.entrepreneurship?.logo_url
-        }));
-        
-        setOrders(mappedOrders);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-        setError('No se pudieron cargar los pedidos. Por favor, intente de nuevo más tarde.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchOrders();
-  }, [user]); // Removed page from dependencies since we're not paginating
+          logoUrl: order.entrepreneurship?.logo_url,
+          items: [] // Items not included in this response
+        };
+      });
+
+      // Sort by creation date (newest first)
+      mappedOrders.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setOrders(mappedOrders);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("No se pudieron cargar los pedidos. Por favor, intente de nuevo más tarde.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchOrders();
+}, [user]);
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => 
-      (statusFilter === 'all' || order.status === statusFilter) &&
-      (query.trim() === '' || 
-       (order.orderNumber && order.orderNumber.toLowerCase().includes(query.toLowerCase())) ||
-       (order.entrepreneurshipName && order.entrepreneurshipName.toLowerCase().includes(query.toLowerCase())))
+    return orders.filter(
+      (order) =>
+        (statusFilter === "all" || order.status === statusFilter) &&
+        (query.trim() === "" ||
+          (order.orderNumber &&
+            order.orderNumber.toLowerCase().includes(query.toLowerCase())) ||
+          (order.entrepreneurshipName &&
+            order.entrepreneurshipName
+              .toLowerCase()
+              .includes(query.toLowerCase())))
     );
   }, [orders, statusFilter, query]);
 
@@ -195,13 +240,19 @@ export default function MyOrders() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">Mis pedidos</h1>
-            <p className="text-secondary mt-1">Historial de pedidos y sus estados.</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary">
+              Mis pedidos
+            </h1>
+            <p className="text-secondary mt-1">
+              Historial de pedidos y sus estados.
+            </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-secondary whitespace-nowrap">Estado:</label>
+              <label className="text-sm text-secondary whitespace-nowrap">
+                Estado:
+              </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -231,150 +282,260 @@ export default function MyOrders() {
           </div>
         </div>
 
-  <div className="mt-6 bg-white rounded-lg border border-border shadow-sm overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b text-sm font-medium text-gray-500">
-            <div className="col-span-3">Emprendimiento</div>
-            <div className="col-span-2">Código</div>
-            <div className="col-span-2">Fecha</div>
-            <div className="col-span-1 text-center">Artículos</div>
-            <div className="col-span-2 text-right">Total</div>
-            <div className="col-span-2 text-center">Estado</div>
-          </div>
-          {filteredOrders.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <p className="text-lg font-medium">No se encontraron pedidos</p>
-              <p className="text-sm mt-1">
-                {statusFilter === 'all' 
-                  ? 'Aún no has realizado ningún pedido.' 
-                  : `No hay pedidos con el estado seleccionado.`}
-              </p>
+        <div className="mt-6 bg-white rounded-lg border border-border shadow-sm overflow-hidden">
+          {/* Desktop view */}
+          <div className="hidden md:block">
+            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b text-sm font-medium text-gray-500">
+              <div className="col-span-3">Producto</div>
+              <div className="col-span-2">Código</div>
+              <div className="col-span-2">Fecha</div>
+              <div className="col-span-1 text-center">Cantidad</div>
+              <div className="col-span-2 text-right">Precio unitario</div>
+              <div className="col-span-2 text-right">Total</div>
             </div>
-          ) : null}
 
-          {/* Desktop / tablet: show table rows */}
-          <ul className="hidden md:block divide-y divide-gray-200">
-            {filteredOrders.map((order) => (
-              <li
-                key={order.id}
-                className="px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                onClick={() => navigate(`/orders/${order.id}`)}
-                title="Ver detalle de pedido"
-              >
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-3 flex items-center">
-                    {order.logoUrl ? (
-                      <img 
-                        src={order.logoUrl} 
-                        alt={order.entrepreneurshipName}
-                        className="h-10 w-10 rounded-full object-cover mr-3"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
-                        {order.entrepreneurshipName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="font-medium text-gray-900">{order.entrepreneurshipName}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-sm font-mono text-gray-600">#{order.orderNumber}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="text-sm text-gray-600">
-                      {format(new Date(order.createdAt), 'dd MMM yyyy', { locale: es })}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {format(new Date(order.createdAt), 'HH:mm', { locale: es })}
-                    </div>
-                  </div>
-                  <div className="col-span-1 text-center">
-                    <span className="text-sm text-gray-600">{order.itemsCount}</span>
-                  </div>
-                  <div className="col-span-2 text-right">
-                    <span className="font-medium text-gray-900">₡{order.total.toLocaleString()}</span>
-                  </div>
-                  <div className="col-span-2 flex justify-center">
-                    <StatusBadge status={order.status} />
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* Mobile: show cards (one per order) */}
-          <div className="space-y-4 block md:hidden">
-            {filteredOrders.map((order) => (
-              <div
-                key={order.id}
-                onClick={() => navigate(`/orders/${order.id}`)}
-                title="Ver detalle de pedido"
-                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer border border-gray-200"
-              >
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
+            {filteredOrders.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p className="text-lg font-medium">No se encontraron pedidos</p>
+                <p className="text-sm mt-1">
+                  {statusFilter === "all"
+                    ? "Aún no has realizado ningún pedido."
+                    : `No hay pedidos con el estado seleccionado.`}
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {filteredOrders.map((order) => (
+                  <li 
+                    key={order.id} 
+                    className="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleOrderClick(order.id)}
+                  >
+                    <div className="mb-2 flex justify-between items-center">
+                      <div className="flex items-center">
                         {order.logoUrl ? (
-                          <img 
-                            src={order.logoUrl} 
+                          <img
+                            src={order.logoUrl}
                             alt={order.entrepreneurshipName}
-                            className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+                            className="h-10 w-10 rounded-full object-cover mr-3"
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
                             {order.entrepreneurshipName.charAt(0).toUpperCase()}
                           </div>
                         )}
-                        <div className="min-w-0">
-                          <h3 className="font-medium text-gray-900 truncate">{order.entrepreneurshipName}</h3>
-                          <p className="text-xs text-gray-500">#{order.orderNumber}</p>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {order.entrepreneurshipName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {format(
+                              new Date(order.createdAt),
+                              "dd MMM yyyy - HH:mm",
+                              { locale: es }
+                            )}
+                            <span className="mx-2">•</span>
+                            <StatusBadge status={order.status} />
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {order.orderNumber}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid grid-cols-12 gap-4 items-center py-2"
+                        >
+                          <div className="col-span-3 flex items-center">
+                            {item.product.image_url ? (
+                              <img
+                                src={item.product.image_url}
+                                alt={item.product.name}
+                                className="h-16 w-16 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
+                                <span className="text-xs text-gray-400">
+                                  Sin imagen
+                                </span>
+                              </div>
+                            )}
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-gray-900">
+                                {item.product.name}
+                              </p>
+                              <p className="text-xs text-gray-500 line-clamp-1">
+                                {item.product.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-sm font-mono text-gray-600">
+                              #{order.orderNumber}-{item.id}
+                            </span>
+                          </div>
+                          <div className="col-span-2 text-sm text-gray-600">
+                            {format(new Date(order.createdAt), "dd MMM yyyy", {
+                              locale: es,
+                            })}
+                          </div>
+                          <div className="col-span-1 text-center text-sm text-gray-600">
+                            {item.quantity}
+                          </div>
+                          <div className="col-span-2 text-right text-sm text-gray-600">
+                            ₡{parseFloat(item.unit_price).toLocaleString()}
+                          </div>
+                          <div className="col-span-2 text-right font-medium text-gray-900">
+                            ₡{parseFloat(item.total_price).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">
+                            Total del pedido:
+                          </p>
+                          <p className="text-lg font-semibold">
+                            ₡
+                            {order.total.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
                         </div>
                       </div>
                     </div>
-                    <div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Mobile view */}
+          <div className="md:hidden">
+            {filteredOrders.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p className="text-lg font-medium">No se encontraron pedidos</p>
+                <p className="text-sm mt-1">
+                  {statusFilter === "all"
+                    ? "Aún no has realizado ningún pedido."
+                    : `No hay pedidos con el estado seleccionado.`}
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredOrders.map((order) => (
+                  <div 
+                    key={order.id} 
+                    className="p-4"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOrderClick(order.id);
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center">
+                          {order.logoUrl ? (
+                            <img
+                              src={order.logoUrl}
+                              alt={order.entrepreneurshipName}
+                              className="h-10 w-10 rounded-full object-cover mr-3"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+                              {order.entrepreneurshipName
+                                .charAt(0)
+                                .toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {order.entrepreneurshipName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {order.orderNumber} •{" "}
+                              {format(new Date(order.createdAt), "dd/MM/yy", {
+                                locale: es,
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                       <StatusBadge status={order.status} />
                     </div>
-                  </div>
-                </div>
 
-                <div className="p-4">
-                  {order.itemsCount > 0 ? (
-                    <div className="space-y-3">
-                      <div className="p-3 bg-white rounded-md border border-gray-100 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-gray-600">Artículos</div>
-                          <div className="text-sm font-medium">{order.itemsCount}</div>
+                    <div className="mt-3 space-y-3">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex p-3 bg-gray-50 rounded-lg"
+                        >
+                          {item.product.image_url ? (
+                            <img
+                              src={item.product.image_url}
+                              alt={item.product.name}
+                              className="h-16 w-16 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
+                              <span className="text-xs text-gray-400">
+                                Sin imagen
+                              </span>
+                            </div>
+                          )}
+                          <div className="ml-3 flex-1">
+                            <p className="text-sm font-medium text-gray-900">
+                              {item.product.name}
+                            </p>
+                            <p className="text-xs text-gray-500 line-clamp-1">
+                              {item.product.description}
+                            </p>
+                            <div className="mt-1 flex justify-between items-center">
+                              <span className="text-sm font-medium">
+                                ₡{parseFloat(item.unit_price).toLocaleString()}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                x {item.quantity}
+                              </span>
+                              <span className="text-sm font-semibold">
+                                ₡
+                                {order.total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="text-sm text-gray-600">Total</div>
-                          <div className="font-semibold text-primary">₡{order.total.toLocaleString()}</div>
+                      ))}
+
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Total:</span>
+                          <span className="text-lg font-semibold">
+                            ₡
+                            {order.total.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Fecha</div>
-                        <div className="text-sm">
-                          {format(new Date(order.createdAt), 'dd/MM/yyyy', { locale: es })}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Artículos</div>
-                        <div className="text-sm">{order.itemsCount}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Total</div>
-                        <div className="text-lg font-semibold text-primary">₡{order.total.toLocaleString()}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
           <div className="px-4 py-3 border-t bg-white rounded-b-lg border-border">
             <div className="text-sm text-gray-500">
-              Mostrando {filteredOrders.length} {filteredOrders.length === 1 ? 'pedido' : 'pedidos'}
+              Mostrando {filteredOrders.length}{" "}
+              {filteredOrders.length === 1 ? "pedido" : "pedidos"}
             </div>
           </div>
         </div>

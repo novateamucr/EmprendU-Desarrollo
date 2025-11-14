@@ -136,7 +136,7 @@ export default function MyOrderDetail() {
       
       if (!isMounted) return;
       
-      const orderData = response.data.data;
+      const orderData = response.data;
       setOrder(orderData);
       
       if (orderData.items?.length > 0) {
