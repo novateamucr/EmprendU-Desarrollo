@@ -24,6 +24,7 @@ use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
 
 use App\Mail\ContactUsMailable;
+use App\Mail\ContactUsConfirmationMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);

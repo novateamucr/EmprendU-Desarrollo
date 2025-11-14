@@ -25,12 +25,12 @@ class ContactUsConfirmationMailable extends Mailable
     /**
      * Get the message envelope.
      */
-    public function envelope(): Envelope
+    /*public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Contact Us Confirmation Mailable',
         );
-    }
+    }*/
 
     public function build()
     {
@@ -43,12 +43,12 @@ class ContactUsConfirmationMailable extends Mailable
     /**
      * Get the message content definition.
      */
-    public function content(): Content
+    /*public function content(): Content
     {
         return new Content(
             view: 'emails.contactUsConfirmation',
         );
-    }
+    }*/
 
     /**
      * Get the attachments for the message.

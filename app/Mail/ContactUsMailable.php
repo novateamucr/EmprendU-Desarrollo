@@ -59,7 +59,6 @@ class ContactUsMailable extends Mailable
     {
         return $this->from('novateamucr@gmail.com', 'EmpowerUp')
                     ->to('novateamucr@gmail.com') 
-                    ->cc($this->data['email']) 
                     ->subject('Nuevo mensaje desde formulario de contacto')
                     ->view('emails.contactUs')
                     ->with('data', $this->data);
