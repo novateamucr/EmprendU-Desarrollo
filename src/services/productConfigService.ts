@@ -106,3 +106,19 @@ export async function updateCustomForm(productId: number, customFormId: number, 
 export async function deleteCustomForm(productId: number, customFormId: number): Promise<void> {
   await axios.delete(`${API_URL}/products/${productId}/custom-forms/${customFormId}`);
 }
+
+// Builder (batch load and update)
+export async function getProductBuilder(productId: number): Promise<{
+  product: any;
+  options: ProductOption[];
+  values: Record<number, ProductOptionValue[]>;
+  custom_forms: ProductCustomForm[];
+}> {
+  const res = await axios.get(`${API_URL}/products/${productId}/builder`);
+  return res.data;
+}
+
+export async function updateProductBuilder(productId: number, payload: any): Promise<any> {
+  const res = await axios.put(`${API_URL}/products/${productId}/builder`, payload);
+  return res.data;
+}
