@@ -79,7 +79,7 @@ export default function Ferias() {
       return;
     }
 
-   
+    toast.info('Cargando emprendimientos...');
     try {
       // Obtener inscripciones del usuario para esta feria (tener datos frescos)
       let userIns: any[] = [];
@@ -147,7 +147,7 @@ export default function Ferias() {
       });
 
       const created = res && (res.data ?? res);
-      toast.success("Inscripción registrada con exito");
+      toast.success("Inscripción registrada con exito.");
 
       setShowConfirmationPopup(false);
       setShowPopupEmprendimientos(false);
