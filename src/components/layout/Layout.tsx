@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, LayoutDashboard, Store, Package } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import emprendULogo from '../../assets/logo.svg';
+import { Toaster } from 'react-hot-toast';
 
 type LayoutProps = {
   children: ReactNode;
@@ -171,6 +172,7 @@ export function Layout({ children }: LayoutProps) {
           {children}
         </div>
       </main>
+      <Toaster position="bottom-center" />
     </div>
   );
 }

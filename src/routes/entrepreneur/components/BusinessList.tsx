@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Heart, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, AlertCircle, RefreshCw, Eye } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Card } from '../../../components/ui/Card';
@@ -290,96 +290,99 @@ export default function BusinessList() {
           </ModalAnimaciones>
         </div>
       ) : (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mx-auto w-full">
-          {businesses.map((business) => (
-            <Card key={business.id} className="overflow-hidden">
-              <div className="p-4">
-                <div className="flex justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <div className="flex-shrink-0 h-14 w-14 rounded-md bg-gray-100 overflow-hidden">
-                      {business.image_url ? (
-                        <img
-                          src={business.image_url}
-                          alt={`Logo de ${business.name}`}
-                          className="h-14 w-14 object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder-business.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="h-14 w-14 bg-gray-200 flex items-center justify-center">
-                          <Package className="h-6 w-6 text-gray-500" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{business.name}</h3>
-                        <Badge variant={business.banned ? 'destructive' : 'success'} className="flex-shrink-0">
-                          {business.banned ? 'Inactivo' : 'Activo'}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-600 line-clamp-2 overflow-hidden text-ellipsis">
-                        {business.description || 'Sin descripción'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  {/* Category stays on a single row in mobile (label + value) */}
-                  <div className="flex items-center justify-start text-sm gap-2">
-                    <span className="text-gray-500">Categoría</span>
-                    <span className="font-medium truncate">{business.category}</span>
-                  </div>
-
-                  {/* Products and favorites stack on mobile, and sit side-by-side on sm+ */}
-                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Package className="h-4 w-4 text-primary" />
-                      <span className="text-sm"><span className="font-semibold">{business.products?.length || 0}</span> productos</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Heart className="h-4 w-4 text-red-500" />
-                      <span className="text-sm"><span className="font-semibold">{business.favorites?.length || 0}</span> favoritos</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="text-xs text-gray-500">
-                    Actualizado el {formatDate(business.updated_at)}
-                  </div>
-                  <div className="flex items-center space-x-2.5">
-                    <Button variant="secondary" size="icon" className="h-10 w-10" asChild>
-                      <Link to={`/entrepreneur/business/setup?businessId=${business.id}`}>
-                        <Pencil className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-10 w-10"
-                      onClick={() => navigate(`/entrepreneur/inventory?businessId=${business.id}`)}
-                      title="Ver productos"
-                    >
-                      <Package className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-10 w-10"
-                      onClick={() => requestDelete(business.id)}
-                      title="Eliminar emprendimiento"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto w-full">
+    {businesses.map((business) => (
+      <Card key={business.id} className="overflow-hidden flex flex-col h-full">
+        {/* Full-width banner image */}
+        <div className="w-full h-32 bg-gray-100 overflow-hidden">
+          {business.image_url ? (
+            <img
+              src={business.image_url}
+              alt={`Banner de ${business.name}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder-business.png';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+              <Package className="h-12 w-12 text-gray-400" />
+            </div>
+          )}
         </div>
+
+        <div className="p-4 flex-1 flex flex-col">
+          {/* Business Info */}
+          <div className="text-center mb-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">
+              {business.name}
+            </h3>
+            <Badge variant={business.banned ? 'destructive' : 'success'} className="mb-2">
+              {business.banned ? 'Inactivo' : 'Activo'}
+            </Badge>
+            <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+              {business.description || 'Sin descripción'}
+            </p>
+            <div className="text-xs text-gray-500">
+              {business.category}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-auto pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-around mb-3">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{business.products?.length || 0}</div>
+                <div className="text-xs text-gray-500">Productos</div>
+              </div>
+              <div className="h-10 w-px bg-gray-200" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-500">{business.favorites?.length || 0}</div>
+                <div className="text-xs text-gray-500">Favoritos</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-between items-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 mr-2"
+                onClick={() => navigate(`/entrepreneur/inventory?businessId=${business.id}`)}
+              >
+                <Package className="h-5 w-5 mr-2" />
+                Inventario
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-10 w-10"
+                asChild
+              >
+                <Link to={`/entrepreneur/business/setup?businessId=${business.id}`}>
+                  <Pencil className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-10 w-10 ml-2"
+                onClick={() => requestDelete(business.id)}
+                title="Eliminar emprendimiento"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-xs text-gray-400 text-center mt-2">
+              Actualizado el {formatDate(business.updated_at)}
+            </div>
+          </div>
+        </div>
+      </Card>
+    ))}
+  </div>
       )}
       {/* Modal de confirmación para eliminar un emprendimiento */}
       <Modal

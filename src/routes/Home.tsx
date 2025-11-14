@@ -20,7 +20,7 @@ import {
 } from "../domain/profile/queries";
 import type { UserProfile } from "../domain/profile/types";
 import { useAuth } from "../context/AuthContext";
-import { categoryIconUrl, categoryColor } from "../utils/categoryIcons";
+import { categoryColor, categoryIconUrl } from "../utils/categoryIcons";
 import { Modal } from "../components/Modal";
 import FeaturedEntrepreneurOfDay from "../components/FeaturedEntrepreneurOfDay";
 import {
@@ -31,6 +31,21 @@ import {
   Diamond,
   Favorite,
   FavoriteBorder,
+  Restaurant,
+  Fastfood,
+  Cake,
+  LocalBar,
+  LocalCafe,
+  Icecream,
+  LocalPizza,
+  DinnerDining,
+  RamenDining,
+  RestaurantMenu,
+  SetMeal,
+  LunchDining,
+  BreakfastDining,
+  OutdoorGrill,
+  SportsBar,
 } from "@mui/icons-material";
 import { Skeleton } from "@mui/material";
 import {
@@ -188,7 +203,7 @@ const removeAccents = (str: string) => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
 
-export default function Home() {
+export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [viewMode, setViewMode] = useState<"emprendimientos" | "productos">(
@@ -525,11 +540,109 @@ export default function Home() {
         }
       });
 
-      // Convert to array of category objects
+      // Map of category names to Material-UI icons
+      // First, let's create a mapping of category names to their corresponding icons
+      const categoryIconMap: Record<string, React.ElementType> = {
+        // Food categories
+        Comida: Restaurant,
+        Restaurante: Restaurant,
+        "Comida Rápida": Fastfood,
+        Postres: Cake,
+        Bebidas: LocalBar,
+        Café: LocalCafe,
+        Té: LocalCafe,
+        Helados: Icecream,
+        Pizza: LocalPizza,
+        Hamburguesas: DinnerDining,
+        Asiática: RamenDining,
+        Italiana: DinnerDining,
+        Mexicana: RestaurantMenu,
+        Saludable: Favorite,
+        Vegano: FavoriteBorder, // Using FavoriteBorder as a fallback for Spa
+        Vegetariano: Favorite, // Using Favorite as a fallback for Eco
+        Panadería: Cake, // Using Cake as a fallback for BakeryDining
+        Mariscos: SetMeal,
+        Sushi: LunchDining,
+        Desayunos: BreakfastDining,
+        Almuerzos: LunchDining,
+        Cenas: DinnerDining,
+        Snacks: RestaurantMenu, // Using RestaurantMenu as a fallback for Tapas
+        // Add more mappings as needed
+      };
+
+      // Helper function to get the appropriate icon for a category
+      const getCategoryIcon = (categoryName: string): React.ElementType => {
+        // Try to find an exact match first
+        if (categoryIconMap[categoryName]) {
+          return categoryIconMap[categoryName];
+        }
+
+        // Then check for partial matches
+        const lowerName = categoryName.toLowerCase();
+
+        if (lowerName.includes("comida")) return Restaurant;
+        if (lowerName.includes("bebida")) return LocalBar;
+        if (lowerName.includes("postre")) return Cake;
+        if (lowerName.includes("café") || lowerName.includes("cafe"))
+          return LocalCafe;
+        if (lowerName.includes("té") || lowerName.includes("te"))
+          return LocalCafe;
+        if (lowerName.includes("helado")) return Icecream;
+        if (lowerName.includes("pizza")) return LocalPizza;
+        if (lowerName.includes("hamburguesa")) return DinnerDining;
+        if (lowerName.includes("sushi")) return LunchDining;
+        if (lowerName.includes("marisco")) return SetMeal;
+        if (lowerName.includes("pescado")) return SetMeal;
+        if (lowerName.includes("carne")) return OutdoorGrill;
+        if (lowerName.includes("pollo")) return DinnerDining;
+        if (lowerName.includes("ensalada")) return RestaurantMenu;
+        if (lowerName.includes("sopa")) return RestaurantMenu; // Using RestaurantMenu as a fallback for SoupKitchen
+        if (lowerName.includes("sándwich") || lowerName.includes("sandwich"))
+          return LunchDining;
+        if (lowerName.includes("empanada")) return Cake; // Using Cake as a fallback for BakeryDining
+        if (lowerName.includes("arepa")) return Cake; // Using Cake as a fallback for BakeryDining
+        if (lowerName.includes("taco")) return RestaurantMenu; // Using RestaurantMenu as a fallback for Taco
+        if (lowerName.includes("burrito")) return LunchDining;
+        if (lowerName.includes("pasta")) return DinnerDining;
+        if (lowerName.includes("perro") || lowerName.includes("hot dog"))
+          return LunchDining;
+        if (lowerName.includes("papa") || lowerName.includes("papa frita"))
+          return LunchDining;
+        if (lowerName.includes("alita")) return DinnerDining;
+        if (lowerName.includes("ceviche")) return DinnerDining;
+        if (lowerName.includes("tiramisú") || lowerName.includes("tiramisu"))
+          return Cake;
+        if (lowerName.includes("chocolate")) return Cake;
+        if (
+          lowerName.includes("jugo") ||
+          lowerName.includes("batido") ||
+          lowerName.includes("smoothie") ||
+          lowerName.includes("malteada")
+        )
+          return LocalBar;
+        if (lowerName.includes("refresco") || lowerName.includes("agua"))
+          return LocalBar;
+        if (
+          lowerName.includes("cerveza") ||
+          lowerName.includes("vino") ||
+          lowerName.includes("licor") ||
+          lowerName.includes("cóctel") ||
+          lowerName.includes("coctel") ||
+          lowerName.includes("trago") ||
+          lowerName.includes("mixolog") ||
+          lowerName.includes("bar")
+        )
+          return SportsBar;
+
+        // Default icon if no match is found
+        return Apps;
+      };
+
+      // Then in your component where you map categories:
       const categoryItems = Array.from(categoryCounts.entries()).map(
-        ([name, { count, color, icon }]) => ({
+        ([name, { count, color }]) => ({
           name,
-          icon,
+          icon: getCategoryIcon(name),
           count,
           color,
         })
@@ -541,7 +654,7 @@ export default function Home() {
           name: "Todos",
           icon: Apps,
           count: totalCount,
-          color: "#4F46E5", // Default color for 'Todos'
+          color: "#4F46E5", // Indigo
         },
         ...(userInterests.length && misInteresesCount > 0
           ? [
@@ -549,12 +662,17 @@ export default function Home() {
                 name: "Mis intereses",
                 icon: Star,
                 count: misInteresesCount,
-                color: "#D97706", // Amber color for 'Mis intereses'
+                color: "#D97706", // Amber
               } as const,
             ]
           : []),
         ...categoryItems
           .filter((cat) => cat.count > 0) // Only include categories with at least one item
+          .map((cat) => ({
+            ...cat,
+            // Ensure consistent color for each category
+            color: categoryColor(cat.name) || "#6B7280", // Default to gray if no color
+          }))
           .sort((a, b) => b.count - a.count), // Sort by count descending
       ];
 
@@ -573,14 +691,17 @@ export default function Home() {
     ]);
 
     return (
-      <div className="mb-8">
-        <h2 className="text-lg md:text-xl 3xl:text-2xl 4xl:text-4xl font-semibold text-primary mb-4">
+      <div className="mb-8" id="categories-section">
+        <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2">
+          <FloatingElement>
+            <Apps sx={{ fontSize: 24 }} />
+          </FloatingElement>
           Categorías
         </h2>
-        <div className="relative overflow-hidden">
+        <div className="relative">
           <div
             ref={categoryScrollRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth category-scroll w-full"
+            className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide scroll-smooth w-full"
           >
             {loadingCategories ? (
               <div className="flex gap-3 w-full">
@@ -590,10 +711,10 @@ export default function Home() {
                     className="w-28 sm:w-40 flex flex-col items-center px-3 py-2"
                   >
                     <Skeleton
-                      variant="text"
+                      variant="rounded"
                       width="100%"
-                      height={60}
-                      className="rounded-md"
+                      height={48}
+                      className="rounded-full"
                     />
                   </div>
                 ))}
@@ -604,32 +725,46 @@ export default function Home() {
               </div>
             ) : (
               categories.map((category) => {
-                // Ensure category.name is a string and has a value
                 const categoryName =
                   String(category.name || "").trim() || "General";
                 const isSelected = selectedCategory === categoryName;
+                const iconColor = isSelected
+                  ? "#FFFFFF"
+                  : category.color || "#5b98b8";
+
                 return (
                   <button
                     key={categoryName}
                     onClick={() => setSelectedCategory(categoryName)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 4xl:px-6 4xl:py-3 rounded-full transition-all duration-200 ${
                       isSelected
-                        ? "bg-brand text-white border-brand"
-                        : "bg-white text-secondary border-border hover:border-brand/50"
+                        ? `shadow-md`
+                        : "hover:shadow-sm hover:bg-gray-50"
                     }`}
+                    style={{
+                      backgroundColor: isSelected
+                        ? category.color || "#4F46E5"
+                        : "#FFFFFF",
+                      color: isSelected ? "#FFFFFF" : "#374151",
+                      border: `1px solid ${
+                        isSelected ? category.color || "#4F46E5" : "#E5E7EB"
+                      }`,
+                    }}
                   >
                     <img
-                      src={categoryIconUrl(
-                        categoryName,
-                        isSelected ? "#FFFFFF" : "#5b98b8"
-                      )}
+                      src={categoryIconUrl(categoryName, iconColor)}
                       alt={categoryName}
-                      className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6"
+                      className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6 flex-shrink-0"
                     />
-                    <span className="font-medium text-sm 3xl:text-base 4xl:text-3xl truncate max-w-[100px] sm:max-w-[140px]">
+                    <span className="font-medium text-sm 3xl:text-base 4xl:text-xl whitespace-nowrap">
                       {categoryName}
                     </span>
-                    <span className="text-xs 3xl:text-sm 4xl:text-2xl opacity-75">
+                    <span
+                      className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80"
+                      style={{
+                        color: isSelected ? "rgba(255,255,255,0.9)" : "inherit",
+                      }}
+                    >
                       ({category.count})
                     </span>
                   </button>
@@ -662,7 +797,7 @@ export default function Home() {
     ),
   ];
 
-  // Filter businesses by category, search query, and selected zone (backend data)
+  // Filter businesses by category, search query, selected province and selected zone/canton
   const filteredBusinesses = useMemo(() => {
     return entrepreneurships.filter((business: any) => {
       // Get the category name from bizCategoryInfo which has the correct mapping
@@ -694,13 +829,20 @@ export default function Home() {
         ) ||
         normalizedCat.includes(normalizedSearch);
 
-      // Match by selected zone (if any)
-      const matchesZone =
+      // Match by selected province (if any)
+      const matchesProvince =
         selectedProvince === "Todos" ||
         (business.owner?.province || "").toLowerCase() ===
           selectedProvince.toLowerCase();
 
-      return matchesCategory && matchesSearch && matchesZone;
+      // Match by selected zone/canton (if any)
+      // Note: selectedZone default value is "Todas"
+      const matchesCanton =
+        selectedZone === "Todas" ||
+        (business.owner?.canton || "").toLowerCase() ===
+          selectedZone.toLowerCase();
+
+      return matchesCategory && matchesSearch && matchesProvince && matchesCanton;
     });
   }, [
     entrepreneurships,
@@ -728,7 +870,7 @@ export default function Home() {
   const filteredProducts: Product[] = allProducts.filter((p) => {
     // Get product category name from category_id if available
     let effectiveCategoryName = "General";
-    
+
     if (p?.category_id != null) {
       const category = categoryMap.get(Number(p.category_id));
       effectiveCategoryName = category?.name || "General";
@@ -739,23 +881,29 @@ export default function Home() {
     }
 
     // Normalize category names for comparison
-    const normalizedEffectiveCat = removeAccents(effectiveCategoryName.toLowerCase().trim());
-    const normalizedSelectedCat = removeAccents(selectedCategory.toLowerCase().trim());
-    
+    const normalizedEffectiveCat = removeAccents(
+      effectiveCategoryName.toLowerCase().trim()
+    );
+    const normalizedSelectedCat = removeAccents(
+      selectedCategory.toLowerCase().trim()
+    );
+
     // Match by selected category
-    const matchesCategory = 
+    const matchesCategory =
       selectedCategory === "Todos"
         ? true
         : selectedCategory === "Mis intereses"
-          ? interestsSet.has(normalizedEffectiveCat)
-          : normalizedEffectiveCat === normalizedSelectedCat;
+        ? interestsSet.has(normalizedEffectiveCat)
+        : normalizedEffectiveCat === normalizedSelectedCat;
 
     // Match by search query
     const normalizedSearch = removeAccents(searchQuery.toLowerCase().trim());
-    const matchesSearch = 
+    const matchesSearch =
       searchQuery === "" ||
       removeAccents((p.name || "").toLowerCase()).includes(normalizedSearch) ||
-      removeAccents((p.description || "").toLowerCase()).includes(normalizedSearch) ||
+      removeAccents((p.description || "").toLowerCase()).includes(
+        normalizedSearch
+      ) ||
       normalizedEffectiveCat.includes(normalizedSearch);
 
     return matchesCategory && matchesSearch;
@@ -1119,6 +1267,8 @@ export default function Home() {
                                     const categoryInfo = bizCategoryInfo.get(
                                       business.id
                                     ) || { name: "General", color: "#4F46E5" };
+                                    const iconUrl = categoryIconUrl(categoryInfo.name, categoryInfo.color);
+                                    
                                     return (
                                       <button
                                         onClick={(e) => {
@@ -1143,12 +1293,17 @@ export default function Home() {
                                           border: `1px solid ${categoryInfo.color}33`, // 20% opacity border
                                         }}
                                       >
-                                        <span
-                                          className="w-2 h-2 rounded-full"
-                                          style={{
-                                            backgroundColor: categoryInfo.color,
-                                          }}
-                                        ></span>
+                                        {iconUrl && (
+                                          <img 
+                                            src={iconUrl} 
+                                            alt="" 
+                                            className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-6 4xl:h-6"
+                                            style={{
+                                              minWidth: '12px',
+                                              minHeight: '12px',
+                                            }}
+                                          />
+                                        )}
                                         {categoryInfo.name}
                                       </button>
                                     );

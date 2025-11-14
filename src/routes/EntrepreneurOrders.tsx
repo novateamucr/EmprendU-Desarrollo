@@ -48,11 +48,11 @@ function StatusBadge({ status }: { status: OrderStatus }) {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium rounded-full border shadow-sm ${styles[status]}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium rounded-full border shadow-sm ${styles[status]} whitespace-nowrap`}
       title={STATUS_LABEL[status]}
     >
       {icons[status]}
-      <span>{STATUS_LABEL[status]}</span>
+      <span className="hidden sm:inline">{STATUS_LABEL[status]}</span>
     </span>
   );
 }
@@ -224,104 +224,125 @@ export default function EntrepreneurOrders() {
     const isAccepted = o.status === 'pedido_aceptado';
     const isTerminal = o.status === 'pedido_cancelado' || o.status === 'pedido_completado' || o.status === 'pedido_calificado';
 
+    // Button classes
+    const baseButtonClass = "flex-1 flex items-center justify-center px-2 py-1.5 rounded-md border text-xs font-medium focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors";
+    const acceptButtonClass = `${baseButtonClass} border-green-200 bg-green-50 text-green-700 hover:bg-green-100 focus:ring-green-500`;
+    const cancelButtonClass = `${baseButtonClass} border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus:ring-red-500`;
+    const completeButtonClass = `${baseButtonClass} border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 focus:ring-indigo-500`;
+    const disabledClass = "opacity-50 cursor-not-allowed";
+
     return (
-      <div className="flex items-center justify-center gap-2">
-        {isRequested && !isTerminal && (
-          <button
-            className="p-2 rounded-md border border-border hover:bg-emerald-50 text-emerald-600"
-            title="Aceptar"
-            aria-label="Aceptar pedido"
-            onClick={(e) => { e.stopPropagation(); handleAction(o, 'accept'); }}
-            disabled={loadingId === o.id}
-          >
-            <CheckCircle className="w-4 h-4" />
-          </button>
-        )}
-        {isRequested && !isTerminal && (
-          <button
-            className="p-2 rounded-md border border-border hover:bg-rose-50 text-rose-600"
-            title="Cancelar"
-            aria-label="Cancelar pedido"
-            onClick={(e) => { e.stopPropagation(); handleAction(o, 'cancel'); }}
-            disabled={loadingId === o.id}
-          >
-            <Ban className="w-4 h-4" />
-          </button>
-        )}
-        {isAccepted && !isTerminal && (
-          <button
-            className="p-2 rounded-md border border-border hover:bg-indigo-50 text-indigo-600"
-            title="Completar"
-            aria-label="Completar pedido"
-            onClick={(e) => { e.stopPropagation(); handleAction(o, 'complete'); }}
-            disabled={loadingId === o.id}
-          >
-            <ClipboardCheck className="w-4 h-4" />
-          </button>
-        )}
-        {isAccepted && !isTerminal && (
-          <button
-            className="p-2 rounded-md border border-border hover:bg-rose-50 text-rose-600"
-            title="Cancelar"
-            aria-label="Cancelar pedido"
-            onClick={(e) => { e.stopPropagation(); handleAction(o, 'cancel'); }}
-            disabled={loadingId === o.id}
-          >
-            <Ban className="w-4 h-4" />
-          </button>
+      <div className="w-full flex items-stretch gap-1.5">
+        {isRequested && !isTerminal ? (
+          <>
+            <button
+              className={`${acceptButtonClass} ${loadingId === o.id ? disabledClass : ''}`}
+              title="Aceptar pedido"
+              aria-label="Aceptar pedido"
+              onClick={(e) => { e.stopPropagation(); handleAction(o, 'accept'); }}
+              disabled={loadingId === o.id}
+            >
+              <CheckCircle className="w-3.5 h-3.5 mr-1" />
+              <span>Aceptar</span>
+            </button>
+            <button
+              className={`${cancelButtonClass} ${loadingId === o.id ? disabledClass : ''}`}
+              title="Rechazar pedido"
+              aria-label="Rechazar pedido"
+              onClick={(e) => { e.stopPropagation(); handleAction(o, 'cancel'); }}
+              disabled={loadingId === o.id}
+            >
+              <XCircle className="w-3.5 h-3.5 mr-1" />
+              <span>Rechazar</span>
+            </button>
+          </>
+        ) : isAccepted && !isTerminal ? (
+          <>
+            <button
+              className={`${completeButtonClass} ${loadingId === o.id ? disabledClass : ''}`}
+              title="Marcar como completado"
+              aria-label="Marcar como completado"
+              onClick={(e) => { e.stopPropagation(); handleAction(o, 'complete'); }}
+              disabled={loadingId === o.id}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+              <span>Completar</span>
+            </button>
+            <button
+              className={`${cancelButtonClass} ${loadingId === o.id ? disabledClass : ''}`}
+              title="Cancelar pedido"
+              aria-label="Cancelar pedido"
+              onClick={(e) => { e.stopPropagation(); handleAction(o, 'cancel'); }}
+              disabled={loadingId === o.id}
+            >
+              <Ban className="w-3.5 h-3.5 mr-1" />
+              <span>Cancelar</span>
+            </button>
+          </>
+        ) : (
+          <div className="text-xs text-gray-500 italic w-full text-center py-1">
+            {o.status === 'pedido_completado' ? 'Completado' : 
+             o.status === 'pedido_cancelado' ? 'Cancelado' : 'Sin acciones'}
+          </div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="pt-24 pb-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedidos</h1>
-        <p className="text-secondary mt-1">Pedidos de todos tus emprendimientos.</p>
+    <div className="pt-6 md:pt-12 pb-8 px-3 sm:px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="px-3 sm:px-4">
+          <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedidos</h1>
+          <p className="text-secondary mt-1 text-sm sm:text-base">Pedidos de todos tus emprendimientos.</p>
+        </div>
 
-        <div className="mt-6 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-          <div className="flex gap-2 items-center">
-            <label className="text-sm text-secondary">Estado:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="text-sm border border-border rounded-md px-2 py-1 bg-white"
-            >
-              <option value="all">Todos</option>
-              <option value="pedido_solicitado">Pedido solicitado</option>
-              <option value="pedido_aceptado">Pedido aceptado</option>
-              <option value="pedido_completado">Pedido completado</option>
-              <option value="pedido_calificado">Pedido calificado</option>
-              <option value="pedido_cancelado">Pedido cancelado</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <input
-              type="text"
-              placeholder="Buscar por cliente, emprendimiento o código..."
-              className="w-full md:w-80 border border-border rounded-md px-3 py-2 text-sm"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <span title="Usa el buscador para filtrar por cliente, código o emprendimiento">
-              <Info className="w-4 h-4 text-secondary" />
-            </span>
+        <div className="mt-6 px-3 sm:px-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100">
+            <div className="w-full sm:w-auto">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full sm:w-48 text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="pedido_solicitado">Pedido solicitado</option>
+                <option value="pedido_aceptado">Pedido aceptado</option>
+                <option value="pedido_completado">Pedido completado</option>
+                <option value="pedido_calificado">Pedido calificado</option>
+                <option value="pedido_cancelado">Pedido cancelado</option>
+              </select>
+            </div>
+            <div className="w-full sm:w-64">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+              <div className="relative">
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Cliente, emprendimiento o código..."
+                  className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <span className="absolute right-2.5 top-2.5 text-gray-400" title="Buscar por cliente, código o emprendimiento">
+                  <Info className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-6 bg-white rounded-xl border border-border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <div className="hidden md:grid md:grid-cols-9 gap-4 px-4 py-3 border-b text-xs text-secondary text-center">
-              <div className="col-span-1 whitespace-nowrap">Emprendimiento</div>
-              <div className="col-span-1 whitespace-nowrap">Código</div>
-              <div className="col-span-1 whitespace-nowrap">Fecha</div>
-              <div className="col-span-1 whitespace-nowrap">Artículos</div>
-              <div className="col-span-1 whitespace-nowrap">Total</div>
-              <div className="col-span-1 whitespace-nowrap">Cliente</div>
-              <div className="col-span-1 whitespace-nowrap">Dirección</div>
-              <div className="col-span-1 whitespace-nowrap">Estado</div>
-              <div className="col-span-1 whitespace-nowrap">Acción</div>
+        <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mx-3 sm:mx-4">
+          <div className="overflow-x-auto -mx-1">
+            <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-gray-500 font-medium bg-gray-50">
+              <div className="col-span-2 text-center">Emprendimiento</div>
+              <div className="col-span-1 text-center">Código</div>
+              <div className="col-span-1 text-center">Fecha</div>
+              <div className="col-span-2 text-center">Total</div>
+              <div className="col-span-2 text-center">Cliente</div>
+              <div className="col-span-2 text-center">Estado</div>
+              <div className="col-span-2 text-center">Acciones</div>
             </div>
           </div>
           {loading && (
@@ -329,34 +350,28 @@ export default function EntrepreneurOrders() {
               {[1,2,3,4].map((i) => (
                 <li key={i} className="px-4 py-4">
                   <div className="grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-12 md:col-span-2">
+                    <div className="col-span-12 md:col-span-3">
                       <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
                       <div className="h-3 w-24 bg-gray-100 rounded mt-2 animate-pulse md:hidden" />
                     </div>
-                    <div className="hidden md:block col-span-2">
+                    <div className="hidden md:block col-span-1">
                       <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
                     </div>
-                    <div className="col-span-6 md:col-span-2">
+                    <div className="col-span-6 md:col-span-1">
                       <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
                     </div>
-                    <div className="col-span-3 md:col-span-1">
-                      <div className="h-4 w-12 bg-gray-100 rounded animate-pulse" />
-                    </div>
-                    <div className="col-span-3 md:col-span-1">
+                    <div className="col-span-3 md:col-span-2">
                       <div className="h-4 w-16 bg-gray-100 rounded animate-pulse" />
                     </div>
                     <div className="col-span-12 md:col-span-2">
                       <div className="h-4 w-40 bg-gray-100 rounded animate-pulse" />
                       <div className="h-3 w-28 bg-gray-100 rounded mt-2 animate-pulse" />
                     </div>
-                    <div className="col-span-12 md:col-span-1">
-                      <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
-                    </div>
                     <div className="col-span-6 md:col-span-1">
                       <div className="h-6 w-24 bg-gray-100 rounded-full animate-pulse" />
                     </div>
-                    <div className="col-span-6 md:col-span-1">
-                      <div className="h-8 w-24 bg-gray-100 rounded-md animate-pulse" />
+                    <div className="col-span-6 md:col-span-2">
+                      <div className="h-8 w-32 bg-gray-100 rounded-md animate-pulse" />
                     </div>
                   </div>
                 </li>
@@ -375,40 +390,70 @@ export default function EntrepreneurOrders() {
             </div>
           )}
           {!loading && (
-          <ul className="divide-y">
+          <ul className="divide-y divide-gray-200">
             {paged.map((o) => (
               <li
                 key={o.id}
-                className="px-4 py-4 cursor-pointer transition-colors hover:bg-gray-50/80"
+                className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer transition-colors hover:bg-gray-50/80 border-b border-gray-100 last:border-0"
                 onClick={() => navigate(`/entrepreneur/orders/${o.id}`)}
                 title="Ver detalle de pedido"
               >
-                <div className="grid grid-cols-12 md:grid-cols-9 gap-4 items-center text-center md:text-center">
-                  <div className="col-span-12 md:col-span-1 text-left md:text-center">
-                    <div className="font-medium text-primary">{o.entrepreneurshipName}</div>
-                    <div className="md:hidden text-xs text-secondary mt-0.5">Código: {o.id}</div>
-                  </div>
-                  <div className="hidden md:block col-span-1 text-sm">{o.id}</div>
-                  <div className="col-span-6 md:col-span-1 text-sm text-secondary">
-                    {new Date(o.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="col-span-3 md:col-span-1 text-sm">{o.items}</div>
-                  <div className="col-span-3 md:col-span-1 text-sm font-semibold text-primary">
-                    ₡{o.total.toLocaleString()}
-                  </div>
-                  <div className="col-span-12 md:col-span-1 text-xs md:text-sm text-left">
-                    <div className="font-medium">{o.customer?.name || '-'}</div>
-                    <div className="text-secondary">{o.customer?.phone || '-'}</div>
-                    <div className="text-secondary truncate">{o.customer?.email || '-'}</div>
-                  </div>
-                  <div className="col-span-12 md:col-span-1 text-xs md:text-sm text-secondary truncate text-left md:text-center" title={o.customer?.address || ''}>
-                    <span className="md:hidden font-medium text-primary">Dirección: </span>
-                    {o.customer?.address || '-'}
-                  </div>
-                  <div className="col-span-6 md:col-span-1 flex items-center justify-center gap-2 mt-2 md:mt-0">
+                {/* Mobile View */}
+                <div className="md:hidden space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-gray-900">{o.entrepreneurshipName}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Código: {o.id}</div>
+                    </div>
                     <StatusBadge status={o.status} />
                   </div>
-                  <div className="col-span-6 md:col-span-1 mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500">Fecha</div>
+                      <div>{new Date(o.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500">Total</div>
+                      <div className="font-semibold">₡{o.total.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-center">
+                    <div className="text-xs text-gray-500">Cliente</div>
+                    <div className="font-medium">{o.customer?.name || '-'}</div>
+                    <div className="text-gray-600 text-xs">{o.customer?.phone || '-'}</div>
+                  </div>
+                  
+                  <div className="pt-2">
+                    <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                      <div className={loadingId === o.id ? 'opacity-50 pointer-events-none' : ''}>
+                        <ActionButtons o={o} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop View */}
+                <div className="hidden md:grid md:grid-cols-12 gap-4 items-center text-sm">
+                  <div className="col-span-2 text-center">
+                    <div className="font-medium text-gray-900">{o.entrepreneurshipName}</div>
+                  </div>
+                  <div className="col-span-1 text-gray-500 text-sm text-center">{o.id}</div>
+                  <div className="col-span-1 text-gray-500 text-center">
+                    {new Date(o.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="col-span-2 text-center font-medium text-gray-900">
+                    ₡{o.total.toLocaleString()}
+                  </div>
+                  <div className="col-span-2 text-center">
+                    <div className="font-medium">{o.customer?.name || '-'}</div>
+                    <div className="text-xs text-gray-500 truncate">{o.customer?.phone || '-'}</div>
+                  </div>
+                  <div className="col-span-2 flex justify-center">
+                    <StatusBadge status={o.status} />
+                  </div>
+                  <div className="col-span-2" onClick={(e) => e.stopPropagation()}>
                     <div className={loadingId === o.id ? 'opacity-50 pointer-events-none' : ''}>
                       <ActionButtons o={o} />
                     </div>
@@ -419,31 +464,35 @@ export default function EntrepreneurOrders() {
           </ul>
           )}
           {!loading && filtered.length > 0 && (
-            <div className="flex flex-col md:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white">
-              <div className="flex items-center gap-2 text-sm text-secondary">
-                <span>Filas por página:</span>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="whitespace-nowrap">Filas por página:</span>
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="border border-border rounded px-2 py-1 text-sm"
+                  className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                 >
                   {[5, 10, 20, 50].map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
-                <span className="ml-3">{(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} de {filtered.length}</span>
+                <span className="whitespace-nowrap">
+                  {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} de {filtered.length}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="px-3 py-1 rounded border border-border text-sm disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
                   Anterior
                 </button>
-                <span className="text-sm text-secondary">Página {page} de {totalPages}</span>
+                <span className="text-sm text-gray-700 w-24 text-center">
+                  Página {page} de {totalPages}
+                </span>
                 <button
-                  className="px-3 py-1 rounded border border-border text-sm disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >

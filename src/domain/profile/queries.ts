@@ -1,6 +1,7 @@
 // TODO: reactivar cuando el equipo de auth dé el flujo final
 // import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 import { getProfile, updateProfile, setInterests, updatePassword, uploadAvatar, getInterests, getFavorites, addFavorite, removeFavorite, updateProfileById, uploadAvatarById, adminResetPasswordById } from './service';
 import { api } from '../../lib/api';
 import { mapFavoritesDTO, mapProfileDTO, mapToProfileDTO } from './mapper';
@@ -119,6 +120,27 @@ export function useAddFavorite() {
   return useMutation({
     mutationFn: (entrepreneurshipId: number) => addFavorite(entrepreneurshipId),
     onSuccess: async (data) => {
+      // Show success toast in light blue theme with checkmark
+      toast.success('¡Añadido a favoritos!', {
+        position: 'bottom-center',
+        duration: 2000,
+        style: {
+          background: '#E6F2F8', // Lighter blue background
+          color: '#0A5B7A', // Darker blue text
+          borderRadius: '8px',
+          padding: '12px 20px',
+          marginBottom: '20px',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          fontSize: '14px',
+          fontWeight: 500,
+        },
+        icon: '✓',
+        iconTheme: {
+          primary: '#10B981', // Green checkmark
+          secondary: '#E6F2F8',
+        }
+      });
+      
       // Actualizar inmediatamente el cache con la respuesta confirmada del backend
       queryClient.setQueryData<UserProfile>(PROFILE_KEY, (old) => {
         if (!old) return old as any;
@@ -220,6 +242,27 @@ export function useRemoveFavorite() {
   return useMutation({
     mutationFn: (favoriteId: number) => removeFavorite(favoriteId),
     onSuccess: async (_res, favoriteId) => {
+      // Show removed from favorites toast with red X icon
+      toast.success('Eliminado de favoritos', {
+        position: 'bottom-center',
+        duration: 2000,
+        style: {
+          background: '#E6F2F8', // Lighter blue background
+          color: '#0A5B7A', // Darker blue text
+          borderRadius: '8px',
+          padding: '12px 20px',
+          marginBottom: '20px',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          fontSize: '14px',
+          fontWeight: 500,
+        },
+        icon: '✕', // X icon for removal
+        iconTheme: {
+          primary: '#EF4444', // Red X
+          secondary: '#E6F2F8',
+        }
+      });
+      
       // Quitar inmediatamente del cache tras confirmación
       queryClient.setQueryData<UserProfile>(PROFILE_KEY, (old) => {
         if (!old) return old as any;

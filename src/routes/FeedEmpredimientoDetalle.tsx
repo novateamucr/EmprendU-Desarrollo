@@ -88,7 +88,7 @@ export function FeedEmpredimientoDetalle() {
     setLoading(true);
     try {
 
-      const response = await fetch("https://emprendu-desarrollo-production.up.railway.app/api/reviews", {
+      const response = await fetch("http://emprendu-backend.test/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

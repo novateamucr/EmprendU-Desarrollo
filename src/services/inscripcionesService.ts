@@ -12,4 +12,10 @@ export const inscripcionesApi = {
     const response = await api.get(`/inscripciones/${userId}`);
     return response.data;
   },
+
+  // Obtener inscripciones para una feria (participantes)
+  getByFair: async (fairId: number) => {
+    const response = await api.get(`/inscripciones/feria/${fairId}`);
+    return response.data;
+  },
 };
