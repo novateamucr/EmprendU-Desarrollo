@@ -651,70 +651,86 @@ export default function Dashboard() {
     );
   }
   return (
-    <div className="space-y-6 pt-12 px-4 sm:px-6 3xl:px-12 4xl:px-16 text-base 3xl:text-lg 4xl:text-xl">
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
-          <div className="w-full max-w-2xl">
-            <label className="block text-sm md:text-base 3xl:text-lg 4xl:text-2xl font-medium text-gray-700 mb-1.5">
-              Seleccionar emprendimiento
-            </label>
-            <div className="flex items-start gap-3">
-              <BusinessSelect
-                businesses={businesses}
-                selectedBusiness={currentBusiness}
-                onSelect={(option) => {
-                  const found = businesses.find(b => b.id === option.id);
-                  if (!found) return;
-                  const mapped: Entrepreneurship = {
-                    id: parseInt(found.id, 10),
-                    name: found.name,
-                    description: found.description || '',
-                    category: (typeof found.category === 'number' ? found.category : parseInt(found.category || '0', 10)) || 0,
-                    image_url: found.image_url || null,
-                    user_id: found.user_id,
-                    created_at: found.created_at,
-                    updated_at: found.updated_at,
-                    products: [],
-                    owner: {
-                      id: found.user_id,
-                      name: 'Usuario',
-                      email: 'usuario@ejemplo.com',
-                      username: `user_${found.user_id}`,
-                      email_verified_at: null,
-                      password: 'temporary-password',
-                      role: 2,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                      phone: null,
-                      province: null,
-                      canton: null,
-                      district: null,
-                      address: null,
-                      banned: false,
-                      avatar_url: null,
-                      remember_token: null,
-                    },
-                    category_relation: {
-                      id: typeof found.category === 'number' ? found.category : 0,
-                      nombre: (found.category ?? '').toString() || 'Sin categoría',
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                    },
-                    address: found.address,
-                    phone: found.phone,
-                    email: found.email,
-                    website: found.website,
-                    banned: false,
-                  } as Entrepreneurship;
-                  setSelectedBusiness(mapped);
-                }}
-                className="flex-1"
-              />
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 3xl:p-8 4xl:p-10">
+      <div className="max-w-[2000px] mx-auto space-y-6">
+        {/* Business Selector */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <div className="w-full max-w-3xl">
+              <label className="block text-sm sm:text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-medium text-gray-700 mb-2">
+                Seleccionar emprendimiento
+              </label>
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <div className="flex-1">
+                  <BusinessSelect
+                    businesses={businesses}
+                    selectedBusiness={currentBusiness}
+                    onSelect={(option) => {
+                      const found = businesses.find(b => b.id === option.id);
+                      if (!found) return;
+                      const mapped: Entrepreneurship = {
+                        id: parseInt(found.id, 10),
+                        name: found.name,
+                        description: found.description || '',
+                        category: (typeof found.category === 'number' ? found.category : parseInt(found.category || '0', 10)) || 0,
+                        image_url: found.image_url || null,
+                        user_id: found.user_id,
+                        created_at: found.created_at,
+                        updated_at: found.updated_at,
+                        products: [],
+                        owner: {
+                          id: found.user_id,
+                          name: 'Usuario',
+                          email: 'usuario@ejemplo.com',
+                          username: `user_${found.user_id}`,
+                          email_verified_at: null,
+                          password: 'temporary-password',
+                          role: 2,
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString(),
+                          phone: null,
+                          province: null,
+                          canton: null,
+                          district: null,
+                          address: null,
+                          banned: false,
+                          avatar_url: null,
+                          remember_token: null,
+                        },
+                        category_relation: {
+                          id: typeof found.category === 'number' ? found.category : 0,
+                          nombre: (found.category ?? '').toString() || 'Sin categoría',
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString(),
+                        },
+                        address: found.address,
+                        phone: found.phone,
+                        email: found.email,
+                        website: found.website,
+                        banned: false,
+                      } as Entrepreneurship;
+                      setSelectedBusiness(mapped);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+                <Button 
+                  asChild 
+                  variant="outline" 
+                  className="w-full sm:w-auto"
+                >
+                  <Link to="/entrepreneur/business/setup" className="flex items-center justify-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    <span>Nuevo</span>
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
         
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div 
             onClick={() => navigate(`/entrepreneur/inventory?businessId=${selectedBusiness?.id || ''}`)}
             className="cursor-pointer hover:opacity-90 transition-opacity"
@@ -722,332 +738,349 @@ export default function Dashboard() {
             <StatsCard
               title="Productos"
               value={totalProducts}
-              icon={<Package className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-              
+              icon={<Package className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10" />}
             />
           </div>
-          <StatsCard
-            title="Ventas"
-            value={new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(totalSales)}
-            icon={<ShoppingBag className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-            
-          />
           <div 
             className="cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => {
-              // Show customer list in a modal or navigate to customer management
-              alert('Mostrar lista de clientes');
-            }}
+            onClick={() => navigate('/entrepreneur/orders')}
+          >
+            <StatsCard
+              title="Ventas"
+              value={new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(totalSales)}
+              icon={<ShoppingBag className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10" />}
+            />
+          </div>
+          <div 
+            className="cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => navigate('/entrepreneur/customers')}
           >
             <StatsCard
               title="Clientes"
               value={uniqueCustomersCount}
-              icon={<Users className="h-6 w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8" />}
-              
+              icon={<Users className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10" />}
             />
           </div>
         </div>
-      </div>
-      
-      {/* Información del emprendimiento seleccionado */}
-      <Card>
-        <div className="p-6 3xl:p-8 4xl:p-10">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg md:text-xl 3xl:text-3xl 4xl:text-4xl font-medium">Información del emprendimiento</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4">
-              {currentBusiness.image_url ? (
-                <img 
-                  src={currentBusiness.image_url} 
-                  alt={currentBusiness.name}
-                  className="h-16 w-16 3xl:h-20 3xl:w-20 4xl:h-24 4xl:w-24 rounded-md object-cover"
-                />
-              ) : (
-                <div className="h-16 w-16 3xl:h-20 3xl:w-20 4xl:h-24 4xl:w-24 rounded-md bg-gray-100 flex items-center justify-center">
-                  <Store className="h-8 w-8 3xl:h-10 3xl:w-10 4xl:h-12 4xl:w-12 text-gray-400" />
+        
+        {/* Business Information */}
+        <Card className="overflow-hidden">
+          <div className="p-6 3xl:p-8 4xl:p-10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+              <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900">
+                Información del emprendimiento
+              </h3>
+              <Button 
+                asChild 
+                variant="outline" 
+                size="sm"
+                className="w-full sm:w-auto mt-4 sm:mt-0"
+              >
+                <Link to={`/entrepreneur/business/edit/${selectedBusiness?.id}`} className="flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  <span>Editar</span>
+                </Link>
+              </Button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="flex-shrink-0">
+                  {currentBusiness.image_url ? (
+                    <img 
+                      src={currentBusiness.image_url} 
+                      alt={currentBusiness.name}
+                      className="h-24 w-24 sm:h-32 sm:w-32 3xl:h-40 3xl:w-40 rounded-lg object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="h-24 w-24 sm:h-32 sm:w-32 3xl:h-40 3xl:w-40 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Store className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
                 </div>
-              )}
-              <div>
-                <h4 className="font-medium text-base md:text-lg 3xl:text-2xl 4xl:text-3xl">{currentBusiness.name}</h4>
-                <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl text-gray-500">
-                  {currentBusiness.description || 'Sin descripción'}
-                </p>
-                {currentBusiness.address && (
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl text-gray-500 mt-1">
-                    {currentBusiness.address}
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-gray-900 mb-2">
+                    {currentBusiness.name}
+                  </h4>
+                  <p className="text-gray-600 text-sm sm:text-base 3xl:text-lg 4xl:text-xl">
+                    {currentBusiness.description || 'Sin descripción'}
                   </p>
+                  {currentBusiness.address && (
+                    <div className="mt-3 flex items-start">
+                      <svg className="h-5 w-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm sm:text-base 3xl:text-lg 4xl:text-xl text-gray-600">
+                        {currentBusiness.address}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
+                {currentBusiness.phone && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Teléfono</p>
+                    <a 
+                      href={`tel:${currentBusiness.phone.replace(/\D/g, '')}`}
+                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                    >
+                      {currentBusiness.phone}
+                    </a>
+                  </div>
+                )}
+                {currentBusiness.email && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
+                    <a 
+                      href={`mailto:${currentBusiness.email}`}
+                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors break-all"
+                    >
+                      {currentBusiness.email}
+                    </a>
+                  </div>
+                )}
+                {currentBusiness.website && (
+                  <div className="bg-gray-50 p-4 rounded-lg sm:col-span-2 lg:col-span-1">
+                    <p className="text-sm font-medium text-gray-500 mb-1">Sitio web</p>
+                    <a 
+                      href={currentBusiness.website.startsWith('http') ? currentBusiness.website : `https://${currentBusiness.website}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-blue-600 hover:text-blue-700 transition-colors break-all"
+                    >
+                      {currentBusiness.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
                 )}
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              {currentBusiness.phone && (
-                <div>
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl font-medium text-gray-500">Teléfono</p>
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl">{currentBusiness.phone}</p>
-                </div>
-              )}
-              {currentBusiness.email && (
-                <div>
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl font-medium text-gray-500">Email</p>
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl">{currentBusiness.email}</p>
-                </div>
-              )}
-              {currentBusiness.website && (
-                <div className="col-span-2">
-                  <p className="text-sm md:text-base 3xl:text-xl 4xl:text-2xl font-medium text-gray-500">Sitio web</p>
-                  <a 
-                    href={currentBusiness.website.startsWith('http') ? currentBusiness.website : `https://${currentBusiness.website}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline text-sm md:text-base 3xl:text-xl 4xl:text-2xl"
-                  >
-                    {currentBusiness.website}
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Sección de gráficos */}
-      <div className="mt-8">
-  <h3 className="text-lg md:text-xl 3xl:text-3xl 4xl:text-4xl font-medium mb-6">Estadísticas</h3>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 3xl:gap-8 4xl:gap-10">
-          {/* Products Chart */}
-          <Card className="p-6 3xl:p-8 4xl:p-10">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-base md:text-lg 3xl:text-2xl 4xl:text-3xl flex items-center gap-2">
-                <BarChart2 className="h-5 w-5 3xl:h-6 3xl:w-6 4xl:h-7 4xl:w-7 text-blue-600" />
-                Productos por categoría
-              </h4>
-            </div>
-            <div className="h-56 sm:h-64 3xl:h-72 4xl:h-80">
-              {chartData?.products ? (
-                <Bar 
-                  data={chartData.products} 
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      },
-                      tooltip: {
-                        callbacks: {
-                          label: function(context) {
-                            return `${context.parsed.y} productos`;
-                          }
-                        }
-                      }
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: {
-                          stepSize: 1
-                        }
-                      }
-                    }
-                  }}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  No hay datos de productos disponibles
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Sales Chart */}
-          <Card className="p-6 3xl:p-8 4xl:p-10">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-base md:text-lg 3xl:text-2xl 4xl:text-3xl flex items-center gap-2">
-                <LineChart className="h-5 w-5 3xl:h-6 3xl:w-6 4xl:h-7 4xl:w-7 text-green-600" />
-                Ventas mensuales
-              </h4>
-            </div>
-            <div className="h-56 sm:h-64 3xl:h-72 4xl:h-80">
-              {chartData?.sales ? (
-                <Line 
-                  data={chartData.sales}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false
-                      },
-                      tooltip: {
-                        callbacks: {
-                          label: function(context) {
-                            return `₡${context.parsed.y.toLocaleString()}`;
-                          }
-                        }
-                      }
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: {
-                          callback: function(value) {
-                            return `₡${value.toLocaleString()}`;
-                          }
-                        }
-                      }
-                    }
-                  }}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  No hay datos de ventas disponibles
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Customers Chart */}
-          <Card className="p-6 3xl:p-8 4xl:p-10 lg:col-span-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-              <h4 className="font-medium text-base md:text-lg 3xl:text-2xl 4xl:text-3xl flex items-center gap-2">
-                <PieChart className="h-5 w-5 3xl:h-6 3xl:w-6 4xl:h-7 4xl:w-7 text-purple-600" />
-                Clientes: nuevos vs recurrentes
-              </h4>
-            </div>
-            <div className="h-56 sm:h-64 3xl:h-72 4xl:h-80">
-              {chartData?.customers ? (
-                <Pie 
-                  data={chartData.customers}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        // On small screens place legend below for better fit
-                        position: windowWidth < 640 ? 'bottom' as const : 'right' as const,
-                      },
-                      tooltip: {
-                        callbacks: {
-                          label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                            return `${label}: ${value} cliente${value !== 1 ? 's' : ''} (${percentage}%)`;
-                          }
-                        }
-                      }
-                    }
-                  }}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  No hay datos de clientes disponibles
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Customers Section */}
-      <div className="mt-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg md:text-xl 3xl:text-3xl 4xl:text-4xl font-medium">Clientes Recientes</h3>
-          <Button variant="outline" size="sm" onClick={() => alert('Ver todos los clientes')}>
-            Ver todos
-          </Button>
-        </div>
-        
-        <Card>
-          {/* Desktop / tablet table */}
-          <div className="overflow-x-auto hidden md:block">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs md:text-sm 3xl:text-base 4xl:text-lg font-medium text-gray-500 uppercase tracking-wider">
-                    Nombre
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs md:text-sm 3xl:text-base 4xl:text-lg font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs md:text-sm 3xl:text-base 4xl:text-lg font-medium text-gray-500 uppercase tracking-wider">
-                    Provincia
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs md:text-sm 3xl:text-base 4xl:text-lg font-medium text-gray-500 uppercase tracking-wider">
-                    Compras
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs md:text-sm 3xl:text-base 4xl:text-lg font-medium text-gray-500 uppercase tracking-wider">
-                    Última compra
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {recentCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => alert(`Mostrar detalles del cliente: ${customer.name}`)}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 3xl:h-12 3xl:w-12 4xl:h-14 4xl:w-14 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-primary font-medium text-sm md:text-base 3xl:text-lg 4xl:text-xl">
-                            {customer.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm md:text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900">{customer.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-900">{customer.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs md:text-sm 3xl:text-lg 4xl:text-xl leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        {customer.province || '—'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-500">
-                      {customer.totalPurchases} compras
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm md:text-base 3xl:text-lg 4xl:text-xl text-gray-500">
-                      {new Date(customer.lastPurchase).toLocaleDateString('es-CR')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile list view */}
-          <div className="space-y-3 md:hidden">
-            {recentCustomers.map((customer) => (
-              <div key={customer.id} className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                   onClick={() => alert(`Mostrar detalles del cliente: ${customer.name}`)}>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-primary font-medium">
-                        {customer.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                      <div className="text-sm text-gray-500">{customer.email}</div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-500 text-right">
-                    <div className="mb-1"><span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{customer.province || '—'}</span></div>
-                    <div className="text-sm">{customer.totalPurchases} compras</div>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-400 mt-2">Última compra: {new Date(customer.lastPurchase).toLocaleDateString('es-CR')}</div>
-              </div>
-            ))}
           </div>
         </Card>
+
+        {/* Charts Section */}
+        <div className="mb-8">
+          <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-6">
+            Estadísticas
+          </h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 3xl:gap-8 4xl:gap-10">
+            {/* Products Chart */}
+            <Card className="p-6 3xl:p-8 4xl:p-10">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2">
+                  <BarChart2 className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10 text-blue-600" />
+                  Productos por categoría
+                </h4>
+              </div>
+              <div className="h-64 sm:h-72 3xl:h-80 4xl:h-96">
+                {chartData?.products ? (
+                  <Bar 
+                    data={chartData.products} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              return `${context.parsed.y} productos`;
+                            }
+                          }
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            stepSize: 1
+                          }
+                        }
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-500 text-lg">
+                    No hay datos de productos disponibles
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Sales Chart */}
+            <Card className="p-6 3xl:p-8 4xl:p-10">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2">
+                  <LineChart className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10 text-green-600" />
+                  Ventas mensuales
+                </h4>
+              </div>
+              <div className="h-64 sm:h-72 3xl:h-80 4xl:h-96">
+                {chartData?.sales ? (
+                  <Line 
+                    data={chartData.sales}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            callback: function(value) {
+                              return `₡${value}`;
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-500 text-lg">
+                    No hay datos de ventas disponibles
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recent Customers */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-4 sm:mb-0">
+              Clientes Recientes
+            </h3>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/entrepreneur/customers')}
+              className="w-full sm:w-auto"
+            >
+              Ver todos
+            </Button>
+          </div>
+          
+          <Card>
+            {/* Desktop/Tablet View */}
+            <div className="hidden md:block">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Última compra
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total gastado
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Compras
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recentCustomers.length > 0 ? (
+                    recentCustomers.map((customer) => (
+                      <tr 
+                        key={customer.id} 
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => navigate(`/entrepreneur/customers/${customer.id}`)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-gray-600 font-medium">
+                                {customer.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                              <div className="text-sm text-gray-500">{customer.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(customer.lastPurchase).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            ₡{/* Format total spent */}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {customer.totalPurchases}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">
+                        No hay clientes recientes para mostrar
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Mobile View */}
+            <div className="md:hidden">
+              {recentCustomers.length > 0 ? (
+                <div className="divide-y divide-gray-200">
+                  {recentCustomers.map((customer) => (
+                    <div 
+                      key={customer.id}
+                      className="p-4 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => navigate(`/entrepreneur/customers/${customer.id}`)}
+                    >
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-600 text-lg font-medium">
+                            {customer.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="ml-4 flex-1">
+                          <div className="flex justify-between">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                              <div className="text-sm text-gray-500">{customer.email}</div>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {customer.totalPurchases} compras
+                            </div>
+                          </div>
+                          <div className="mt-2 text-sm text-gray-500">
+                            Última compra: {new Date(customer.lastPurchase).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-sm text-gray-500">
+                  No hay clientes recientes para mostrar
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

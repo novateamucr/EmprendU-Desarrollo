@@ -295,7 +295,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
   }
 
   return (
-    <div className="px-2 sm:px-4 lg:px-6 py-6 w-full max-w-full mx-auto">
+    <div className="container mx-auto px-4 py-8 max-w-4xl mt-10">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-2">
@@ -309,7 +309,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
         </div>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 max-w-4xl mx-auto">
         {/* Formulario principal del emprendimiento */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">

@@ -162,15 +162,15 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
     // Map to OrderTableItem format
     const mappedData = orders.map((order: any) => ({
       id: order.id,
-      order_number: order.order_number,
+      order_number: order.id,
       status: order.status,
-      total: parseFloat(order.total || 0),
+      total: parseFloat(order.grand_total || 0),
       created_at: order.created_at,
       updated_at: order.updated_at,
       entrepreneurship: {
         id: order.entrepreneurship?.id || 0,
         name: order.entrepreneurship?.name || 'Emprendimiento',
-        logo_url: order.entrepreneurship?.logo_url
+        logo_url: order.entrepreneurship?.image_url
       },
       items_count: order.items?.length || 0
     }));
@@ -189,11 +189,13 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
 }
 
 // Ver un pedido (incluye items por defecto)
-export async function getOrder(orderId: number | string, includeItems: boolean = true) {
-  const response = await api.get(`/orders/${orderId}`, {
-    params: { include_items: includeItems },
+export async function getOrder(orderId: number | string) {
+  const res = await api.get(`/orders/${orderId}`, {
+    params: {
+      include: 'items,items.product,items.options,items.options.option,items.options.option_value,entrepreneurship,customer'
+    }
   });
-  return response;
+  return res.data;
 }
 
 export async function cancelOrder(orderId: number | string) {

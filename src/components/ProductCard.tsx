@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProductOptions, getCustomForms } from '../services/productConfigService';
 import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { categoryColor } from '../utils/categoryIcons';
+import { categoryColor, categoryIconUrl } from '../utils/categoryIcons';
 
 export interface ProductCardProps {
   title: string;
@@ -94,6 +94,7 @@ export function ProductCard(props: ProductCardProps) {
   };
 
   const categoryColorHex = props.categoryName ? categoryColor(props.categoryName) : undefined;
+  const iconUrl = props.categoryName ? categoryIconUrl(props.categoryName, categoryColorHex) : null;
 
   return (
     <div 
@@ -109,16 +110,29 @@ export function ProductCard(props: ProductCardProps) {
       </div>
       <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
         {props.categoryName && (
-          <span
-            className="inline-block w-fit self-end mb-1 text-[11px] 3xl:text-xs 4xl:text-xl px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full"
-            style={{
-              backgroundColor: categoryColorHex ? `${categoryColorHex}1a` : '#E6F4FA',
-              color: categoryColorHex || '#0A5B7A',
-              border: categoryColorHex ? `1px solid ${categoryColorHex}33` : undefined,
-            }}
-          >
-            {props.categoryName}
-          </span>
+          <div className="self-end mb-1">
+            <div
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full text-[11px] 3xl:text-xs 4xl:text-xl"
+              style={{
+                backgroundColor: categoryColorHex ? `${categoryColorHex}1a` : '#E6F4FA',
+                color: categoryColorHex || '#0A5B7A',
+                border: categoryColorHex ? `1px solid ${categoryColorHex}33` : undefined,
+              }}
+            >
+              {iconUrl && (
+                <img 
+                  src={iconUrl} 
+                  alt="" 
+                  className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-6 4xl:h-6"
+                  style={{
+                    minWidth: '12px',
+                    minHeight: '12px',
+                  }}
+                />
+              )}
+              <span>{props.categoryName}</span>
+            </div>
+          </div>
         )}
         <h3 className="font-semibold text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1 ">{props.title}</h3>
         <p className="font-medium text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">

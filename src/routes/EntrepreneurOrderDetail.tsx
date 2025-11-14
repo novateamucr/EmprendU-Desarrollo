@@ -1,51 +1,248 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getOrder, updateOrderStatus } from '../services/orderService';
-import { CheckCircle2, XCircle, BadgeCheck, Star, Wrench } from 'lucide-react';
-import { getProfile } from '../domain/profile/service';
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { getOrder, updateOrderStatus } from "../services/orderService";
+import {
+  CheckCircle2,
+  XCircle,
+  BadgeCheck,
+  Star,
+  Wrench,
+  Package,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
+import { getProfile } from "../domain/profile/service";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-type BackendStatus = 'draft' | 'requested' | 'accepted' | 'canceled' | 'completed' | 'rated';
+type BackendStatus =
+  | "draft"
+  | "requested"
+  | "accepted"
+  | "canceled"
+  | "completed"
+  | "rated";
+
+type OrderItem = {
+  id: number;
+  order_id: number;
+  product_id: number;
+  product_name: string | null;
+  quantity: number;
+  unit_price: number;
+  options_total: number;
+  subtotal: number;
+  order_options: Array<{
+    id: number;
+    option_name: string;
+    option_value: string;
+    price_delta: number;
+  }>;
+  product_image?: string;
+};
+
+// Update the Order type to match the API response
+type Order = {
+  id: number;
+  entrepreneurship_id: number;
+  entrepreneurship_name: string;
+  entrepreneurship: {
+    id: number;
+    name: string;
+  };
+  customer_name: string;
+  customer_phone_8: string;
+  customer_email: string;
+  status: string;
+  items_total: number;
+  options_total: number;
+  shipping_total: number;
+  discount_total: number;
+  grand_total: number;
+  currency: string;
+  notes: string | null;
+  items: OrderItem[];
+  created_at: string;
+  updated_at: string;
+};
 
 function mapStatus(s?: string) {
-  const s2 = String(s || '').toLowerCase();
-  if (s2 === 'requested' || s2 === 'draft') return { label: 'Pedido solicitado', cls: 'bg-sky-50 text-sky-700 border-sky-200' };
-  if (s2 === 'accepted') return { label: 'Pedido aceptado', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
-  if (s2 === 'canceled') return { label: 'Pedido cancelado', cls: 'bg-rose-50 text-rose-700 border-rose-200' };
-  if (s2 === 'completed') return { label: 'Pedido completado', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-  if (s2 === 'rated') return { label: 'Pedido calificado', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
-  return { label: 'Pedido solicitado', cls: 'bg-sky-50 text-sky-700 border-sky-200' };
+  const s2 = String(s || "").toLowerCase();
+  const statusMap = {
+    requested: {
+      label: "Pedido solicitado",
+      icon: <Clock className="w-4 h-4" />,
+      cls: "bg-sky-50 text-sky-700 border-sky-200",
+    },
+    draft: {
+      label: "Borrador",
+      icon: <Wrench className="w-4 h-4" />,
+      cls: "bg-gray-50 text-gray-700 border-gray-200",
+    },
+    accepted: {
+      label: "Pedido aceptado",
+      icon: <CheckCircle2 className="w-4 h-4" />,
+      cls: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    },
+    canceled: {
+      label: "Cancelado",
+      icon: <XCircle className="w-4 h-4" />,
+      cls: "bg-rose-50 text-rose-700 border-rose-200",
+    },
+    completed: {
+      label: "Completado",
+      icon: <BadgeCheck className="w-4 h-4" />,
+      cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    },
+    rated: {
+      label: "Calificado",
+      icon: <Star className="w-4 h-4" />,
+      cls: "bg-amber-50 text-amber-700 border-amber-200",
+    },
+  };
+  return statusMap[s2 as keyof typeof statusMap] || statusMap["requested"];
 }
 
 export default function EntrepreneurOrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState<any | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<BackendStatus | null>(null);
-  const [address, setAddress] = useState<string>('');
+  const [address, setAddress] = useState<string>("");
 
   useEffect(() => {
-    (async () => {
+    // Update the fetchOrder function in the useEffect
+    const fetchOrder = async () => {
       try {
-        setErr(null);
-        const data = await getOrder(String(id)); // includes items by default
-        setOrder(data?.data || data);
-        // Build address from profile
-        const profile = await getProfile();
-        const addr = [profile?.province, profile?.canton, profile?.district, profile?.address]
-          .filter((p: any) => !!p && String(p).trim().length > 0)
-          .join(', ');
-        setAddress(addr);
-      } catch (e: any) {
-        setErr(e?.response?.data?.message || e?.message || 'Error al cargar el pedido');
+        setLoading(true);
+        setError(null);
+
+        if (!id) {
+          throw new Error("No se proporcionó un ID de pedido");
+        }
+
+        console.log("Fetching order with ID:", id);
+        const response = await getOrder(String(id));
+        console.log("Raw API Response:", response);
+
+        if (!response) {
+          throw new Error("No se recibió respuesta del servidor");
+        }
+
+        // Handle different response structures
+        const responseData = response?.data || response;
+        const orderData = responseData?.data || responseData;
+
+        console.log("Processed order data:", orderData);
+
+        if (!orderData) {
+          throw new Error("Los datos del pedido están vacíos");
+        }
+
+        // Ensure items is an array and provide a default empty array if not present
+        const items =
+          orderData && orderData.items && Array.isArray(orderData.items)
+            ? orderData.items
+            : [];
+
+        console.log("Processing items:", items);
+
+        // Process items with proper error handling
+        const processedItems = items.map((item: any) => {
+          const unitPrice = Number(item?.unit_price || 0);
+          const quantity = Number(item?.quantity || 0);
+          const optionsTotal = Number(item?.options_total || 0);
+          const subtotal = unitPrice * quantity + optionsTotal;
+
+          const productName =
+            item?.product_name ||
+            `Producto #${item?.product_id || item?.id || ""}`;
+
+          return {
+            ...item,
+            id: item?.id || 0,
+            order_id: item?.order_id || 0,
+            product_id: item?.product_id || 0,
+            product_name: productName,
+            quantity: quantity,
+            unit_price: unitPrice,
+            options_total: optionsTotal,
+            subtotal: item?.subtotal || subtotal,
+            order_options: Array.isArray(item?.order_options)
+              ? item.order_options
+              : [],
+          };
+        });
+
+        // Calculate totals if not provided
+        const calculatedItemsTotal = processedItems.reduce(
+          (sum: number, item: any) => sum + (item.subtotal || 0),
+          0 as number
+        );
+
+        // Create the final order object with all required fields
+        const processedOrder = {
+          ...orderData,
+          id: orderData.id || 0,
+          entrepreneurship_id: orderData.entrepreneurship_id || 0,
+          entrepreneurship_name: orderData.entrepreneurship_name || "",
+          customer_name: orderData.customer_name || "",
+          customer_phone_8: orderData.customer_phone_8 || "",
+          customer_email: orderData.customer_email || "",
+          status: orderData.status || "draft",
+          items_total: Number(orderData.items_total || calculatedItemsTotal),
+          options_total: Number(orderData.options_total || 0),
+          shipping_total: Number(orderData.shipping_total || 0),
+          discount_total: Number(orderData.discount_total || 0),
+          grand_total: Number(
+            orderData.grand_total ||
+              calculatedItemsTotal -
+                Number(orderData.discount_total || 0) +
+                Number(orderData.shipping_total || 0)
+          ),
+          currency: orderData.currency || "CRC",
+          notes: orderData.notes || null,
+          created_at: orderData.created_at || new Date().toISOString(),
+          updated_at: orderData.updated_at || new Date().toISOString(),
+          items: processedItems,
+          order_number: orderData.order_number || orderData.id,
+          entrepreneurship: orderData.entrepreneurship || {
+            id: orderData.entrepreneurship_id,
+            name: orderData.entrepreneurship_name,
+          },
+        };
+
+        console.log("Final processed order:", processedOrder);
+        setOrder(processedOrder);
+      } catch (error: any) {
+        console.error("Error in fetchOrder:", {
+          error,
+          errorMessage: error?.message || "Unknown error",
+          stack: error?.stack,
+          response: error?.response?.data || "No response data",
+        });
+        setError(
+          "No se pudo cargar la información del pedido. Por favor, intente nuevamente."
+        );
       } finally {
         setLoading(false);
       }
-    })();
+    };
+    fetchOrder();
   }, [id]);
 
   const statusInfo = useMemo(() => mapStatus(order?.status), [order?.status]);
+
+  // Format the created at date
+  const formattedDate = useMemo(() => {
+    if (!order?.created_at) return "";
+    const createdAt = new Date(order.created_at);
+    return format(createdAt, "d 'de' MMMM 'de' yyyy 'a las' h:mm a", {
+      locale: es,
+    });
+  }, [order?.created_at]);
 
   async function doUpdate(next: BackendStatus) {
     if (!order) return;
@@ -63,8 +260,16 @@ export default function EntrepreneurOrderDetail() {
   if (loading) {
     return (
       <div className="pt-24 pb-8">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-white border border-border rounded-lg p-6 text-center text-sm text-secondary">Cargando pedido...</div>
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="mt-6 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 bg-gray-100 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -73,86 +278,241 @@ export default function EntrepreneurOrderDetail() {
   if (!order) {
     return (
       <div className="pt-24 pb-8">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-white border border-rose-200 text-rose-700 rounded-lg p-6 text-center text-sm">{err || 'No se encontró el pedido'}</div>
-          <div className="text-center mt-4">
-            <button onClick={() => navigate(-1)} className="px-3 py-1.5 rounded-md border border-border text-sm hover:bg-gray-50">Volver</button>
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white border border-rose-200 text-rose-700 rounded-lg p-6 text-center">
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <AlertCircle className="w-10 h-10 text-rose-500" />
+              <p className="font-medium">No se pudo cargar el pedido</p>
+              <p className="text-sm text-gray-600">
+                {error ||
+                  "El pedido solicitado no existe o no tienes permiso para verlo."}
+              </p>
+              <button
+                onClick={() => navigate(-1)}
+                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
+              >
+                Volver atrás
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
+
   return (
-    <div className="pt-24 pb-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-4">
+    <div className="pt-24 pb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedido {order.id}</h1>
-            <p className="text-secondary text-sm">{new Date(order.created_at).toLocaleString()}</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                Pedido #{order.order_number || order.id}
+              </h1>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusInfo.cls}`}
+              >
+                {statusInfo.icon}
+                {statusInfo.label}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              Realizado el {formattedDate}
+            </p>
           </div>
-          <Link to="/entrepreneur/orders" className="px-3 py-1.5 rounded-md border border-border text-sm hover:bg-gray-50">Volver</Link>
+          <Link
+            to="/entrepreneur/orders"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Volver a pedidos
+          </Link>
         </div>
 
-        <div className="bg-white border border-border rounded-lg p-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium rounded-full border shadow-sm ${statusInfo.cls}`}>{statusInfo.label}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {(order.status === 'requested' || order.status === 'draft') && (
-                <button onClick={() => doUpdate('accepted')} disabled={!!updating} className="px-3 py-1.5 rounded-md border text-sm hover:bg-emerald-50 text-emerald-700 border-emerald-200 inline-flex items-center gap-1">
-                  <CheckCircle2 size={16} /> Aceptar
-                </button>
-              )}
-              {(order.status === 'requested' || order.status === 'draft' || order.status === 'accepted') && (
-                <button onClick={() => doUpdate('canceled')} disabled={!!updating} className="px-3 py-1.5 rounded-md border text-sm hover:bg-rose-50 text-rose-700 border-rose-200 inline-flex items-center gap-1">
-                  <XCircle size={16} /> Cancelar
-                </button>
-              )}
-              {order.status === 'accepted' && (
-                <button onClick={() => doUpdate('completed')} disabled={!!updating} className="px-3 py-1.5 rounded-md border text-sm hover:bg-indigo-50 text-indigo-700 border-indigo-200 inline-flex items-center gap-1">
-                  <BadgeCheck size={16} /> Completar
-                </button>
-              )}
-              {order.status === 'completed' && (
-                <span className="px-3 py-1.5 rounded-md border text-sm bg-amber-50 text-amber-700 border-amber-200 inline-flex items-center gap-1">
-                  <Star size={16} /> Listo para calificar
-                </span>
-              )}
-            </div>
+        {/* Order Summary */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Resumen del pedido
+            </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Cliente</p>
-              <p className="text-sm font-medium text-primary">{order.customer_name}</p>
-              <p className="text-xs text-secondary">{order.customer_phone_8}</p>
-              <p className="text-xs text-secondary">{order.customer_email}</p>
-              {address && (
-                <p className="text-xs text-secondary mt-1 whitespace-normal break-words">Dirección: {address}</p>
-              )}
-            </div>
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Totales</p>
-              <p className="text-sm text-secondary">Artículos: <span className="font-semibold text-primary">{Number(order.items_total || 0).toLocaleString()}</span></p>
-              <p className="text-sm text-secondary">Envío: <span className="font-semibold text-primary">₡{Number(order.shipping_total || 0).toLocaleString()}</span></p>
-              <p className="text-sm text-secondary">Descuento: <span className="font-semibold text-primary">₡{Number(order.discount_total || 0).toLocaleString()}</span></p>
-              <p className="text-sm text-secondary mt-1">Gran total: <span className="font-semibold text-primary">₡{Number(order.grand_total || 0).toLocaleString()}</span></p>
-            </div>
-            <div className="p-3 rounded-lg bg-gray-50 border border-border">
-              <p className="text-xs text-secondary">Emprendimiento</p>
-              <p className="text-sm font-medium text-primary">{order?.entrepreneurship?.name || order.entrepreneurship_name}</p>
-              <p className="text-xs text-secondary">ID: {order.entrepreneurship_id}</p>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-semibold text-primary mb-2">Productos</h2>
-            <div className="rounded-lg border border-border overflow-hidden bg-white">
-              <div className="p-6 text-center text-secondary text-sm flex flex-col items-center gap-2">
-                <Wrench className="w-6 h-6" />
-                <span>Sección en construcción. Pronto verás los productos del pedido aquí.</span>
+          {/* Customer Info */}
+          <div className="border-b border-gray-200 px-4 py-5 sm:p-6">
+            <h4 className="text-sm font-medium text-gray-500 mb-3">
+              INFORMACIÓN DEL CLIENTE
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  {order.customer_name}
+                </p>
+                <p className="text-sm text-gray-500">{order.customer_email}</p>
+                <p className="text-sm text-gray-500">
+                  {order.customer_phone_8}
+                </p>
               </div>
+              {address && (
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    Dirección de entrega
+                  </p>
+                  <p className="text-sm text-gray-500 whitespace-pre-line">
+                    {address}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Order Items */}
+          <div className="px-4 py-5 sm:p-6">
+            <h4 className="text-sm font-medium text-gray-500 mb-4">
+              PRODUCTOS
+            </h4>
+            <div className="space-y-6">
+              {order.items?.length > 0 ? (
+                order.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100">
+                      {item.product_image ? (
+                        <img
+                          src={item.product_image}
+                          alt={item.product_name}
+                          className="h-full w-full object-cover object-center"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-gray-400">
+                          <Package className="h-6 w-6" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {item.product_name}
+                          </h4>
+                          {item.options && item.options.length > 0 && (
+                            <div className="mt-1 space-y-1">
+                              {item.options?.map((option) => (
+                                <div
+                                  key={option.id}
+                                  className="text-xs text-gray-500"
+                                >
+                                  {option.option_name}: {option.option_value}
+                                  {option.price_delta > 0 && (
+                                    <span className="text-green-600 ml-1">
+                                      (+₡{option.price_delta.toLocaleString()})
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <p className="ml-4 text-sm font-medium text-gray-900">
+                          ₡{(item.unit_price * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <span>Cantidad: {item.quantity}</span>
+                        <span className="mx-2">•</span>
+                        <span>₡{item.unit_price.toLocaleString()} c/u</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No hay productos en este pedido
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span>₡{order.items_total?.toLocaleString() || "0"}</span>
+              </div>
+              {order.shipping_total > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Envío</span>
+                  <span>₡{order.shipping_total.toLocaleString()}</span>
+                </div>
+              )}
+              {order.discount_total > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Descuento</span>
+                  <span className="text-green-600">
+                    -₡{order.discount_total.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-base font-medium text-gray-900 pt-2 border-t border-gray-200 mt-2">
+                <span>Total</span>
+                <span>
+                  ₡
+                  {order.grand_total?.toLocaleString() ||
+                    order.items_total?.toLocaleString() ||
+                    "0"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Notes */}
+          {order.notes && (
+            <div className="bg-yellow-50 px-4 py-4 sm:px-6 border-t border-yellow-100">
+              <h4 className="text-sm font-medium text-yellow-800 mb-1">
+                Notas del pedido
+              </h4>
+              <p className="text-sm text-yellow-700">{order.notes}</p>
+            </div>
+          )}
+
+          {/* Order Actions */}
+          <div className="px-4 py-4 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              {["requested", "draft"].includes(order.status) && (
+                <button
+                  onClick={() => doUpdate("accepted")}
+                  disabled={!!updating}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating === "accepted" ? "Procesando..." : "Aceptar pedido"}
+                </button>
+              )}
+
+              {["requested", "draft", "accepted"].includes(order.status) && (
+                <button
+                  onClick={() => doUpdate("canceled")}
+                  disabled={!!updating}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating === "canceled"
+                    ? "Cancelando..."
+                    : "Cancelar pedido"}
+                </button>
+              )}
+
+              {order.status === "accepted" && (
+                <button
+                  onClick={() => doUpdate("completed")}
+                  disabled={!!updating}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating === "completed"
+                    ? "Completando..."
+                    : "Marcar como completado"}
+                </button>
+              )}
             </div>
           </div>
         </div>

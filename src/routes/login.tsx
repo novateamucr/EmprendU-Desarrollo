@@ -7,6 +7,8 @@ import Input from '../components/ui/Input';
 import AuthForm from '../components/ui/AuthForm';
 import OptionPanel from '../components/ui/OptionPanel';
 import Btn from '../components/ui/Btn';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function Login() {
   const { login, loading: isLoading, error } = useUserLogin();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
 
   const handleChange = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues(prev => ({ ...prev, [key]: e.target.value }));
@@ -96,10 +100,49 @@ export default function Login() {
     }
   };
 
+ const handlePasswordReset = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  const emailToReset = formValues.email.trim();
+  
+  if (!emailToReset) {
+    toast.error('Por favor ingresa tu correo electrónico en el campo de inicio de sesión');
+    return;
+  }
+
+  try {
+    setIsResetting(true);
+    
+    // Get the base URL from environment variables
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    
+    // Make the POST request to the password reset endpoint
+    const response = await axios.post(
+      `${apiBaseUrl}/password/reset`,
+      { email: emailToReset },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    if (response.data) {
+      toast.success('Se ha enviado una nueva contraseña temporal a tu correo electrónico');
+      setShowResetForm(false);
+    }
+  } catch (error: any) {
+    console.error('Password reset error:', error);
+    const errorMessage = error.response?.data?.message || 'Error al enviar la solicitud de restablecimiento';
+    toast.error(errorMessage);
+  } finally {
+    setIsResetting(false);
+  }
+};
+
   // Inputs del login
   const loginInputs = [
     <Input
-     
       key="email"
       type="email"
       placeholder="Correo electrónico"
@@ -154,15 +197,61 @@ export default function Login() {
   ];
 
   // Link de contraseña olvidada
-  const pwLink = [
-    <Link
-      key="forgot"
-      to="/pwreset"
-      className="text-brand hover:text-brandDark hover:underline underline-offset-4 mt-4 text-sm place-self-end"
+  const pwLink = (
+    <button 
+      type="button" 
+      onClick={() => setShowResetForm(true)}
+      className="text-brand hover:underline text-sm text-left w-full mt-2"
     >
       ¿Olvidaste tu contraseña?
-    </Link>
-  ];
+    </button>
+  );
+
+ const resetForm = (
+  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+    <h3 className="font-medium text-gray-900 mb-2">Restablecer contraseña</h3>
+    <p className="text-sm text-gray-600 mb-3">
+      Se enviará una nueva contraseña temporal a: 
+      <span className="font-medium text-gray-900"> {formValues.email}</span>
+    </p>
+    <form 
+      onSubmit={async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await handlePasswordReset(e);
+      }} 
+      className="space-y-3"
+    >
+      <div className="p-3 bg-gray-100 rounded-md text-sm">
+        <p className="font-medium">Correo electrónico:</p>
+        <p className="text-gray-700">{formValues.email}</p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={isResetting}
+          className="flex-1 bg-brand hover:bg-brandDark text-white py-2 px-4 rounded-md disabled:opacity-50"
+          onClick={(e) => {
+            e.preventDefault();
+            handlePasswordReset(e);
+          }}
+        >
+          {isResetting ? 'Enviando...' : 'Enviar contraseña temporal'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShowResetForm(false);
+          }}
+          className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          disabled={isResetting}
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+);
 
   // Panel lateral
   const optPanelInicia = (
@@ -188,7 +277,7 @@ export default function Login() {
               style="w-full"
               title="Inicia sesión"
               input={loginInputs}
-              newPw={pwLink}
+              newPw={showResetForm ? null : pwLink}
               button={[
                 <button
                   key="login-button"
@@ -200,6 +289,7 @@ export default function Login() {
                 </button>
               ]}
             />
+            {showResetForm && resetForm}
           </form>
           {error && (
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">

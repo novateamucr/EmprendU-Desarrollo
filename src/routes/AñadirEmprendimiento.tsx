@@ -395,7 +395,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
 
       <Card className="p-6">
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
+          <div className="max-w-4xl mx-auto space-y-6">
             
 
             <div>
@@ -561,7 +561,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
         </form>
       </Card>
       {/* Redes y contactos (Admin) */}
-      <div className="mt-8">
+      <div className="mt-6 max-w-4xl mx-auto">
         <Card className="p-6">
           {isEditMode && (formData.id || id) ? (
             <ChannelsEditor entrepreneurshipId={Number(formData.id || id)} />
