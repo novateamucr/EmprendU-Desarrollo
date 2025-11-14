@@ -79,7 +79,7 @@ export default function Ferias() {
       return;
     }
 
-    toast.info('Cargando emprendimientos...');
+   
     try {
       // Obtener inscripciones del usuario para esta feria (tener datos frescos)
       let userIns: any[] = [];
@@ -113,9 +113,7 @@ export default function Ferias() {
 
       setFetchedEntrepreneurships(filtered);
       setShowPopupEmprendimientos(true);
-      if (filtered.length === 0) {
-        toast.info('No tienes emprendimientos disponibles para inscribirte en esta feria (ya estás registrado en todos).');
-      }
+      
     } catch (err) {
       console.error('Error fetching entrepreneurships for user', err);
       toast.error('No se pudieron cargar tus emprendimientos. Intenta de nuevo.');
@@ -149,7 +147,7 @@ export default function Ferias() {
       });
 
       const created = res && (res.data ?? res);
-      toast.success("Inscripción completada correctamente ✅");
+      toast.success("Inscripción registrada con exito");
 
       setShowConfirmationPopup(false);
       setShowPopupEmprendimientos(false);
@@ -347,6 +345,7 @@ export default function Ferias() {
           loading={loadingEntrepreneurships}
           selectedId={selectedEntrepreneurshipId}
           onSelect={(id) => setSelectedEntrepreneurshipId(id)}
+          userEntrepreneurshipsCount={userEntrepreneurships.length}
         />
       )}
       {showConfirmationPopup && (
