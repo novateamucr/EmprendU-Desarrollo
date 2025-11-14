@@ -81,7 +81,7 @@ class UserController extends Controller
             $confirmationUrl = url("/api/confirm-email/{$user->confirmation_token}");
 
             Mail::to($user->email)->send(new UserNotification([
-                'subject' => 'Bienvenido a EmpowerUp' ,
+                'subject' => 'Bienvenido a ' . config('app.name'),
                 'greeting' => '¡Gracias por registrarte, ' . $user->name . '!',
                 'content' => 'Tu cuenta ha sido creada exitosamente. Por favor, confirma tu dirección de correo electrónico para activar tu cuenta.',
                 'action_url' => $confirmationUrl,
