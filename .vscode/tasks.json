@@ -237,6 +237,27 @@
 				"$eslint-stylish"
 			],
 			"group": "build"
+		},
+		{
+			"label": "vite-build-once",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "vite-build-once (role-alias)",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "vite-build-once (remove-hidden-role)",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

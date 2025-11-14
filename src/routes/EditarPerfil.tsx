@@ -213,11 +213,16 @@ export function EditarPerfil() {
 
   // Enviar perfil
   const onSubmitProfile = (data: ProfileFormData) => {
+    // Merge with current form values to be sure 'role' and nested fields are present
+    const current = profileForm.getValues();
+    const merged = { ...current, ...data } as ProfileFormData;
+
     // If target is admin, force role to remain as 'administrador'
-    const safeData = { ...data };
+    const safeData = { ...merged };
     if (isTargetAdmin) {
       safeData.role = 'administrador' as any;
     }
+
     updateProfileMutation.mutate(safeData, {
       onSuccess: async () => {
         // Bandera para celebrar en Perfil solo para self-edit
