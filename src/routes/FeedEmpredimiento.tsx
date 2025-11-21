@@ -1,11 +1,45 @@
 import { ProductCard } from '../components/ProductCard'; 
-
+import { Facebook, WhatsApp, Twitter, Link as LinkIcon } from '@mui/icons-material';
 
 // Importar imágenes desde src/assets
 import logoEmprendimiento from "../assets/logoEmprendimiento.jpg";
 import rosas from "../assets/rosas.jpg";
 
  function FeedEmprendimiento() {
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToWhatsApp = () => {
+    const text = `Mira este emprendimiento: HASU - ${currentUrl}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToTwitter = () => {
+    const text = `Mira este emprendimiento: HASU`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert('Link copiado al portapapeles');
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = currentUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copiado al portapapeles');
+    }
+  };
+
   return (
     <div className="pt-24 pb-8">
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -26,6 +60,43 @@ import rosas from "../assets/rosas.jpg";
           <button className="mt-4 px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors focus-brand">
             Agregar a favoritos
           </button>
+          <div className="mt-4 flex flex-col items-center gap-1">
+            <span className="text-xs text-secondary">Comparte este emprendimiento</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={shareToFacebook}
+                aria-label="Compartir en Facebook"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                title="Compartir en Facebook"
+              >
+                <Facebook sx={{ fontSize: 18 }} />
+              </button>
+              <button
+                onClick={shareToTwitter}
+                aria-label="Compartir en Twitter"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                title="Compartir en Twitter"
+              >
+                <Twitter sx={{ fontSize: 18 }} />
+              </button>
+              <button
+                onClick={shareToWhatsApp}
+                aria-label="Compartir en WhatsApp"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                title="Compartir en WhatsApp"
+              >
+                <WhatsApp sx={{ fontSize: 18 }} />
+              </button>
+              <button
+                onClick={copyLink}
+                aria-label="Copiar link"
+                className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                title="Copiar link"
+              >
+                <LinkIcon sx={{ fontSize: 18 }} />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Likes */}
