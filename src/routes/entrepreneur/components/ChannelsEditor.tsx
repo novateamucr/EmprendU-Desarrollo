@@ -34,6 +34,7 @@ type Pending = { seconds: number; dto: UpdateChannelDto };
 export default function ChannelsEditor({ entrepreneurshipId }: Props) {
   const { list, create, update, remove } = useChannels(entrepreneurshipId);
   const [drafts, setDrafts] = useState<Editable[]>([]);
+  const [creatingIndex, setCreatingIndex] = useState<number | null>(null);
 
   // Local optimistic copy of channels
   const [local, setLocal] = useState<Channel[]>([]);
@@ -66,14 +67,33 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
     });
   };
 
+  const normalizeUrl = (value?: string | null): string | null => {
+    const raw = (value || '').trim();
+    if (!raw) return null;
+    if (!/^https?:\/\//i.test(raw)) {
+      return `https://${raw}`;
+    }
+    return raw;
+  };
+
   const commitDraft = async (idx: number) => {
     const d = drafts[idx];
     if (!d.platform_code) return toast.error('Selecciona una plataforma');
 
+    // Evitar intentar crear un canal duplicado de la misma plataforma
+    const existingSamePlatform = (local || []).some(
+      (c) => (c.platform?.code || c.platform_code) === d.platform_code,
+    );
+    const otherDraftSamePlatform = drafts.some((draft, i) => i !== idx && draft.platform_code === d.platform_code);
+    if (existingSamePlatform || otherDraftSamePlatform) {
+      toast.error('Ya tienes un canal de esta plataforma. Edita el existente o elimina el duplicado.');
+      return;
+    }
+
     // Build DTO with possible WhatsApp URL using CR code 506
     let dto: CreateChannelDto = {
       platform_code: d.platform_code,
-      url: d.url || null,
+      url: normalizeUrl(d.url),
       handle: d.handle || null,
       is_primary: !!d.is_primary,
       is_public: d.is_public !== false,
@@ -92,7 +112,8 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
     } else if (d.platform_code === 'phone') {
       // Guardar número en handle (8 dígitos) y nombre del propietario en url (texto)
       const digits = (d.handle || '').replace(/[^\d]/g, '').slice(0, 8);
-      dto = { ...dto, handle: digits, url: d.url || '' };
+      // Para evitar validación de URL en backend, no enviar nombre del propietario en url
+      dto = { ...dto, handle: digits, url: null };
     } else if (d.platform_code === 'email') {
       const to = (d.handle || '').trim();
       const body = (d.url || '').trim();
@@ -101,12 +122,15 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
     }
 
     try {
+      setCreatingIndex(idx);
       const created = await create.mutateAsync(dto);
       setDrafts((arr) => arr.filter((_, i) => i !== idx));
       setLocal((arr) => sortChannels([...(arr || []), created] as Channel[]));
       toast.success('Canal agregado');
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'No se pudo crear el canal');
+    } finally {
+      setCreatingIndex((current) => (current === idx ? null : current));
     }
   };
 
@@ -454,7 +478,8 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
               } else if (isPhone) {
                 // Guardar número en handle (8 dígitos) y nombre del propietario en url (texto)
                 setLocal((arr) => arr.map((it) => it.id === id ? { ...it, handle: row.handle, url: row.url } : it));
-                scheduleUpdate(id, { handle: row.handle, url: row.url });
+                // En el backend solo persistimos el número (handle); url se envía como null para no violar la regla de URL
+                scheduleUpdate(id, { handle: row.handle, url: null });
               } else if (isEmail) {
                 const to = (row.handle || '').trim();
                 const body = (row.url || '').trim();
@@ -612,7 +637,7 @@ export default function ChannelsEditor({ entrepreneurshipId }: Props) {
 
         <div className="flex items-center justify-end gap-2">
           <Button type="button" onClick={() => commitDraft(idx)} disabled={create.isPending}>
-            {create.isPending ? <Loader2 className="w-4 h-4 animate-spin"/> : 'Agregar'}
+            {create.isPending && creatingIndex === idx ? <Loader2 className="w-4 h-4 animate-spin"/> : 'Agregar'}
           </Button>
           <Button type="button" variant="outline" onClick={() => setDrafts((arr) => arr.filter((_, i) => i !== idx))}>
             Cancelar

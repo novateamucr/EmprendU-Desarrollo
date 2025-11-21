@@ -1,4 +1,4 @@
-import { Search } from '@mui/icons-material';
+import { Search, Facebook, WhatsApp, Twitter, Link as LinkIcon } from '@mui/icons-material';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { entrepreneurshipApi, Entrepreneurship, categoryApi } from '../services/entrepreneurshipService';
@@ -52,6 +52,48 @@ export function FeedEmpredimientoDetalle() {
     created_at: string;
     updated_at: string;
     user?: { id: number; name: string };
+  };
+
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const frontendBusinessUrl = business?.id
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/business/${business.id}`
+    : currentUrl;
+
+  const apiBase = (import.meta as any)?.env?.VITE_API_BASE_URL || 'https://emprendu-desarrollo-production.up.railway.app/api';
+  const backendBase = typeof apiBase === 'string' ? apiBase.replace(/\/?api\/?$/, '') : '';
+
+  const universalShare = business?.id ? `${backendBase}/share/entrepreneurship/${business.id}` : frontendBusinessUrl;
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(universalShare)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToWhatsApp = () => {
+    const text = `Mira este emprendimiento: ${business?.name} - ${frontendBusinessUrl}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const shareToTwitter = () => {
+    const text = `Mira este emprendimiento: ${business?.name}`;
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(frontendBusinessUrl)}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(frontendBusinessUrl);
+      alert('Link copiado al portapapeles');
+    } catch {
+      const textArea = document.createElement('textarea');
+      textArea.value = frontendBusinessUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copiado al portapapeles');
+    }
   };
 
   //Buscador y filtros
@@ -289,10 +331,48 @@ export function FeedEmpredimientoDetalle() {
                 )}
                 {displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
               </button>
-
               {/* Canales del emprendimiento */}
               {business?.id ? <BusinessChannels entrepreneurshipId={Number(business.id)} /> : null}
             </div>
+
+            <div className="mt-4 flex flex-col items-center gap-1">
+              <span className="text-xs text-secondary">Comparte este emprendimiento</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={shareToFacebook}
+                  aria-label="Compartir en Facebook"
+                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  title="Compartir en Facebook"
+                >
+                  <Facebook sx={{ fontSize: 18 }} />
+                </button>
+                <button
+                  onClick={shareToTwitter}
+                  aria-label="Compartir en Twitter"
+                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  title="Compartir en Twitter"
+                >
+                  <Twitter sx={{ fontSize: 18 }} />
+                </button>
+                <button
+                  onClick={shareToWhatsApp}
+                  aria-label="Compartir en WhatsApp"
+                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  title="Compartir en WhatsApp"
+                >
+                  <WhatsApp sx={{ fontSize: 18 }} />
+                </button>
+                <button
+                  onClick={copyLink}
+                  aria-label="Copiar link"
+                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  title="Copiar link"
+                >
+                  <LinkIcon sx={{ fontSize: 18 }} />
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
 
