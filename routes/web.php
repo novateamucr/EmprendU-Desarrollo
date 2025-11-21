@@ -22,3 +22,4 @@ Route::get('/', function () {
 
 // Share endpoints (HTML with Open Graph metadata for scrapers)
 Route::get('/share/product/{id}', [ShareController::class, 'product'])->name('share.product');
+Route::get('/share/entrepreneurship/{id}', [ShareController::class, 'entrepreneurship'])->name('share.entrepreneurship');

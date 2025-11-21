@@ -33,8 +33,9 @@ use App\Mail\ContactUsConfirmationMailable;
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
 
-// Public share metadata endpoint (no auth)
+// Public share metadata endpoints (no auth)
 Route::get('public/share/product/{id}', [PublicShareController::class, 'productMeta']);
+Route::get('public/share/entrepreneurship/{id}', [PublicShareController::class, 'entrepreneurshipMeta']);
 
 
 // Protected routes (authentication required)
