@@ -23,12 +23,14 @@ protected $fillable = [
     'banned',
     'avatar_url',
     'confirmation_token',
-    'isConfirmed'  // Changed from is_confirmed
+    'isConfirmed',  // Changed from is_confirmed
+    'must_change_password',
 ];
 
 protected $casts = [
     'banned' => 'boolean',
     'isConfirmed' => 'boolean',  // Changed from is_confirmed
+    'must_change_password' => 'boolean',
 ];
     // Relaciones existentes
     public function roleRelation()
@@ -36,11 +38,16 @@ protected $casts = [
         return $this->belongsTo(UserRole::class, 'role');
     }
 
-    // Add this to your User model
     public function getIsConfirmedAttribute()
     {
         return (bool) $this->attributes['isConfirmed'];
     }
+
+    public function getMustChangePasswordAttribute()
+    {
+        return (bool) ($this->attributes['must_change_password'] ?? false);
+    }
+
     public function interests()
     {
         return $this->hasMany(UserInterest::class);
@@ -66,6 +73,12 @@ protected $casts = [
     {
         return $this->isConfirmed;
     }
+
+    public function mustChangePassword(): bool
+    {
+        return $this->must_change_password;
+    }
+
     public function setIsConfirmedAttribute($value)
     {
         $this->attributes['isConfirmed'] = (bool) $value;
