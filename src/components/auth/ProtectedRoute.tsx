@@ -88,19 +88,24 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/" replace />;
   }
 
+  // Check if user must change password (except if already on password change page)
+  if (user?.must_change_password && location.pathname !== '/force-password-change') {
+    return <Navigate to="/force-password-change" replace />;
+  }
+
   // If roles are specified, check if user has required role
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = user?.role ? (typeof user.role === 'string' ? parseInt(user.role) : user.role) : null;
-    
+
     if (!userRole) {
       return <Navigate to="/" replace />;
     }
-    
+
     // If user is a client (role 1) trying to access non-client routes, redirect to home
     if (userRole === 1 && !allowedRoles.includes(1)) {
       return <Navigate to="/" replace />;
     }
-    
+
     // For other roles, check if they have the required role
     if (!allowedRoles.includes(userRole)) {
       return <Navigate to={redirectTo} replace />;

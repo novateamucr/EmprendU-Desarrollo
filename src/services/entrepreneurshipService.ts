@@ -144,15 +144,15 @@ export const entrepreneurshipApi = {
           },
         }
       );
-      
+
       // Handle both direct data and nested data response formats
       const responseData = response.data;
-      
+
       // If the response already has pagination structure, return it as is
       if (responseData && 'data' in responseData && 'current_page' in responseData) {
         return responseData;
       }
-      
+
       // If the response is just the data array, wrap it in a pagination structure
       if (Array.isArray(responseData)) {
         return {
@@ -171,7 +171,7 @@ export const entrepreneurshipApi = {
           links: []
         };
       }
-      
+
       // If we get here, the response format is unexpected
       throw new Error('Formato de respuesta inesperado');
     } catch (error) {
@@ -206,9 +206,9 @@ export const entrepreneurshipApi = {
 
       // Log form data for debugging
       console.log('Sending form data with keys:', Array.from(formData.keys()));
-      
+
       const response = await api.post<{ data: Entrepreneurship }>('/entrepreneurships', formData, {
-        headers: { 
+        headers: {
           'Accept': 'application/json',
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
@@ -216,16 +216,16 @@ export const entrepreneurshipApi = {
         },
         withCredentials: true,
       });
-      
+
       return response.data.data || response.data;
     } catch (error: any) {
       console.error('Error creating entrepreneurship:', error);
-      
+
       // If we have a 422 validation error, extract and format the error messages
       if (error.response?.status === 422 && error.response?.data) {
         const errorData = error.response.data;
         let errorMessage = 'Por favor corrige los siguientes errores:\n\n';
-        
+
         // Mapear los errores a mensajes en español
         const errorMessages: Record<string, string> = {
           name: 'El nombre es obligatorio y debe ser claro y descriptivo.',
@@ -235,7 +235,7 @@ export const entrepreneurshipApi = {
           image: 'La imagen es obligatoria.',
           'image_url': 'La imagen es obligatoria.'
         };
-        
+
         // Check for field-specific errors
         if (errorData.errors) {
           Object.entries(errorData.errors).forEach(([field, messages]) => {
@@ -247,13 +247,13 @@ export const entrepreneurshipApi = {
           // Fallback to the general error message
           errorMessage = errorData.message;
         }
-        
+
         // Create a new error with the formatted message
         const validationError = new Error(errorMessage);
         validationError.name = 'ValidationError';
         throw validationError;
       }
-      
+
       // For other types of errors, rethrow them
       throw error;
     }
@@ -264,21 +264,21 @@ export const entrepreneurshipApi = {
     try {
       formData.append('_method', 'PUT'); // Laravel way to handle PUT/PATCH with FormData
       const response = await api.post<{ data: Entrepreneurship }>(`/entrepreneurships/${id}`, formData, {
-        headers: { 
+        headers: {
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
         },
       });
-      
+
       return response.data.data || response.data;
     } catch (error: any) {
       console.error(`Error updating business ${id}:`, error);
-      
+
       // If we have a 422 validation error, extract and format the error messages
       if (error.response?.status === 422 && error.response?.data) {
         const errorData = error.response.data;
         let errorMessage = 'Por favor corrige los siguientes errores:\n\n';
-        
+
         // Mapear los errores a mensajes en español
         const errorMessages: Record<string, string> = {
           name: 'El nombre es obligatorio y debe ser claro y descriptivo.',
@@ -288,7 +288,7 @@ export const entrepreneurshipApi = {
           image: 'La imagen es obligatoria.',
           'image_url': 'La imagen es obligatoria.'
         };
-        
+
         // Check for field-specific errors
         if (errorData.errors) {
           Object.entries(errorData.errors).forEach(([field, messages]) => {
@@ -300,13 +300,13 @@ export const entrepreneurshipApi = {
           // Fallback to the general error message
           errorMessage = errorData.message;
         }
-        
+
         // Create a new error with the formatted message
         const validationError = new Error(errorMessage);
         validationError.name = 'ValidationError';
         throw validationError;
       }
-      
+
       // For other types of errors, rethrow them
       throw error;
     }
@@ -350,6 +350,18 @@ export const productApi = {
       throw error;
     }
   },
+
+  // Get top selling products
+  getTopSelling: async (): Promise<Product[]> => {
+    try {
+      const response = await api.get<Product[]>('/products/top-selling');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching top selling products:', error);
+      throw error;
+    }
+  },
+
   // Get all products for an entrepreneurship with pagination (backend expects query param)
   getByEntrepreneurship: async (
     entrepreneurshipId: string,
@@ -407,7 +419,7 @@ export const productApi = {
         entrepreneurship_id: entrepreneurshipId,
       };
 
-      const allowed: (keyof Product)[] = ['name','description','long_description','price','image_url','category_id'];
+      const allowed: (keyof Product)[] = ['name', 'description', 'long_description', 'price', 'image_url', 'category_id'];
       allowed.forEach((key) => {
         const v = (productData as any)[key];
         if (v !== undefined) payload[key] = v;
@@ -429,7 +441,7 @@ export const productApi = {
   ): Promise<Product> => {
     try {
       const payload: Record<string, any> = {};
-      const allowed: (keyof Product)[] = ['entrepreneurship_id','name','description','long_description','price','image_url','category_id'];
+      const allowed: (keyof Product)[] = ['entrepreneurship_id', 'name', 'description', 'long_description', 'price', 'image_url', 'category_id'];
       allowed.forEach((key) => {
         const v = (productData as any)[key];
         if (v !== undefined) payload[key] = v;
