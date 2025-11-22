@@ -7,6 +7,8 @@ interface Props {
   entrepreneurshipId: number;
 }
 
+////holis
+
 export default function BusinessChannels({ entrepreneurshipId }: Props) {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
