@@ -71,6 +71,7 @@ export default function Login() {
           district: response.user.district || "",
           address: response.user.address || "",
           avatar_url: response.user.avatar_url || "",
+          must_change_password: response.user.must_change_password || response.must_change_password || false,
           role_relation: response.user.role_relation || null,
           interests: response.user.interests || [],
           entrepreneurships: response.user.entrepreneurships || [],
@@ -299,11 +300,10 @@ export default function Login() {
                 <button
                   key="login-button"
                   type="submit"
-                  className={`w-full bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg ${
-                    !isFormValid || isLoading
+                  className={`w-full bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg ${!isFormValid || isLoading
                       ? "opacity-50 cursor-not-allowed"
                       : ""
-                  } focus-brand`}
+                    } focus-brand`}
                   disabled={!isFormValid || isLoading}
                 >
                   {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}

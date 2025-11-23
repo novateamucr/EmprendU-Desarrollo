@@ -30,6 +30,7 @@ import MyOrderDetail from './routes/MyOrderDetail';
 import AdminDashB from './routes/AdminDashB';
 import FAQs from './routes/FAQs';
 import ContactUs from './routes/ContactUs';
+import ForcePasswordChange from './routes/ForcePasswordChange';
 
 //Admin
 import GestorUsuarios from './routes/GestorUsuarios';
@@ -59,11 +60,11 @@ import './App.css';
 
 function RootRoute() {
   const { isAuthenticated } = useAuth();
-  
+
   if (isAuthenticated === undefined) {
     return <div>Loading...</div>;
   }
-  
+
   return isAuthenticated ? <Navigate to="/home" replace /> : <LandingPage />;
 }
 
@@ -84,13 +85,22 @@ function App() {
                 <Route path="/FAQs" element={<FAQs />} />
                 <Route path="/contactUs" element={<ContactUs />} />
 
+                {/* Force Password Change - Protected but accessible even with must_change_password flag */}
+                <Route element={
+                  <ProtectedRoute>
+                    <Outlet />
+                  </ProtectedRoute>
+                }>
+                  <Route path="/force-password-change" element={<ForcePasswordChange />} />
+                </Route>
+
                 {/* Protected Routes */}
                 <Route element={
                   <ProtectedRoute>
                     <FairsProvider>
-                    <Layout>
-                      <Outlet />
-                    </Layout>
+                      <Layout>
+                        <Outlet />
+                      </Layout>
                     </FairsProvider>
                   </ProtectedRoute>
                 }>
@@ -101,7 +111,7 @@ function App() {
                   <Route path="/ferias" element={<FeriasPage />} />
                   <Route path="/ferias/actividades" element={<FeriasActividades />} />
 
-                  
+
                   {/* Regular User Routes (role 1) */}
                   <Route element={<RoleBasedRoute allowedRoles={[1, 2, 3]}> <Outlet /> </RoleBasedRoute>}>
                     <Route path="/profile" element={<Perfil />} />
@@ -112,7 +122,7 @@ function App() {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/cart/detail" element={<CartDetail />} />
                   </Route>
-                  
+
                   {/* Admin Routes (role 3) */}
                   <Route element={<RoleBasedRoute allowedRoles={[3]} redirectTo="/admin/dashboard"> <Outlet /> </RoleBasedRoute>}>
                     <Route path="/admin/usuarios" element={<GestorUsuarios />} />
