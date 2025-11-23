@@ -41,6 +41,7 @@ Route::get('public/share/entrepreneurship/{id}', [PublicShareController::class, 
 // Protected routes (authentication required)
 Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
 
+Route::get('products/top-selling', [ProductController::class, 'topSelling']);
 Route::apiResource('products', ProductController::class);
 Route::post('products/by-ids', [ProductController::class, 'getProductsByIds']);
 

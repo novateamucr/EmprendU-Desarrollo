@@ -412,12 +412,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Get multiple products by their IDs
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getProductsByIds(Request $request)
     {
         $request->validate([
@@ -435,4 +429,30 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Get the top 5 most bought products based on orders.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function topSelling()
+    {
+        $topProducts = \App\Models\OrderItem::select('product_id', DB::raw('SUM(quantity) as total_sold'))
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->limit(5)
+            ->with('product.entrepreneurship')
+            ->get()
+            ->map(function ($item) {
+                $product = $item->product;
+                if ($product) {
+                    $product->total_sold = (int)$item->total_sold;
+                    return $product;
+                }
+                return null;
+            })
+            ->filter()
+            ->values();
+
+        return response()->json($topProducts);
+    }
 }
