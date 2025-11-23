@@ -1,19 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ $data['subject'] ?? 'Notificación' }}</title>
+    <meta charset="UTF-8">
+    <title>{{ $data['subject'] ?? 'Bienvenido a EmpowerUp' }}</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
-        .content { padding: 20px; }
-        .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; color: #666; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #76B0CD;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+        .content {
+            padding: 25px;
+            color: #333;
+            align-items: center;
+            text-align: center;
+        }
+        .content h2 {
+            color: #76B0CD;
+        }
+        .action-button {
+            display: inline-block;
+            background: #76B0CD;
+            color: white !important;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .action-button:hover {
+            background: #0feb1aff;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #777;
+            border-top: 1px solid #e0e0e0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{ config('app.name') }}</h1>
+            <h1>EmpowerUp</h1>
         </div>
         
         <div class="content">
@@ -26,18 +78,15 @@
             @endif
 
             @if(isset($data['action_url']) && isset($data['action_text']))
-                <p style="margin: 25px 0;">
-                    <a href="{{ $data['action_url'] }}" 
-                       style="background: #4e73df; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                        {{ $data['action_text'] }}
-                    </a>
-                </p>
+                <a href="{{ $data['action_url'] }}" class="action-button">
+                    {{ $data['action_text'] }}
+                </a>
             @endif
         </div>
 
         <div class="footer">
-            <p>Si no creaste esta cuenta, puedes ignorar este mensaje.</p>
-            <p>&copy; {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.</p>
+            <p>Si no solicitaste esta acción, puedes ignorar este mensaje.</p>
+            <p>&copy; {{ date('Y') }} EmpowerUp. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>

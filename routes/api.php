@@ -19,14 +19,23 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Api\ProductOptionController;
 use App\Http\Controllers\Api\ProductOptionValueController;
 use App\Http\Controllers\Api\ProductCustomFormController;
+use App\Http\Controllers\Api\ProductBuilderController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\FeaturedBusinessController;
+use App\Http\Controllers\Api\SocialPlatformController;
+use App\Http\Controllers\Api\PublicShareController;
+use App\Http\Controllers\Api\UbicacionController;
 
 use App\Mail\ContactUsMailable;
+use App\Mail\ContactUsConfirmationMailable;
 
 // Public routes (no authentication required)
 Route::post('login', [UserController::class, 'login']);
+
+// Public share metadata endpoints (no auth)
+Route::get('public/share/product/{id}', [PublicShareController::class, 'productMeta']);
+Route::get('public/share/entrepreneurship/{id}', [PublicShareController::class, 'entrepreneurshipMeta']);
 
 
 // Protected routes (authentication required)
@@ -35,11 +44,18 @@ Route::apiResource('entrepreneurships', EntrepreneurshipController::class);
 Route::get('products/top-selling', [ProductController::class, 'topSelling']);
 Route::apiResource('products', ProductController::class);
 Route::post('products/by-ids', [ProductController::class, 'getProductsByIds']);
+
+// Product builder (batch edit of options/values/custom forms)
+Route::get('products/{product}/builder', [ProductBuilderController::class, 'show']);
+Route::put('products/{product}/builder', [ProductBuilderController::class, 'update']);
 Route::apiResource('fairs', FairController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('roles', RoleController::class);
 Route::apiResource('favorites', FavoriteController::class);
 Route::apiResource('interests', InterestController::class);
+Route::apiResource('ubicaciones', UbicacionController::class)->parameters([
+    'ubicaciones' => 'ubicacion'
+]);
 // User routes
 Route::apiResource('users', UserController::class);
 
@@ -51,6 +67,10 @@ Route::apiResource('reviews', ReviewController::class);
 Route::get('/fairs', [FairController::class, 'index']);
 Route::get('/featured-business/today', [FeaturedBusinessController::class, 'today']);
 Route::get('/featured-business/history', [FeaturedBusinessController::class, 'history']);
+
+// Social platforms (redes)
+Route::get('social-platforms', [SocialPlatformController::class, 'index']);
+Route::get('social-platforms/{platform}', [SocialPlatformController::class, 'show']);
 
 // Secure password update route (expects current_password, password, password_confirmation)
 Route::put('users/{user}/password', [UserController::class, 'updatePassword']);
@@ -107,6 +127,8 @@ Route::post('assistant/validate/product', [AIAssistantController::class, 'valida
 
 Route::post('/inscripciones', [InscripcionController::class, 'store']);
 Route::get('/inscripciones/{userId}', [InscripcionController::class, 'getByUser']);
+Route::get('/inscripciones/feria/{fairId}', [InscripcionController::class, 'getByFair']);
+
 
 Route::post('/ContactUs', function (Request $request) {
     $data = $request->validate([
@@ -116,6 +138,7 @@ Route::post('/ContactUs', function (Request $request) {
     ]);
 
     Mail::to('novateamucr@gmail.com')->send(new ContactUsMailable($data));
+    Mail::to($data['email'])->send(new ContactUsConfirmationMailable($data));
 
     return response()->json(['message' => '¡Correo enviado exitosamente! Pronto serás contactado.']);
 });

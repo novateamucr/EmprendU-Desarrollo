@@ -23,7 +23,7 @@ class UserNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->data['subject'] ?? 'Notificación',
+            subject: $this->data['subject'] ?? 'Bienvenido a EmpowerUp',
         );
     }
 

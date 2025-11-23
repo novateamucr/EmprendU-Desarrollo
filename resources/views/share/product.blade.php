@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>{{ $title ? e($title) : 'Compartir' }}</title>
+    <link rel="canonical" href="{{ $url }}" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="{{ $title }}">
@@ -16,10 +17,11 @@
         <meta property="og:image" content="{{ $image }}">
         <meta property="og:image:secure_url" content="{{ $image }}">
         <meta property="og:image:type" content="image/jpeg">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
     @endif
     <meta property="og:site_name" content="{{ $site_name ?? 'EmprendU' }}">
+    @if(!empty($fb_app_id))
+        <meta property="fb:app_id" content="{{ $fb_app_id }}">
+    @endif
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
@@ -29,21 +31,22 @@
         <meta name="twitter:image" content="{{ $image }}">
     @endif
 
-    <!-- Fallback redirect for non-JS environments -->
-    <meta http-equiv="refresh" content="2;url={{ $redirect_url }}">
+    <!-- No meta refresh to ensure scrapers do not follow redirects before reading OG -->
 </head>
 <body>
     <noscript>
         <p>Serás redirigido en breve. Si no ocurre automáticamente, <a href="{{ e($redirect_url) }}">haz clic aquí</a>.</p>
     </noscript>
-    <script>
-        // Redirección rápida para usuarios normales; los scrapers se quedarán con las OG
-        (function(){
-            var to = {{ json_encode($redirect_url) }};
-            if (to) {
-                window.location.replace(to);
-            }
-        })();
-    </script>
+    @unless(!empty($is_bot) && $is_bot)
+        <script>
+            // Redirección rápida para usuarios normales; los scrapers no serán redirigidos
+            (function(){
+                var to = {{ json_encode($redirect_url) }};
+                if (to) {
+                    window.location.replace(to);
+                }
+            })();
+        </script>
+    @endunless
 </body>
 </html>
