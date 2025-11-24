@@ -185,7 +185,7 @@ export default function BusinessList() {
             </button>
             )}
         </div>
-        <Button asChild className="bg-black hover:bg-black/90 text-white">
+        <Button asChild className= "text-white hover:text-white">
           <Link to="/entrepreneur/business/setup" className="inline-flex items-center gap-2 px-3 py-2 rounded-md whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
@@ -228,7 +228,7 @@ export default function BusinessList() {
               Crea tu primer emprendimiento para comenzar a vender productos y llegar a más clientes en nuestra plataforma.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white hover:text-white">
                 <Link to="/entrepreneur/business/setup" className="flex items-center gap-2">
                   <Plus className="h-5 w-5" />
                   Crear mi primer emprendimiento
@@ -242,7 +242,7 @@ export default function BusinessList() {
               </Button>
             </div>
             <div className="mt-10 pt-8 border-t border-gray-100">
-              <button className="text-sm text-decoration-line: underline font-medium text-gray-500 mb-4 hover:text-blue-600"
+              <button className="text-sm text-decoration-line: underline font-medium text-gray-500 mb-4 hover:text-brand"
                 onClick={() => setShowCrearEmp(true)}>¿Necesitas ayuda para comenzar?</button>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
