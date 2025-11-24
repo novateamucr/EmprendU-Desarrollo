@@ -16,16 +16,21 @@ import { profileFormSchema, passwordSchema, adminPasswordSchema } from '../domai
 import type { ProfileFormData, PasswordFormData, AdminPasswordFormData } from '../domain/profile/schema';
 import { getProfile } from '../domain/profile/service';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
+import { useQueryClient } from '@tanstack/react-query';
 // TODO: reactivar cuando el equipo de auth dé el flujo final
 // import { getToken } from '../domain/auth';
 
 export function EditarPerfil() {
   const navigate = useNavigate();
-  const { token, login } = useAuth();
+  const { token, login, logout } = useAuth();
+  const queryClient = useQueryClient();
   const { id } = useParams();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
   
   const isEditingOther = !!id;
   const { data: user, isLoading, isError, error, refetch } = (isEditingOther ? useProfileById(id as string) : useProfile()) as any;
@@ -315,6 +320,28 @@ export function EditarPerfil() {
       navigate('/admin/usuarios');
     } else {
       navigate('/profile');
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!user) return;
+    setDeletePending(true);
+    try {
+      await api.delete(`/users/${user.id}`);
+      if (typeof logout === 'function') {
+        try { logout(); } catch (_) { /* ignore */ }
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      queryClient.clear();
+      navigate('/login');
+    } catch (err: any) {
+      console.error('Error eliminando cuenta:', err);
+      alert(err?.response?.data?.message || 'No se pudo eliminar la cuenta');
+    } finally {
+      setDeletePending(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -754,11 +781,59 @@ export function EditarPerfil() {
                 )}
               </div>
               )}
+
+              {/* Eliminar cuenta: solo visible cuando el usuario edita su propia cuenta */}
+              {!isEditingOther && (
+                <div className="mt-8 pt-8 border-t border-border">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-red-600">Eliminar cuenta</h3>
+                    <p className="text-sm text-secondary mt-2">
+                      Esta acción eliminará tu cuenta de forma permanente y no se podrá deshacer.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(true)}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors focus-brand"
+                  >
+                    Eliminar mi cuenta
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
         </div>
       </div>
+
+      {/* Modal confirmar eliminar cuenta */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Eliminar cuenta"
+        variant="danger"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary">
+            Esta acción eliminará tu cuenta de forma permanente y no se podrá deshacer. ¿Deseas continuar?
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={deleteAccount}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              disabled={deletePending}
+            >
+              {deletePending ? 'Eliminando...' : 'Eliminar cuenta'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal de Información de Ubicación */}
       <Modal

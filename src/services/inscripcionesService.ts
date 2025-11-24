@@ -18,4 +18,10 @@ export const inscripcionesApi = {
     const response = await api.get(`/inscripciones/feria/${fairId}`);
     return response.data;
   },
+
+  // Cancelar inscripción
+  delete: async (inscripcionId: number) => {
+    const response = await api.delete(`/inscripciones/${inscripcionId}`);
+    return response.data;
+  },
 };

@@ -14,7 +14,7 @@ import { useRemoveFavorite } from '../domain/profile/queries';
 import { UserProfile } from '../domain/profile/types';
 import { ConfettiOverlay } from '../components/Confetti';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { categoryApi, entrepreneurshipApi, type Category, type Entrepreneurship } from '../services/entrepreneurshipService';
+import { categoryApi, entrepreneurshipApi, type Entrepreneurship } from '../services/entrepreneurshipService';
 import { categoryIconUrl } from '../utils/categoryIcons';
 import { Favorite } from '@mui/icons-material';
 
@@ -30,7 +30,7 @@ interface ProfileData extends Omit<UserProfile, 'interests'> {
 
 export function Perfil() {
   const navigate = useNavigate();
-  const { user: authUser, token, logout } = useAuth(); // Get user, token and optional logout from context
+  const { user: authUser, token } = useAuth();
   const queryClient = useQueryClient();
 
   const [user, setUser] = useState<ProfileData | null>(null);
@@ -39,9 +39,6 @@ export function Perfil() {
   const [showInterestModal, setShowInterestModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  // Modal + loading for account deletion
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePending, setDeletePending] = useState(false);
   // Eliminación directa desde el botón del corazón (sin modal)
   const [favPendingById, setFavPendingById] = useState<Record<number, boolean>>({});
   // Confirmación para eliminar favorito desde el perfil
@@ -61,7 +58,7 @@ export function Perfil() {
     updated_at: string;
   }
 
-  const { data: categoriesData, isLoading: loadingCategories, error: categoriesError } = useQuery<ICategory[]>({
+  const { data: categoriesData, isLoading: loadingCategories } = useQuery<ICategory[]>({
     queryKey: ['categories', 'profile'],
     queryFn: async (): Promise<ICategory[]> => {
       try {
@@ -312,9 +309,6 @@ export function Perfil() {
   // Use centralized icon utility to ensure consistent icons with fallback
   const iconUrlForCategory = (name: string) => categoryIconUrl(name);
 
-  // State to track loading interests
-  const [loadingInterests, setLoadingInterests] = useState<Record<string, boolean>>({});
-
   // Add interest by category (user_interests)
   const addInterestByCategory = async (category: { id: number; name: string }) => {
     if (!authUser || !user) return;
@@ -325,9 +319,6 @@ export function Perfil() {
       ...prev, 
       interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
     } : prev);
-    
-    // Set loading state
-    setLoadingInterests(prev => ({ ...prev, [categoryName]: true }));
     
     try {
       await api.post('/interests', { user_id: authUser.id, category_id: category.id });
@@ -341,9 +332,6 @@ export function Perfil() {
         interests: (prev.interests || []).filter(i => i !== categoryName) 
       } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo agregar el interés'));
-    } finally {
-      // Clear loading state
-      setLoadingInterests(prev => ({ ...prev, [categoryName]: false }));
     }
   };
 
@@ -363,9 +351,6 @@ export function Perfil() {
       ...prev, 
       interests: (prev.interests || []).filter(i => i !== categoryName) 
     } : prev);
-    
-    // Set loading state
-    setLoadingInterests(prev => ({ ...prev, [categoryName]: true }));
     
     try {
       // Find the interest record by querying with user_id and category_id
@@ -391,37 +376,8 @@ export function Perfil() {
         interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
       } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo eliminar el interés'));
-    } finally {
-      // Clear loading state
-      setLoadingInterests(prev => ({ ...prev, [categoryName]: false }));
     }
   };
-
-  // Función para eliminar la cuenta del usuario
-  const deleteAccount = async () => {
-    if (!authUser) return;
-    setDeletePending(true);
-    setError(null);
-    try {
-      await api.delete(`/users/${authUser.id}`);
-      // Limpiar sesión local / context
-      if (typeof logout === 'function') {
-        try { logout(); } catch (_) { /* ignore */ }
-      } else {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-      queryClient.clear();
-      navigate('/login');
-    } catch (err: any) {
-      console.error('Error eliminando cuenta:', err);
-      setError(new Error(err?.response?.data?.message || 'No se pudo eliminar la cuenta'));
-    } finally {
-      setDeletePending(false);
-      setShowDeleteModal(false);
-    }
-  };
-
 
   if (isLoading) {
     return (
@@ -507,7 +463,6 @@ export function Perfil() {
               onContactInfoClick={() => setShowContactModal(true)}
               onLocationInfoClick={() => setShowLocationModal(true)}
               hideEdit
-              onDeleteAccount={() => setShowDeleteModal(true)}
             />
           </div>
         </div>
@@ -582,7 +537,6 @@ export function Perfil() {
             user={user}
             onContactInfoClick={() => setShowContactModal(true)}
             onLocationInfoClick={() => setShowLocationModal(true)}
-            onDeleteAccount={() => setShowDeleteModal(true)}
           />
         </div>
 
@@ -790,35 +744,6 @@ export function Perfil() {
               No se encontraron categorías disponibles.
             </div>
           )}
-        </div>
-      </Modal>
-
-      {/* Modal confirmar eliminar cuenta */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        title="Eliminar cuenta"
-        variant="danger"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-secondary">
-            Esta acción eliminará tu cuenta de forma permanente y no se podrá deshacer. ¿Deseas continuar?
-          </p>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={() => setShowDeleteModal(false)}
-              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={deleteAccount}
-              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-              disabled={deletePending}
-            >
-              {deletePending ? 'Eliminando...' : 'Eliminar cuenta'}
-            </button>
-          </div>
         </div>
       </Modal>
 
