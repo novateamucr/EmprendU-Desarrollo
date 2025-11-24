@@ -49,7 +49,7 @@ export default function ContactUs() {
       <main className="flex-1 flex items-center justify-center px-10 md:p-12 mt-10 md:mt-4 lg:px-28 lg:pt-20">
         <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 items-center">
           <div className="flex flex-col gap-2 w-full md:w-1/2">
-            <h3 className="text-sm md:text-xl font-bold text-blue-400 leading-tight">CONTACTO</h3>
+            <h3 className="text-sm md:text-xl font-bold text-brand leading-tight">CONTACTO</h3>
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">Contáctanos</h1>
             <p className="text-sm md:text-lg mt-4">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias.</p>
             <p className="text-sm md:text-lg mt-4">Nuestro equipo revisará tu mensaje y te brindará una respuesta en el menor tiempo posible.</p>
@@ -88,7 +88,7 @@ export default function ContactUs() {
               ></textarea>
               <button
                 type="submit"
-                className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+                className="bg-brand text-white p-2 rounded-full hover:bg-brandDark transition"
               >
                 Enviar
               </button>

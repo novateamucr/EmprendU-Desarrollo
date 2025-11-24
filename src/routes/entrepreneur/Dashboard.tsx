@@ -599,13 +599,13 @@ export default function Dashboard() {
           
            <button
               onClick={() => setShowExtraModal(true)}
-              className="transition-colors pb-4text-sm text-decoration-line: underline text-gray-500 mb-4 hover:text-blue-600"
+              className="transition-colors pb-4text-sm text-decoration-line: underline text-gray-500 mb-4 hover:text-brand"
               aria-label="Abrir información"
             >
               Como crear un emprendimiento
             </button>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button asChild size="lg" className=" text-white hover:text-white">
               <Link to="/entrepreneur/business/setup" className="flex items-center gap-2">
                 <Plus className="h-5 w-5 3xl:h-6 3xl:w-6 4xl:h-7 4xl:w-7" />
                 Crear mi primer emprendimiento

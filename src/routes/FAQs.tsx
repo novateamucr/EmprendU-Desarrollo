@@ -74,7 +74,7 @@ export default function FAQ() {
           <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center px-2 sm:px-8 md:px-20 ">
             {/* TITULOS */}
             <div className="flex flex-col gap-3 p-6" style={{ minWidth: 260 }}>
-              <h1 className="text-5xl md:text-6xl font-bold text-blue-400 leading-tight">
+              <h1 className="text-5xl md:text-6xl font-bold text-brand leading-tight">
                 Preguntas
               </h1>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
@@ -82,7 +82,7 @@ export default function FAQ() {
               </h1>
               <p className="text-sm md:text-base mt-2">
                 ¿Tienes más preguntas?{" "}
-                <a href="/contactUs" className="hover:underline text-blue-400">
+                <a href="/contactUs" className="hover:underline text-brand">
                   Contáctanos
                 </a>
               </p>
@@ -117,7 +117,7 @@ export default function FAQ() {
                           {faq.question}
                         </h3>
                         <button
-                          className="bg-blue-400 text-white rounded-full p-2 hover:bg-blue-500 transition ease-in-out duration-300"
+                          className="bg-brand text-white rounded-full p-2 hover:bg-brandDark transition ease-in-out duration-300"
                           aria-label={openIndex === realIndex ? "Cerrar" : "Abrir"}
                           type="button"
                           tabIndex={-1}
@@ -153,7 +153,7 @@ export default function FAQ() {
                     onClick={() => handlePageChange(idx + 1)}
                     className={`
                       w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold
-                      ${currentPage === idx + 1 ? "bg-blue-800" : "bg-blue-400 hover:bg-blue-500"}
+                      ${currentPage === idx + 1 ? "bg-blue-900" : "bg-brand hover:bg-brandDark"}
                       transition
                       focus:outline-none
                     `}
