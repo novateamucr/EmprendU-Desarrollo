@@ -34,7 +34,7 @@ export function FeriaCard(props: FeriaCardProps) {
        
         <button
           onClick={props.onButtonClick}
-          className="mt-4 w-full bg-brandLight text-white py-2 3xl:py-2.5 rounded-full hover:bg-brand transition text-sm 3xl:text-base 4xl:text-lg"
+          className="mt-4 w-full bg-brand hover:bg-brandDark text-white py-2 3xl:py-2.5 rounded-full transition text-sm 3xl:text-base 4xl:text-lg"
         >
           {props.buttonText}
         </button>

@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -56,78 +57,12 @@ import {
 import insta from "../assets/instagram_icon.svg";
 import youtube from "../assets/youtube_icon.svg";
 import tiktok from "../assets/tiktok_icon.svg";
+import { TopProductsSidebar } from "../components/TopProductsSidebar";
 
 // Custom hook to fetch all reviews at once
-const useReviews = (entrepreneurshipId: string | number) => {
-  const { token } = useAuth();
 
-  return useQuery({
-    queryKey: ["reviews", entrepreneurshipId],
-    queryFn: async () => {
-      if (!entrepreneurshipId) return [];
-      const res = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL || "/api"
-        }/reviews?entrepreneurship_id=${entrepreneurshipId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!res.ok) throw new Error("Error al obtener reviews");
-      return res.json();
-    },
-    enabled: !!entrepreneurshipId, // solo activar si hay id
-  });
-};
 
-export function BusinessStars({
-  entrepreneurshipId,
-}: {
-  entrepreneurshipId: number | string;
-}) {
-  const { data: reviewsData } = useReviews(entrepreneurshipId);
-  const [averageRating, setAverageRating] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!reviewsData || reviewsData.length === 0) {
-      setAverageRating(null);
-      return;
-    }
-
-    try {
-      const sum = reviewsData.reduce(
-        (acc: number, review: any) => acc + (parseFloat(review.rating) || 0),
-        0
-      );
-      const avg = sum / reviewsData.length;
-      setAverageRating(avg);
-    } catch (error) {
-      console.error("Error calculating average rating:", error);
-      setAverageRating(null);
-    }
-  }, [reviewsData]);
-
-  return (
-    <div className="flex flex-wrap justify-center gap-2 4xl:gap-3">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <div key={star} className="relative group">
-          <span
-            className={`text-sm md:text-base 3xl:text-lg 4xl:text-3xl ${
-              averageRating && star <= Math.round(averageRating)
-                ? "text-yellow-500"
-                : "text-gray-300"
-            }`}
-          >
-            ★
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // Soft animations with Emotion
 const fadeInUp = keyframes`
@@ -202,6 +137,105 @@ const SoftButton = styled.button`
 const removeAccents = (str: string) => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 };
+
+interface CategoriesProps {
+  categories: {
+    name: string;
+    count: number;
+    color: string;
+  }[];
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+  loading: boolean;
+}
+
+const Categories = React.memo(({ categories, selectedCategory, setSelectedCategory, loading }: CategoriesProps) => {
+  const categoryScrollRef = useRef<HTMLDivElement | null>(null);
+
+  return (
+    <div className="mb-8" id="categories-section">
+      <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2">
+        <FloatingElement>
+          <Apps sx={{ fontSize: 24 }} />
+        </FloatingElement>
+        Categorías
+      </h2>
+      <div className="relative">
+        <div
+          ref={categoryScrollRef}
+          className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide scroll-smooth w-full"
+        >
+          {loading ? (
+            <div className="flex gap-3 w-full">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={`skeleton-category-${i}`}
+                  className="w-28 sm:w-40 flex flex-col items-center px-3 py-2"
+                >
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={48}
+                    className="rounded-full"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="w-full text-center py-4 text-gray-500">
+              No hay categorías disponibles
+            </div>
+          ) : (
+            categories.map((category) => {
+              const categoryName =
+                String(category.name || "").trim() || "General";
+              const isSelected = selectedCategory === categoryName;
+              const iconColor = isSelected
+                ? "#FFFFFF"
+                : category.color || "#5b98b8";
+
+              return (
+                <button
+                  key={categoryName}
+                  onClick={() => setSelectedCategory(categoryName)}
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 4xl:px-6 4xl:py-3 rounded-full transition-all duration-200 ${isSelected
+                    ? `shadow-md`
+                    : "hover:shadow-sm hover:bg-gray-50"
+                    }`}
+                  style={{
+                    backgroundColor: isSelected
+                      ? category.color || "#4F46E5"
+                      : "#FFFFFF",
+                    color: isSelected ? "#FFFFFF" : "#374151",
+                    border: `1px solid ${isSelected ? category.color || "#4F46E5" : "#E5E7EB"
+                      }`,
+                  }}
+                >
+                  <img
+                    src={categoryIconUrl(categoryName, iconColor)}
+                    alt={categoryName}
+                    className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6 flex-shrink-0"
+                  />
+                  <span className="font-medium text-sm 3xl:text-base 4xl:text-xl whitespace-nowrap">
+                    {categoryName}
+                  </span>
+                  <span
+                    className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80"
+                    style={{
+                      color: isSelected ? "rgba(255,255,255,0.9)" : "inherit",
+                    }}
+                  >
+                    ({category.count})
+                  </span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -369,8 +403,8 @@ export default function HomePage() {
   const { user: authUser } = useAuth();
   const authInterests: string[] = Array.isArray(authUser?.interests)
     ? (authUser!.interests as any[])
-        .map((i) => (typeof i === "string" ? i : i?.name ?? i?.interest ?? ""))
-        .filter(Boolean)
+      .map((i) => (typeof i === "string" ? i : i?.name ?? i?.interest ?? ""))
+      .filter(Boolean)
     : [];
   // Derive interest names directly from backend (format=names)
   const { data: derivedInterestNames } = useQuery<string[]>({
@@ -405,380 +439,9 @@ export default function HomePage() {
     [userInterests]
   );
 
-  interface CategoriesProps {
-    selectedCategory: string;
-    setSelectedCategory: (category: string) => void;
-  }
-  const Categories: React.FC<CategoriesProps> = ({
-    selectedCategory,
-    setSelectedCategory,
-  }) => {
-    const categoryScrollRef = useRef<HTMLDivElement | null>(null);
-
-    // Fetch categories from backend
-    const { data: categoriesData, isLoading: loadingCategories } = useQuery<
-      Category[]
-    >({
-      queryKey: ["categories", "home"],
-      queryFn: () => categoryApi.getAll(),
-      select: (d) => d ?? [],
-      staleTime: 5 * 60 * 1000,
-    });
-    // Loading states are handled individually for better control
-
-    // Build counts depending on view: products per category or entrepreneurships per category
-    const counts = useMemo(() => {
-      const map = new Map<string, number>();
-
-      if (viewMode === "productos") {
-        // For products view, get categories from products
-        const productCategories = new Map<string, number>();
-
-        (allProducts || []).forEach((p: any) => {
-          // Get category from product's category_id if available, otherwise from its entrepreneurship
-          let categoryName = "General";
-
-          if (p.category_id && categoryMap.has(Number(p.category_id))) {
-            const category = categoryMap.get(Number(p.category_id));
-            categoryName = category?.name || "General";
-          } else if (p.entrepreneurship_id) {
-            const biz = entrepreneurships.find(
-              (e: any) => e.id === p.entrepreneurship_id
-            );
-            if (biz?.category) {
-              if (typeof biz.category === "object" && biz.category.name) {
-                categoryName = biz.category.name;
-              } else if (typeof biz.category === "string") {
-                categoryName = biz.category;
-              }
-            }
-          }
-
-          productCategories.set(
-            categoryName,
-            (productCategories.get(categoryName) || 0) + 1
-          );
-        });
-
-        // Add all product categories to the main map
-        productCategories.forEach((count, name) => map.set(name, count));
-      } else {
-        // For businesses view, count entrepreneurships per category
-        const businessCategories = new Map<string, number>();
-
-        entrepreneurships.forEach((b: any) => {
-          let categoryName = "General";
-
-          if (b.category) {
-            if (typeof b.category === "object" && b.category.name) {
-              categoryName = b.category.name;
-            } else if (typeof b.category === "string") {
-              categoryName = b.category;
-            } else if (
-              typeof b.category === "number" &&
-              categoryMap.has(b.category)
-            ) {
-              const category = categoryMap.get(b.category);
-              categoryName = category?.name || "General";
-            }
-          } else if (b.category_relation) {
-            categoryName = b.category_relation.name || "General";
-          }
-
-          businessCategories.set(
-            categoryName,
-            (businessCategories.get(categoryName) || 0) + 1
-          );
-        });
-
-        // Add all business categories to the main map
-        businessCategories.forEach((count, name) => map.set(name, count));
-      }
-
-      return map;
-    }, [viewMode, entrepreneurships, allProducts, bizCategoryInfo]);
-    const totalCount =
-      viewMode === "productos"
-        ? allProducts?.length || 0
-        : entrepreneurships.length;
-    // Count items for "Mis intereses"
-    const misInteresesCount = useMemo(() => {
-      if (!userInterests.length) return 0;
-      return Array.from(counts.entries()).reduce((acc, [name, c]) => {
-        const normalized = removeAccents((name || "").toLowerCase());
-        return acc + (interestsSet.has(normalized) ? c : 0);
-      }, 0);
-    }, [userInterests.length, counts, interestsSet]);
-
-    // Compose final category list: Todos + Mis intereses (if any) + categories from data
-    const categories = useMemo(() => {
-      // First, collect all unique category names and their counts from bizCategoryInfo
-      const categoryCounts = new Map<
-        string,
-        { count: number; color: string; icon: any }
-      >();
-
-      // Count occurrences of each category using bizCategoryInfo
-      entrepreneurships.forEach((b: any) => {
-        const categoryInfo = bizCategoryInfo.get(b.id) || {
-          name: "General",
-          color: "#4F46E5",
-          icon: Palette,
-        };
-
-        const categoryName = categoryInfo.name;
-        const existing = categoryCounts.get(categoryName);
-
-        if (existing) {
-          existing.count++;
-        } else {
-          categoryCounts.set(categoryName, {
-            count: 1,
-            color: categoryInfo.color,
-            icon: categoryInfo.icon || Palette,
-          });
-        }
-      });
-
-      // Map of category names to Material-UI icons
-      // First, let's create a mapping of category names to their corresponding icons
-      const categoryIconMap: Record<string, React.ElementType> = {
-        // Food categories
-        Comida: Restaurant,
-        Restaurante: Restaurant,
-        "Comida Rápida": Fastfood,
-        Postres: Cake,
-        Bebidas: LocalBar,
-        Café: LocalCafe,
-        Té: LocalCafe,
-        Helados: Icecream,
-        Pizza: LocalPizza,
-        Hamburguesas: DinnerDining,
-        Asiática: RamenDining,
-        Italiana: DinnerDining,
-        Mexicana: RestaurantMenu,
-        Saludable: Favorite,
-        Vegano: FavoriteBorder, // Using FavoriteBorder as a fallback for Spa
-        Vegetariano: Favorite, // Using Favorite as a fallback for Eco
-        Panadería: Cake, // Using Cake as a fallback for BakeryDining
-        Mariscos: SetMeal,
-        Sushi: LunchDining,
-        Desayunos: BreakfastDining,
-        Almuerzos: LunchDining,
-        Cenas: DinnerDining,
-        Snacks: RestaurantMenu, // Using RestaurantMenu as a fallback for Tapas
-        // Add more mappings as needed
-      };
-
-      // Helper function to get the appropriate icon for a category
-      const getCategoryIcon = (categoryName: string): React.ElementType => {
-        // Try to find an exact match first
-        if (categoryIconMap[categoryName]) {
-          return categoryIconMap[categoryName];
-        }
-
-        // Then check for partial matches
-        const lowerName = categoryName.toLowerCase();
-
-        if (lowerName.includes("comida")) return Restaurant;
-        if (lowerName.includes("bebida")) return LocalBar;
-        if (lowerName.includes("postre")) return Cake;
-        if (lowerName.includes("café") || lowerName.includes("cafe"))
-          return LocalCafe;
-        if (lowerName.includes("té") || lowerName.includes("te"))
-          return LocalCafe;
-        if (lowerName.includes("helado")) return Icecream;
-        if (lowerName.includes("pizza")) return LocalPizza;
-        if (lowerName.includes("hamburguesa")) return DinnerDining;
-        if (lowerName.includes("sushi")) return LunchDining;
-        if (lowerName.includes("marisco")) return SetMeal;
-        if (lowerName.includes("pescado")) return SetMeal;
-        if (lowerName.includes("carne")) return OutdoorGrill;
-        if (lowerName.includes("pollo")) return DinnerDining;
-        if (lowerName.includes("ensalada")) return RestaurantMenu;
-        if (lowerName.includes("sopa")) return RestaurantMenu; // Using RestaurantMenu as a fallback for SoupKitchen
-        if (lowerName.includes("sándwich") || lowerName.includes("sandwich"))
-          return LunchDining;
-        if (lowerName.includes("empanada")) return Cake; // Using Cake as a fallback for BakeryDining
-        if (lowerName.includes("arepa")) return Cake; // Using Cake as a fallback for BakeryDining
-        if (lowerName.includes("taco")) return RestaurantMenu; // Using RestaurantMenu as a fallback for Taco
-        if (lowerName.includes("burrito")) return LunchDining;
-        if (lowerName.includes("pasta")) return DinnerDining;
-        if (lowerName.includes("perro") || lowerName.includes("hot dog"))
-          return LunchDining;
-        if (lowerName.includes("papa") || lowerName.includes("papa frita"))
-          return LunchDining;
-        if (lowerName.includes("alita")) return DinnerDining;
-        if (lowerName.includes("ceviche")) return DinnerDining;
-        if (lowerName.includes("tiramisú") || lowerName.includes("tiramisu"))
-          return Cake;
-        if (lowerName.includes("chocolate")) return Cake;
-        if (
-          lowerName.includes("jugo") ||
-          lowerName.includes("batido") ||
-          lowerName.includes("smoothie") ||
-          lowerName.includes("malteada")
-        )
-          return LocalBar;
-        if (lowerName.includes("refresco") || lowerName.includes("agua"))
-          return LocalBar;
-        if (
-          lowerName.includes("cerveza") ||
-          lowerName.includes("vino") ||
-          lowerName.includes("licor") ||
-          lowerName.includes("cóctel") ||
-          lowerName.includes("coctel") ||
-          lowerName.includes("trago") ||
-          lowerName.includes("mixolog") ||
-          lowerName.includes("bar")
-        )
-          return SportsBar;
-
-        // Default icon if no match is found
-        return Apps;
-      };
-
-      // Then in your component where you map categories:
-      const categoryItems = Array.from(categoryCounts.entries()).map(
-        ([name, { count, color }]) => ({
-          name,
-          icon: getCategoryIcon(name),
-          count,
-          color,
-        })
-      );
-
-      // Add 'Todos' and 'Mis intereses' if needed
-      const allCats = [
-        {
-          name: "Todos",
-          icon: Apps,
-          count: totalCount,
-          color: "#4F46E5", // Indigo
-        },
-        ...(userInterests.length && misInteresesCount > 0
-          ? [
-              {
-                name: "Mis intereses",
-                icon: Star,
-                count: misInteresesCount,
-                color: "#D97706", // Amber
-              } as const,
-            ]
-          : []),
-        ...categoryItems
-          .filter((cat) => cat.count > 0) // Only include categories with at least one item
-          .map((cat) => ({
-            ...cat,
-            // Ensure consistent color for each category
-            color: categoryColor(cat.name) || "#6B7280", // Default to gray if no color
-          }))
-          .sort((a, b) => b.count - a.count), // Sort by count descending
-      ];
-
-      // If there are no categories with items, return empty array
-      if (allCats.every((cat) => cat.count === 0)) {
-        return [];
-      }
-
-      return allCats;
-    }, [
-      totalCount,
-      userInterests.length,
-      misInteresesCount,
-      entrepreneurships,
-      bizCategoryInfo,
-    ]);
-
-    return (
-      <div className="mb-8" id="categories-section">
-        <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2">
-          <FloatingElement>
-            <Apps sx={{ fontSize: 24 }} />
-          </FloatingElement>
-          Categorías
-        </h2>
-        <div className="relative">
-          <div
-            ref={categoryScrollRef}
-            className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide scroll-smooth w-full"
-          >
-            {loadingCategories ? (
-              <div className="flex gap-3 w-full">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={`skeleton-category-${i}`}
-                    className="w-28 sm:w-40 flex flex-col items-center px-3 py-2"
-                  >
-                    <Skeleton
-                      variant="rounded"
-                      width="100%"
-                      height={48}
-                      className="rounded-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="w-full text-center py-4 text-gray-500">
-                No hay categorías disponibles
-              </div>
-            ) : (
-              categories.map((category) => {
-                const categoryName =
-                  String(category.name || "").trim() || "General";
-                const isSelected = selectedCategory === categoryName;
-                const iconColor = isSelected
-                  ? "#FFFFFF"
-                  : category.color || "#5b98b8";
-
-                return (
-                  <button
-                    key={categoryName}
-                    onClick={() => setSelectedCategory(categoryName)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 4xl:px-6 4xl:py-3 rounded-full transition-all duration-200 ${
-                      isSelected
-                        ? `shadow-md`
-                        : "hover:shadow-sm hover:bg-gray-50"
-                    }`}
-                    style={{
-                      backgroundColor: isSelected
-                        ? category.color || "#4F46E5"
-                        : "#FFFFFF",
-                      color: isSelected ? "#FFFFFF" : "#374151",
-                      border: `1px solid ${
-                        isSelected ? category.color || "#4F46E5" : "#E5E7EB"
-                      }`,
-                    }}
-                  >
-                    <img
-                      src={categoryIconUrl(categoryName, iconColor)}
-                      alt={categoryName}
-                      className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6 flex-shrink-0"
-                    />
-                    <span className="font-medium text-sm 3xl:text-base 4xl:text-xl whitespace-nowrap">
-                      {categoryName}
-                    </span>
-                    <span
-                      className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80"
-                      style={{
-                        color: isSelected ? "rgba(255,255,255,0.9)" : "inherit",
-                      }}
-                    >
-                      ({category.count})
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   // Estado para provincia seleccionada
   const [selectedProvince, setSelectedProvince] = useState<string>("Todos");
+
   // Derive zones from backend data if available (owner.canton or address)
   const zones = [
     ...new Set(
@@ -797,7 +460,203 @@ export default function HomePage() {
     ),
   ];
 
-  // Filter businesses by category, search query, selected province and selected zone/canton
+  // Products view placeholder (global products listing not connected yet)
+  const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
+    queryKey: ["products", "all", viewMode],
+    queryFn: async () => {
+      const res = await productApi.getAll({ per_page: 60 });
+      return (res?.data ?? []) as Product[];
+    },
+    enabled: viewMode === "productos",
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const allProducts: Product[] = products ?? [];
+
+  // Build counts depending on view: products per category or entrepreneurships per category
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
+
+    if (viewMode === "productos") {
+      // For products view, get categories from products
+      const productCategories = new Map<string, number>();
+
+      (allProducts || []).forEach((p: any) => {
+        // Get category from product's category_id if available, otherwise from its entrepreneurship
+        let categoryName = "General";
+
+        if (p.category_id && categoryMap.has(Number(p.category_id))) {
+          const category = categoryMap.get(Number(p.category_id));
+          categoryName = category?.name || "General";
+        } else if (p.entrepreneurship_id) {
+          const biz = entrepreneurships.find(
+            (e: any) => e.id === p.entrepreneurship_id
+          );
+          if (biz?.category) {
+            if (typeof biz.category === "object" && biz.category.name) {
+              categoryName = biz.category.name;
+            } else if (typeof biz.category === "string") {
+              categoryName = biz.category;
+            }
+          }
+        }
+
+        productCategories.set(
+          categoryName,
+          (productCategories.get(categoryName) || 0) + 1
+        );
+      });
+
+      // Add all product categories to the main map
+      productCategories.forEach((count, name) => map.set(name, count));
+    } else {
+      // For businesses view, count entrepreneurships per category
+      const businessCategories = new Map<string, number>();
+
+      entrepreneurships.forEach((b: any) => {
+        let categoryName = "General";
+
+        if (b.category) {
+          if (typeof b.category === "object" && b.category.name) {
+            categoryName = b.category.name;
+          } else if (typeof b.category === "string") {
+            categoryName = b.category;
+          } else if (
+            typeof b.category === "number" &&
+            categoryMap.has(b.category)
+          ) {
+            const category = categoryMap.get(b.category);
+            categoryName = category?.name || "General";
+          }
+        } else if (b.category_relation) {
+          categoryName = b.category_relation.name || "General";
+        }
+
+        businessCategories.set(
+          categoryName,
+          (businessCategories.get(categoryName) || 0) + 1
+        );
+      });
+
+      // Add all business categories to the main map
+      businessCategories.forEach((count, name) => map.set(name, count));
+    }
+
+    return map;
+  }, [viewMode, entrepreneurships, allProducts, bizCategoryInfo, categoryMap]);
+
+  const totalCount =
+    viewMode === "productos"
+      ? allProducts?.length || 0
+      : entrepreneurships.length;
+
+  // Count items for "Intereses"
+  const misInteresesCount = useMemo(() => {
+    if (!userInterests.length) return 0;
+    return Array.from(counts.entries()).reduce((acc, [name, c]) => {
+      const normalized = removeAccents((name || "").toLowerCase());
+      return acc + (interestsSet.has(normalized) ? c : 0);
+    }, 0);
+  }, [userInterests.length, counts, interestsSet]);
+
+  // Count items for "Favoritos"
+  const favoritosCount = useMemo(() => {
+    if (viewMode === "productos") {
+      return (allProducts || []).filter((p) =>
+        favByEntreId.has(Number(p.entrepreneurship_id))
+      ).length;
+    } else {
+      return entrepreneurships.filter((b) =>
+        favByEntreId.has(Number(b.id))
+      ).length;
+    }
+  }, [viewMode, allProducts, entrepreneurships, favByEntreId]);
+
+  // Compose final category list
+  const categories = useMemo(() => {
+    // First, collect all unique category names and their counts from bizCategoryInfo
+    const categoryCounts = new Map<
+      string,
+      { count: number; color: string; icon: any }
+    >();
+
+    // Count occurrences of each category using bizCategoryInfo
+    entrepreneurships.forEach((b: any) => {
+      const categoryInfo = bizCategoryInfo.get(b.id) || {
+        name: "General",
+        color: "#4F46E5",
+        icon: Palette,
+      };
+
+      const categoryName = categoryInfo.name;
+      const existing = categoryCounts.get(categoryName);
+
+      if (existing) {
+        existing.count++;
+      } else {
+        categoryCounts.set(categoryName, {
+          count: 1,
+          color: categoryInfo.color,
+          icon: categoryInfo.icon || Palette,
+        });
+      }
+    });
+
+    const categoryItems = Array.from(categoryCounts.entries()).map(
+      ([name, { count, color }]) => ({
+        name,
+        count,
+        color,
+      })
+    );
+
+    const allCats = [
+      {
+        name: "Todos",
+        count: totalCount,
+        color: "#4F46E5",
+      },
+      ...(userInterests.length > 0
+        ? [
+          {
+            name: "Intereses",
+            count: misInteresesCount,
+            color: "#D97706",
+          },
+        ]
+        : []),
+      ...(favorites.length > 0
+        ? [
+          {
+            name: "Favoritos",
+            count: favoritosCount,
+            color: "#E11D48",
+          },
+        ]
+        : []),
+      ...categoryItems
+        .filter((cat) => cat.count > 0)
+        .map((cat) => ({
+          ...cat,
+          color: categoryColor(cat.name) || "#6B7280",
+        }))
+        .sort((a, b) => b.count - a.count),
+    ];
+
+    if (allCats.every((cat) => cat.count === 0)) {
+      return [];
+    }
+
+    return allCats;
+  }, [
+    totalCount,
+    userInterests.length,
+    misInteresesCount,
+    entrepreneurships,
+    bizCategoryInfo,
+    favoritosCount,
+    favorites.length,
+  ]);
   const filteredBusinesses = useMemo(() => {
     return entrepreneurships.filter((business: any) => {
       // Get the category name from bizCategoryInfo which has the correct mapping
@@ -814,9 +673,11 @@ export default function HomePage() {
       // Match by selected category
       const matchesCategory =
         selectedCategory === "Todos" ||
-        (selectedCategory === "Mis intereses"
+        (selectedCategory === "Intereses"
           ? interestsSet.has(normalizedCat)
-          : normalizedCat === removeAccents(selectedCategory.toLowerCase()));
+          : selectedCategory === "Favoritos"
+            ? favByEntreId.has(Number(business.id))
+            : normalizedCat === removeAccents(selectedCategory.toLowerCase()));
 
       // Match by search query
       const matchesSearch =
@@ -833,14 +694,14 @@ export default function HomePage() {
       const matchesProvince =
         selectedProvince === "Todos" ||
         (business.owner?.province || "").toLowerCase() ===
-          selectedProvince.toLowerCase();
+        selectedProvince.toLowerCase();
 
       // Match by selected zone/canton (if any)
       // Note: selectedZone default value is "Todas"
       const matchesCanton =
         selectedZone === "Todas" ||
         (business.owner?.canton || "").toLowerCase() ===
-          selectedZone.toLowerCase();
+        selectedZone.toLowerCase();
 
       return matchesCategory && matchesSearch && matchesProvince && matchesCanton;
     });
@@ -853,18 +714,7 @@ export default function HomePage() {
     bizCategoryInfo,
   ]);
 
-  // Products view placeholder (global products listing not connected yet)
-  const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
-    queryKey: ["products", "all", viewMode],
-    queryFn: async () => {
-      const res = await productApi.getAll({ per_page: 60 });
-      return (res?.data ?? []) as Product[];
-    },
-    enabled: viewMode === "productos",
-    staleTime: 2 * 60 * 1000,
-  });
 
-  const allProducts: Product[] = products ?? [];
 
   // Filtrado de productos por categoría efectiva del producto
   const filteredProducts: Product[] = allProducts.filter((p) => {
@@ -892,9 +742,11 @@ export default function HomePage() {
     const matchesCategory =
       selectedCategory === "Todos"
         ? true
-        : selectedCategory === "Mis intereses"
-        ? interestsSet.has(normalizedEffectiveCat)
-        : normalizedEffectiveCat === normalizedSelectedCat;
+        : selectedCategory === "Intereses"
+          ? interestsSet.has(normalizedEffectiveCat)
+          : selectedCategory === "Favoritos"
+            ? favByEntreId.has(Number(p.entrepreneurship_id))
+            : normalizedEffectiveCat === normalizedSelectedCat;
 
     // Match by search query
     const normalizedSearch = removeAccents(searchQuery.toLowerCase().trim());
@@ -913,34 +765,34 @@ export default function HomePage() {
   const searchSuggestions =
     searchQuery.length > 0
       ? [
-          ...new Set(
-            viewMode === "emprendimientos"
-              ? [
-                  ...entrepreneurships
-                    .filter((b) =>
-                      removeAccents((b.name || "").toLowerCase()).includes(
-                        removeAccents(searchQuery.toLowerCase())
-                      )
-                    )
-                    .map((b) => b.name),
-                  ...entrepreneurships
-                    .filter((b) =>
-                      removeAccents(
-                        (b.category_relation?.nombre || "").toLowerCase()
-                      ).includes(removeAccents(searchQuery.toLowerCase()))
-                    )
-                    .map((b) => b.category_relation?.nombre || ""),
-                  ...entrepreneurships
-                    .filter((b) =>
-                      removeAccents(
-                        (b.description || "").toLowerCase()
-                      ).includes(removeAccents(searchQuery.toLowerCase()))
-                    )
-                    .map((b) => b.name),
-                ]
-              : []
-          ),
-        ].slice(0, 5)
+        ...new Set(
+          viewMode === "emprendimientos"
+            ? [
+              ...entrepreneurships
+                .filter((b) =>
+                  removeAccents((b.name || "").toLowerCase()).includes(
+                    removeAccents(searchQuery.toLowerCase())
+                  )
+                )
+                .map((b) => b.name),
+              ...entrepreneurships
+                .filter((b) =>
+                  removeAccents(
+                    (b.category_relation?.nombre || "").toLowerCase()
+                  ).includes(removeAccents(searchQuery.toLowerCase()))
+                )
+                .map((b) => b.category_relation?.nombre || ""),
+              ...entrepreneurships
+                .filter((b) =>
+                  removeAccents(
+                    (b.description || "").toLowerCase()
+                  ).includes(removeAccents(searchQuery.toLowerCase()))
+                )
+                .map((b) => b.name),
+            ]
+            : []
+        ),
+      ].slice(0, 5)
       : [];
 
   const filteredSuggestions = searchSuggestions.filter((suggestion) =>
@@ -973,11 +825,10 @@ export default function HomePage() {
                   setSearchQuery("");
                   setShowSuggestions(false);
                 }}
-                className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${
-                  viewMode === "emprendimientos"
-                    ? "bg-white text-primary shadow-sm"
-                    : "text-secondary hover:text-primary hover:bg-brand/10"
-                }`}
+                className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${viewMode === "emprendimientos"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-secondary hover:text-primary hover:bg-brand/10"
+                  }`}
               >
                 Emprendimientos
               </SoftButton>
@@ -987,16 +838,26 @@ export default function HomePage() {
                   setSearchQuery("");
                   setShowSuggestions(false);
                 }}
-                className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${
-                  viewMode === "productos"
-                    ? "bg-white text-primary shadow-sm"
-                    : "text-secondary hover:text-primary hover:bg-brand/10"
-                }`}
+                className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${viewMode === "productos"
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-secondary hover:text-primary hover:bg-brand/10"
+                  }`}
               >
                 Productos
               </SoftButton>
             </div>
           </AnimatedContainer>
+
+          {/* Mobile Top Products (Carousel style) - Shown first on mobile */}
+          <div className="lg:hidden mb-8">
+            <TopProductsSidebar
+              onViewAllClick={() => {
+                setViewMode("productos");
+                setSearchQuery("");
+                setShowSuggestions(false);
+              }}
+            />
+          </div>
 
           {viewMode === "emprendimientos" ? (
             <>
@@ -1010,9 +871,7 @@ export default function HomePage() {
                 </AnimatedContainer>
               )}
               <AnimatedContainer className="mb-8">
-                <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-4 flex items-center gap-2 4xl:gap-3">
-                  
-                </h2>
+
                 {loading ? (
                   <SkeletonFeaturedEntrepreneur />
                 ) : (
@@ -1150,8 +1009,10 @@ export default function HomePage() {
 
               {viewMode !== "productos" && (
                 <Categories
+                  categories={categories}
                   selectedCategory={selectedCategory}
                   setSelectedCategory={setSelectedCategory}
+                  loading={isLoadingCategories}
                 />
               )}
 
@@ -1163,8 +1024,8 @@ export default function HomePage() {
                     {viewMode === "productos"
                       ? "Productos"
                       : selectedCategory === "Todos"
-                      ? "Emprendimientos"
-                      : `Categoría: ${selectedCategory}`}
+                        ? "Emprendimientos"
+                        : `Categoría: ${selectedCategory}`}
                   </h2>
                 </div>
 
@@ -1177,161 +1038,176 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 4xl:grid-cols-3 gap-6 3xl:gap-8 4xl:gap-10">
-                    {filteredBusinesses.map((business: any) =>
-                      (() => {
-                        return (
-                          <Link
-                            key={business.id}
-                            to={`/business/${business.id}`}
-                            className="block"
-                            onClick={() =>
-                              window.scrollTo({ top: 0, behavior: "auto" })
-                            }
-                          >
-                            <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
-                              <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                                <img
-                                  src={
-                                    business.image_url ||
-                                    "https://placehold.co/600x600?text=Sin+imagen"
-                                  }
-                                  alt={
-                                    business.name || "Imagen del emprendimiento"
-                                  }
-                                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                />
-                              </div>
-                              <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h3 className=" text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
-                                    {business.name}
-                                  </h3>
-                                  <button
-                                    className="text-secondary hover:text-brand transition-colors font-medium"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      const bizId = Number(business.id);
-                                      const existing = favByEntreId.get(bizId);
-                                      if (existing?.id) {
-                                        setPendingRemove({
-                                          favoriteId: existing.id,
-                                          bizId,
-                                        });
-                                        setConfirmOpen(true);
-                                      } else {
-                                        setPendingById((p) => ({
-                                          ...p,
-                                          [bizId]: true,
-                                        }));
-                                        addFav.mutate(bizId, {
-                                          onSettled: () =>
-                                            setPendingById((p) => ({
-                                              ...p,
-                                              [bizId]: false,
-                                            })),
-                                        });
+                  <div className="flex flex-col lg:flex-row gap-8 items-start">
+                    <div className="flex-1 w-full">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 3xl:gap-8">
+                        {filteredBusinesses.map((business: any) =>
+                          (() => {
+                            return (
+                              <Link
+                                key={business.id}
+                                to={`/business/${business.id}`}
+                                className="block"
+                                onClick={() =>
+                                  window.scrollTo({ top: 0, behavior: "auto" })
+                                }
+                              >
+                                <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                                  <div className="aspect-square bg-gray-50 relative overflow-hidden">
+                                    <img
+                                      src={
+                                        business.image_url ||
+                                        "https://placehold.co/600x600?text=Sin+imagen"
                                       }
-                                    }}
-                                    disabled={pendingById[Number(business.id)]}
-                                    aria-label={
-                                      favByEntreId.has(Number(business.id))
-                                        ? "Quitar de favoritos"
-                                        : "Agregar a favoritos"
-                                    }
-                                  >
-                                    {favByEntreId.has(Number(business.id)) ? (
-                                      <Favorite
-                                        sx={{ fontSize: 22 }}
-                                        className="text-[#0A5B7A]"
-                                      />
-                                    ) : (
-                                      <FavoriteBorder sx={{ fontSize: 22 }} />
-                                    )}
-                                  </button>
-                                </div>
-                                <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2 font-medium">
-                                  {business.description}
-                                </p>
-                                <div className="flex items-center justify-between mt-auto">
-                                  <div className="flex items-center gap-1 text-secondary">
-                                    <BusinessStars
-                                      entrepreneurshipId={Number(business.id)}
+                                      alt={
+                                        business.name || "Imagen del emprendimiento"
+                                      }
+                                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                     />
                                   </div>
-                                  {(() => {
-                                    const categoryInfo = bizCategoryInfo.get(
-                                      business.id
-                                    ) || { name: "General", color: "#4F46E5" };
-                                    const iconUrl = categoryIconUrl(categoryInfo.name, categoryInfo.color);
-                                    
-                                    return (
+                                  <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                      <h3 className=" text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
+                                        {business.name}
+                                      </h3>
                                       <button
+                                        className="text-secondary hover:text-brand transition-colors font-medium"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          setSelectedCategory(
-                                            categoryInfo.name
-                                          );
-                                          // Scroll to categories section for better UX
-                                          document
-                                            .getElementById(
-                                              "categories-section"
-                                            )
-                                            ?.scrollIntoView({
-                                              behavior: "smooth",
+                                          const bizId = Number(business.id);
+                                          const existing = favByEntreId.get(bizId);
+                                          if (existing?.id) {
+                                            setPendingRemove({
+                                              favoriteId: existing.id,
+                                              bizId,
                                             });
+                                            setConfirmOpen(true);
+                                          } else {
+                                            setPendingById((p) => ({
+                                              ...p,
+                                              [bizId]: true,
+                                            }));
+                                            addFav.mutate(bizId, {
+                                              onSettled: () =>
+                                                setPendingById((p) => ({
+                                                  ...p,
+                                                  [bizId]: false,
+                                                })),
+                                            });
+                                          }
                                         }}
-                                        className={`hover:opacity-90 px-2 py-1 4xl:px-3 4xl:py-1.5 rounded-full text-xs 3xl:text-sm 4xl:text-2xl font-medium transition-all duration-200 flex items-center gap-1`}
-                                        style={{
-                                          backgroundColor: `${categoryInfo.color}1a`, // Add 10% opacity
-                                          color: categoryInfo.color,
-                                          border: `1px solid ${categoryInfo.color}33`, // 20% opacity border
-                                        }}
+                                        disabled={pendingById[Number(business.id)]}
+                                        aria-label={
+                                          favByEntreId.has(Number(business.id))
+                                            ? "Quitar de favoritos"
+                                            : "Agregar a favoritos"
+                                        }
                                       >
-                                        {iconUrl && (
-                                          <img 
-                                            src={iconUrl} 
-                                            alt="" 
-                                            className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-6 4xl:h-6"
-                                            style={{
-                                              minWidth: '12px',
-                                              minHeight: '12px',
-                                            }}
+                                        {favByEntreId.has(Number(business.id)) ? (
+                                          <Favorite
+                                            sx={{ fontSize: 22 }}
+                                            className="text-[#0A5B7A]"
                                           />
+                                        ) : (
+                                          <FavoriteBorder sx={{ fontSize: 22 }} />
                                         )}
-                                        {categoryInfo.name}
                                       </button>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-                            </AnimatedCard>
-                          </Link>
-                        );
-                      })()
-                    )}
-                  </div>
-                )}
-                {hasNextPage && (
-                  <div
-                    ref={loadMoreRef}
-                    className="mt-6 h-10 flex items-center justify-center text-secondary text-sm 4xl:text-3xl"
-                  >
-                    {isFetchingNextPage
-                      ? "Cargando más…"
-                      : "Desplázate para cargar más"}
+                                    </div>
+                                    <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2 font-medium">
+                                      {business.description}
+                                    </p>
+                                    <div className="flex items-center justify-between mt-auto">
+
+                                      {(() => {
+                                        const categoryInfo = bizCategoryInfo.get(
+                                          business.id
+                                        ) || { name: "General", color: "#4F46E5" };
+                                        const iconUrl = categoryIconUrl(categoryInfo.name, categoryInfo.color);
+
+                                        return (
+                                          <button
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              setSelectedCategory(
+                                                categoryInfo.name
+                                              );
+                                              // Scroll to categories section for better UX
+                                              document
+                                                .getElementById(
+                                                  "categories-section"
+                                                )
+                                                ?.scrollIntoView({
+                                                  behavior: "smooth",
+                                                });
+                                            }}
+                                            className={`hover:opacity-90 px-2 py-1 4xl:px-3 4xl:py-1.5 rounded-full text-xs 3xl:text-sm 4xl:text-2xl font-medium transition-all duration-200 flex items-center gap-1`}
+                                            style={{
+                                              backgroundColor: `${categoryInfo.color}1a`, // Add 10% opacity
+                                              color: categoryInfo.color,
+                                              border: `1px solid ${categoryInfo.color}33`, // 20% opacity border
+                                            }}
+                                          >
+                                            {iconUrl && (
+                                              <img
+                                                src={iconUrl}
+                                                alt=""
+                                                className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-6 4xl:h-6"
+                                                style={{
+                                                  minWidth: '12px',
+                                                  minHeight: '12px',
+                                                }}
+                                              />
+                                            )}
+                                            {categoryInfo.name}
+                                          </button>
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
+                                </AnimatedCard>
+                              </Link>
+                            );
+                          })()
+                        )}
+                      </div>
+                      {hasNextPage && (
+                        <div
+                          ref={loadMoreRef}
+                          className="mt-6 h-10 flex items-center justify-center text-secondary text-sm 4xl:text-3xl"
+                        >
+                          {isFetchingNextPage
+                            ? "Cargando más…"
+                            : "Desplázate para cargar más"}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sidebar for Top Products - Desktop */}
+                    <aside className="hidden lg:block w-80 flex-shrink-0 sticky top-24">
+                      <TopProductsSidebar
+                        onViewAllClick={() => {
+                          setViewMode("productos");
+                          setSearchQuery("");
+                          setShowSuggestions(false);
+                        }}
+                      />
+                    </aside>
                   </div>
                 )}
               </div>
+
+
             </>
           ) : (
             <>
               {/* Categories */}
               <Categories
+                categories={categories}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
+                loading={isLoadingCategories}
               />
 
               {/* Popular Products */}
@@ -1371,7 +1247,7 @@ export default function HomePage() {
                             categoryName={
                               product?.category_id != null
                                 ? categoryMap.get(Number(product.category_id))
-                                    ?.name || "General"
+                                  ?.name || "General"
                                 : undefined
                             }
                             productId={String(product.id)}

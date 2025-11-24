@@ -13,6 +13,7 @@ export interface User {
   avatar_url?: string;
   created_at: string;
   updated_at: string;
+  must_change_password?: boolean; // Flag to force password change
   role_relation?: {
     id: number;
     name: string;
@@ -63,12 +64,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback((response: LoginResponse) => {
     try {
       const { token, user } = response;
-      
+
       // Set state
       setToken(token);
       setUser(user);
       setLoading(false);
-      
+
       // Save to localStorage
       const expiresIn = 7 * 24 * 60 * 60 * 1000; // 7 days
       const authData = {
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('auth', JSON.stringify(authData));
       // Also store plain token for shared API client (lib/api.ts)
       localStorage.setItem('token', token);
-      
+
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -150,7 +151,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     hasRole: (role: number | number[]) => {
       if (!user) return false;
-      return Array.isArray(role) 
+      return Array.isArray(role)
         ? role.includes(user.role)
         : user.role === role;
     },
