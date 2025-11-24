@@ -1011,10 +1011,7 @@ export default function HomePage() {
               )}
               <AnimatedContainer className="mb-8">
                 <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-4 flex items-center gap-2 4xl:gap-3">
-                  <FloatingElement>
-                    <Diamond sx={{ fontSize: 24 }} />
-                  </FloatingElement>
-                  Emprendimiento del Día
+                  
                 </h2>
                 {loading ? (
                   <SkeletonFeaturedEntrepreneur />

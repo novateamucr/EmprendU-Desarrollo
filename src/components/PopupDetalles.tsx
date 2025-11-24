@@ -1,7 +1,9 @@
-
+import { useState } from 'react';
 import { PopupHeader } from './ui/PopupHeader';
 import { Fair } from '../services/fairService';
 import { Entrepreneurship } from '../services/entrepreneurshipService';
+import { inscripcionesApi } from '../services/inscripcionesService';
+import { useToast } from '../hooks/useToast';
 
 interface PopupDetallesProps {
   onClose: () => void;
@@ -11,14 +13,85 @@ interface PopupDetallesProps {
 }
 
 export function PopupDetalles({ onClose, fair = null, entrepreneurship = null, inscription = null }: PopupDetallesProps) {
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const handleCancelInscription = async () => {
+    if (!inscription?.id) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo identificar la inscripción',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await inscripcionesApi.delete(inscription.id);
+      toast({
+        title: 'Inscripción cancelada',
+        description: 'Tu inscripción ha sido cancelada exitosamente',
+        variant: 'success',
+      });
+      setShowConfirmDialog(false);
+      onClose();
+      // Reload to refresh the list
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'No se pudo cancelar la inscripción',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    
-<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
-  
+    <>
+      {/* Modal de confirmación de cancelación */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60] p-4">
+          <div className="bg-white p-6 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md 3xl:max-w-lg 4xl:max-w-xl w-full shadow-lg text-center">
+            <PopupHeader 
+              title="Cancelar inscripción" 
+              subtitle="¿Estás seguro de que deseas cancelar tu inscripción a esta feria?" 
+              variant="error" 
+            />
 
-  <div className="bg-white p-8 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md 3xl:max-w-lg 4xl:max-w-xl w-full shadow-lg text-center max-h-[90vh] overflow-auto">
+            <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-100">
+              <p className="text-sm md:text-base 3xl:text-lg text-gray-700">
+                Esta acción no se puede deshacer. Se eliminará tu inscripción a <span className="font-semibold">{fair?.title ?? inscription?.feria_title}</span>.
+              </p>
+            </div>
 
-    <PopupHeader title="Detalles de la Feria" subtitle="Revisa toda la información del evento" variant="info" />
+            <div className="flex space-x-3 mt-6">
+              <button
+                className="flex-1 py-2 3xl:py-2.5 4xl:py-3 rounded-full border border-gray-300 text-gray-600 font-medium hover:bg-gray-100 transition text-sm md:text-base 3xl:text-lg 4xl:text-xl"
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isDeleting}
+              >
+                No, mantener
+              </button>
+              <button
+                className="flex-1 py-2 3xl:py-2.5 4xl:py-3 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition text-sm md:text-base 3xl:text-lg 4xl:text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCancelInscription}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal principal de detalles */}
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+        <div className="bg-white p-8 md:p-8 3xl:p-10 4xl:p-12 rounded-xl max-w-md 3xl:max-w-lg 4xl:max-w-xl w-full shadow-lg text-center max-h-[90vh] overflow-auto">
+          <PopupHeader title="Detalles de la Feria" subtitle="Revisa toda la información del evento" variant="info" />
 
     
 
@@ -58,7 +131,16 @@ export function PopupDetalles({ onClose, fair = null, entrepreneurship = null, i
     </div>
 
     
-    <div className="flex justify-end mt-6">
+    <div className="flex justify-between gap-3 mt-6">
+  {inscription && (
+    <button
+      className="px-4 3xl:px-5 4xl:px-6 py-2 3xl:py-2.5 4xl:py-3 rounded-full bg-red-500 text-white font-medium hover:bg-red-600 transition text-sm md:text-base 3xl:text-lg 4xl:text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+      onClick={() => setShowConfirmDialog(true)}
+      disabled={isDeleting}
+    >
+      Cancelar Inscripción
+    </button>
+  )}
   <button
     className="px-4 3xl:px-5 4xl:px-6 py-2 3xl:py-2.5 4xl:py-3 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition text-sm md:text-base 3xl:text-lg 4xl:text-xl"
     onClick={onClose} 
@@ -69,7 +151,6 @@ export function PopupDetalles({ onClose, fair = null, entrepreneurship = null, i
 
   </div>
 </div>
-
-
+    </>
   );
 }
