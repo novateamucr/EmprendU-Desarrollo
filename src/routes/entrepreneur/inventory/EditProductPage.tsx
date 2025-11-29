@@ -22,6 +22,11 @@ import {
   type ProductOptionValue,
   type ProductCustomForm,
 } from '../../../services/productConfigService';
+import { ModalAnimaciones} from '../../../components/ui/ModalAnimaciones';
+import AnimacionSelectorVid from '../../../assets/animaciones/animacionesFormularioDeProducto/AnimacionSelector.mp4';
+import AnimacionTextoCortoVid from '../../../assets/animaciones/animacionesFormularioDeProducto/AnimacionTextoCorto.mp4';
+import AnimacionNumeroVid from '../../../assets/animaciones/animacionesFormularioDeProducto/AnimacionNumero.mp4';
+import AnimacionInterruptorVid from '../../../assets/animaciones/animacionesFormularioDeProducto/AnimacionInterruptor.mp4';
 
 function AddFieldDropdown({
   onSelect,
@@ -100,6 +105,11 @@ export default function EditProductPage() {
   const [activeTab, setActiveTab] = useState<'general' | 'form'>('general');
   const [showSavedPulse, setShowSavedPulse] = useState(false);
   const [formForbidden, setFormForbidden] = useState(false);
+
+  const [modalSelectorOpen, setmodalSelectorOpen] = useState(false);
+  const [modalTextoOpen, setmodalTextoOpen] = useState(false);
+  const [modalNumeroOpen, setmodalNumeroOpen] = useState(false);
+  const [modalInterruptorOpen, setmodalInterruptorOpen] = useState(false);
 
   // ===== QUERIES =====
   const productQuery = useQuery({
@@ -910,13 +920,134 @@ export default function EditProductPage() {
       {/* TAB FORM BUILDER */}
       {activeTab === 'form' && (
         <div className="bg-white rounded-xl p-6 shadow space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="font-semibold">Formulario del producto</h2>
               <p className="text-xs text-gray-500">
                 Configura los campos que verá el cliente al hacer el pedido.
               </p>
+
+              <div className='flex flex-row sm:flex-row flex-wrap gap-x-1 gap-y-1 pt-1 text-xs text-gray-500'>
+                <p className="text-xs text-gray-500 ">¿Quieres saber cómo puedes usarlos?</p>
+                <button onClick = {() => setmodalSelectorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">Selector y multiselector, </button>
+                <button  onClick = {() => setmodalTextoOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">texto corto y amplio, </button>
+                <button  onClick = {() => setmodalNumeroOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">número, </button>
+                <button  onClick = {() => setmodalInterruptorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">e interruptor. </button>
+              </div>
             </div>
+           <ModalAnimaciones
+              isOpen={modalSelectorOpen}
+              onClose={() => setmodalSelectorOpen(false)}
+              title="Selector y Multiselector"
+              leftContent={
+                <video
+                  src={AnimacionSelectorVid}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-contain rounded-md"
+                />
+              }
+              notice={{
+                title: '¡Guarda el formulario antes de salir de la edición!',
+                description: 'También puedes guardar el borrador o descartar los cambios'
+              }}
+            >
+              <div className="space-y-4 text-gray-700 text-sm">
+                <div>
+                  <p className="font-semibold">+ Selector</p>
+                  <p>El selector da la opción al usuario de escoger solamente una de las opciones agregadas al formulario. </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold">+ Multiselector</p>
+                  <p>Funciona igual al selector, con la diferencia de que el usuario puede escoger más de una opción</p>
+                </div>
+              </div>
+            </ModalAnimaciones>
+
+            <ModalAnimaciones
+              isOpen={modalTextoOpen}
+              onClose={() => setmodalTextoOpen(false)}
+              title="Texto Corto y Amplio"
+              leftContent={
+                <video
+                  src={AnimacionTextoCortoVid}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-contain rounded-md"
+                />
+              }
+              notice={{
+                title: '¡Guarda el formulario antes de salir de la edición!',
+                description: 'También puedes guardar el borrador o descartar los cambios'
+              }}
+            >
+              <div className="space-y-4 text-gray-700 text-sm">
+                <div>
+                  <p className="font-semibold">+ Texto corto</p>
+                  <p>El texto corto le da la opción al usuario de personalizar un texto corto en un producto</p>
+                </div>
+
+                <div>
+                  <p className="font-semibold">+ Texto Amplio</p>
+                  <p>El texto amplio funciona igual; le da la opción al usuario de personalizar un texto en un producto, con la diferencia de que es un texto más largo</p>
+                </div>
+              </div>
+            </ModalAnimaciones>
+
+            <ModalAnimaciones
+              isOpen={modalNumeroOpen}
+              onClose={() => setmodalNumeroOpen(false)}
+              title="Número"
+              leftContent={
+                <video
+                  src={AnimacionNumeroVid}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-contain rounded-md"
+                />
+              }
+              notice={{
+                title: '¡Guarda el formulario antes de salir de la edición!',
+                description: 'También puedes guardar el borrador o descartar los cambios'
+              }}
+            >
+              <div className="space-y-4 text-gray-700 text-sm">
+                <div>
+                  <p className="font-semibold">+ Número</p>
+                  <p>Con el formulario de número, puedes preguntarle al cliente la cantidad de elementos que le desea agregar a un producto</p>
+                </div>
+              </div>
+            </ModalAnimaciones>
+
+            <ModalAnimaciones
+              isOpen={modalInterruptorOpen}
+              onClose={() => setmodalInterruptorOpen(false)}
+              title="Interruptor"
+              leftContent={
+                <video
+                  src={AnimacionInterruptorVid}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-full object-contain rounded-md"
+                />
+              }
+              notice={{
+                title: '¡Guarda el formulario antes de salir de la edición!',
+                description: 'También puedes guardar el borrador o descartar los cambios'
+              }}
+            >
+              <div className="space-y-4 text-gray-700 text-sm">
+                <div>
+                  <p className="font-semibold">+ Interruptor</p>
+                  <p>Con el interruptor le puede realizar preguntas de si o no al cliente</p>
+                </div>
+              </div>
+            </ModalAnimaciones>
 
             <div className="flex items-center gap-3 relative flex-wrap justify-end">
               {showDraftPrompt && hasDraftLS && (
