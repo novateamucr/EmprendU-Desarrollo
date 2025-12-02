@@ -13,9 +13,15 @@ class UpdateChannelRequest extends FormRequest
 
     public function rules()
     {
+        $platform = $this->input('platform_code');
+        $urlRule = 'nullable|url|max:500';
+        if ($platform === 'phone') {
+            $urlRule = 'nullable|string|max:500';
+        }
+
         return [
             'platform_code' => 'sometimes|required|string|exists:social_platforms,code',
-            'url' => 'nullable|url|max:500',
+            'url' => $urlRule,
             'handle' => 'nullable|string|max:255',
             'is_primary' => 'sometimes|boolean',
             'is_public' => 'sometimes|boolean',
