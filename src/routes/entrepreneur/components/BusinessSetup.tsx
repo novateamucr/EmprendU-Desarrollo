@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../../../lib/utils';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Textarea } from '../../../components/ui/Textarea';
 import { Card } from '../../../components/ui/Card';
 import { entrepreneurshipApi, categoryApi } from '../../../services/entrepreneurshipService';
-import ChannelsEditor from './ChannelsEditor';
+import SocialContactsEditor from './SocialContactsEditor';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 import { ImageUpload } from '../../../components/ImageUpload';
@@ -307,6 +307,15 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
               : 'Completa la información básica para crear un nuevo emprendimiento.'}
           </p>
         </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => navigate('/entrepreneur/businesses')}
+          className="px-3 py-2"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver
+        </Button>
       </div>
 
       <Card className="p-6 max-w-4xl mx-auto">
@@ -475,9 +484,9 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       </Card>
 
       <div className="mt-6">
-  <Card className="p-4 sm:p-6 w-full">
+        <Card className="p-4 sm:p-6 w-full">
           {businessId ? (
-            <ChannelsEditor entrepreneurshipId={Number(businessId)} />
+            <SocialContactsEditor entrepreneurshipId={Number(businessId)} />
           ) : (
             <div className="flex flex-col gap-3">
               {/* Order explicit for mobile: 1) title+desc, 2) admin box, 3) add button */}

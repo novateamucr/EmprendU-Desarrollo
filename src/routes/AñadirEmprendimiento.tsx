@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Card } from '../components/ui/Card';
-import ChannelsEditor from './entrepreneur/components/ChannelsEditor';
+import SocialContactsEditor from './entrepreneur/components/SocialContactsEditor';
 import { userApi, User } from '../services/userService';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -564,7 +564,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       <div className="mt-6 max-w-4xl mx-auto">
         <Card className="p-6">
           {isEditMode && (formData.id || id) ? (
-            <ChannelsEditor entrepreneurshipId={Number(formData.id || id)} />
+            <SocialContactsEditor entrepreneurshipId={Number(formData.id || id)} />
           ) : (
             <div className="space-y-2">
               <div>
