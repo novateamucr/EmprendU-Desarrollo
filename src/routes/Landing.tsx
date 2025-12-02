@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Instagram, Facebook, Youtube, Music2 } from "lucide-react";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
@@ -9,9 +9,6 @@ import { Eye, Users, TrendingUp } from "lucide-react"; // Íconos importados
 import emprendu from "../assets/logo.svg";
 import hero from "../assets/hero-blue.png";
 import footerHero from "../assets/hero-w.png";
-import insta from "../assets/instagram_icon.svg";
-import youtube from "../assets/youtube_icon.svg";
-import tiktok from "../assets/tiktok_icon.svg";
 
 
 
@@ -302,9 +299,46 @@ export default function Landing() {
                 <a href="/contactUs" className="text-white text-sm">Contáctanos</a>
               </div>
               <div className="flex gap-4 md:gap-6">
-                <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy"><img src={insta} alt="instagram" className=" h-8" /></a>
-                <a href="https://youtube.com/@novateam-s3l4x?si=FIbBSBjPS5_3a1Ks"><img src={youtube} alt="youtube" className=" h-7" /></a>
-                <a href="https://www.tiktok.com/@emprendecr?_t=ZM-90dL2vVlq0G&_r=1"><img src={tiktok} alt="tiktok" className=" h-7"/></a>
+                <a
+                  href="https://www.instagram.com/empowerup_cr/?utm_source=ig_web_button_share_sheet"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+                  title="Instagram"
+                  aria-label="Instagram EmpowerUp"
+                >
+                  <Instagram className="w-5 h-5 text-white" />
+                </a>
+                <a
+                  href="http://www.youtube.com/@empowerup-novateam"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+                  title="YouTube"
+                  aria-label="YouTube EmpowerUp"
+                >
+                  <Youtube className="w-5 h-5 text-white" />
+                </a>
+                <a
+                  href="https://www.tiktok.com/@empowerup_?is_from_webapp=1&sender_device=pc"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+                  title="TikTok"
+                  aria-label="TikTok EmpowerUp"
+                >
+                  <Music2 className="w-5 h-5 text-white" />
+                </a>
+                <a
+                  href="https://www.facebook.com/profile.php?id=61584385864554"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full inline-flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+                  title="Facebook"
+                  aria-label="Facebook EmpowerUp"
+                >
+                  <Facebook className="w-5 h-5 text-white" />
+                </a>
               </div>
             </div>
             <p className="text-sm text-center mt-4">© 2025 EmpowerUp. Todos los derechos reservados.</p>
