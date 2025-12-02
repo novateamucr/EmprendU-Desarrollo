@@ -290,7 +290,7 @@ export default function EntrepreneurOrders() {
   }
 
   return (
-    <div className="pt-6 md:pt-12 pb-8 px-3 sm:px-4 bg-white dark:bg-backgroundDark min-h-screen">
+    <div className="pt-6 md:pt-12 pb-8 px-3 sm:px-4 bg-gray dark:bg-backgroundDark min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="px-3 sm:px-4">
           <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">Pedidos</h1>

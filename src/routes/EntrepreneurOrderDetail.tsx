@@ -300,14 +300,14 @@ export default function EntrepreneurOrderDetail() {
 
   if (loading) {
     return (
-      <div className="pt-24 pb-8">
+      <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
         <div className="max-w-4xl mx-auto px-4">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
             <div className="mt-6 space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-20 bg-gray-100 rounded-lg"></div>
+                <div key={i} className="h-20 bg-gray-100 dark:bg-cardDark rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -318,13 +318,13 @@ export default function EntrepreneurOrderDetail() {
 
   if (!order) {
     return (
-      <div className="pt-24 pb-8">
+      <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-white border border-rose-200 text-rose-700 rounded-lg p-6 text-center">
+          <div className="bg-white dark:bg-cardDark border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200 rounded-lg p-6 text-center">
             <div className="flex flex-col items-center justify-center space-y-2">
               <AlertCircle className="w-10 h-10 text-rose-500" />
               <p className="font-medium">No se pudo cargar el pedido</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 {error ||
                   "El pedido solicitado no existe o no tienes permiso para verlo."}
               </p>
@@ -342,13 +342,13 @@ export default function EntrepreneurOrderDetail() {
   }
 
   return (
-    <div className="pt-24 pb-12">
+    <div className="pt-24 pb-12 bg-white dark:bg-backgroundDark min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 Pedido #{order.order_number || order.id}
               </h1>
               <span
@@ -358,47 +358,47 @@ export default function EntrepreneurOrderDetail() {
                 {statusInfo.label}
               </span>
             </div>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Realizado el {formattedDate}
             </p>
           </div>
           <Link
             to="/entrepreneur/orders"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-cardDark rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-cardDark hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Volver a pedidos
           </Link>
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+        <div className="bg-white dark:bg-cardDark shadow overflow-hidden sm:rounded-lg mb-6 border border-gray-100 dark:border-transparent">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-cardDark">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
               Resumen del pedido
             </h3>
           </div>
 
           {/* Customer Info */}
-          <div className="border-b border-gray-200 px-4 py-5 sm:p-6">
-            <h4 className="text-sm font-medium text-gray-500 mb-3">
+          <div className="border-b border-gray-200 dark:border-cardDark px-4 py-5 sm:p-6">
+            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               INFORMACIÓN DEL CLIENTE
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {order.customer_name}
                 </p>
-                <p className="text-sm text-gray-500">{order.customer_email}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">{order.customer_email}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {order.customer_phone_8}
                 </p>
               </div>
               {address && (
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
                     Dirección de entrega
                   </p>
-                  <p className="text-sm text-gray-500 whitespace-pre-line">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-line">
                     {address}
                   </p>
                 </div>
@@ -408,7 +408,7 @@ export default function EntrepreneurOrderDetail() {
 
           {/* Order Items */}
           <div className="px-4 py-5 sm:p-6">
-            <h4 className="text-sm font-medium text-gray-500 mb-4">
+            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
               PRODUCTOS
             </h4>
             <div className="space-y-6">
@@ -424,9 +424,9 @@ export default function EntrepreneurOrderDetail() {
                   return (
                     <div
                       key={item.id}
-                      className="flex items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                      className="flex items-start border-b border-gray-100 dark:border-cardDark pb-4 last:border-0 last:pb-0"
                     >
-                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100">
+                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700">
                         {item.product_image ? (
                           <img
                             src={item.product_image}
@@ -441,25 +441,25 @@ export default function EntrepreneurOrderDetail() {
                       <div className="ml-4 flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h4 className="text-sm font-medium text-gray-900">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                               {item.product_name || `Producto #${item.product_id}`}
                             </h4>
 
                             {formOptions && formOptions.length > 0 && (
-                              <div className="mt-2 bg-gray-50 rounded-md px-3 py-2">
-                                <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                              <div className="mt-2 bg-gray-50 dark:bg-backgroundDark/50 rounded-md px-3 py-2">
+                                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
                                   Detalles del formulario
                                 </p>
                                 <dl className="space-y-2">
                                   {formOptions.map((option: OrderItem["order_options"][number]) => (
-                                    <div key={option.id} className="text-xs border-l border-gray-200 pl-2">
-                                      <dt className="text-[11px] font-semibold text-gray-800">
+                                    <div key={option.id} className="text-xs border-l border-gray-200 dark:border-cardDark pl-2">
+                                      <dt className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
                                         {option.option_name}
                                       </dt>
-                                      <dd className="mt-0.5 text-[11px] text-gray-700 break-words">
-                                        <span className="text-gray-800">{option.option_value}</span>
+                                      <dd className="mt-0.5 text-[11px] text-gray-700 dark:text-gray-300 break-words">
+                                        <span className="text-gray-800 dark:text-gray-100">{option.option_value}</span>
                                         {option.price_delta > 0 && (
-                                          <span className="text-[10px] text-green-600 ml-1 font-medium">
+                                          <span className="text-[10px] text-green-600 dark:text-green-400 ml-1 font-medium">
                                             (+₡{option.price_delta.toLocaleString()})
                                           </span>
                                         )}
@@ -470,11 +470,11 @@ export default function EntrepreneurOrderDetail() {
                               </div>
                             )}
                           </div>
-                          <p className="ml-4 text-sm font-medium text-gray-900">
+                          <p className="ml-4 text-sm font-medium text-gray-900 dark:text-white">
                             ₡{(item.unit_price * item.quantity).toLocaleString()}
                           </p>
                         </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <span>Cantidad: {item.quantity}</span>
                           <span className="mx-2">•</span>
                           <span>₡{item.unit_price.toLocaleString()} c/u</span>
@@ -484,7 +484,7 @@ export default function EntrepreneurOrderDetail() {
                   );
                 })
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   No hay productos en este pedido
                 </div>
               )}
@@ -492,17 +492,15 @@ export default function EntrepreneurOrderDetail() {
           </div>
 
           {/* Order Summary */}
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <div className="space-y-3">
-              <div className="flex justify-between text-base font-medium text-gray-900 pt-2">
-                <span>Total</span>
-                <span>
-                  ₡
-                  {order.grand_total?.toLocaleString() ||
-                    order.items_total?.toLocaleString() ||
-                    "0"}
-                </span>
-              </div>
+          <div className="bg-gray-50 dark:bg-backgroundDark/50 px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-cardDark">
+            <div className="mt-2 pt-2 flex justify-between text-base font-medium text-gray-900 dark:text-white">
+              <span>Total</span>
+              <span>
+                ₡
+                {order.grand_total?.toLocaleString() ||
+                  order.items_total?.toLocaleString() ||
+                  "0"}
+              </span>
             </div>
           </div>
 
@@ -517,7 +515,7 @@ export default function EntrepreneurOrderDetail() {
           )}
 
           {/* Order Actions */}
-          <div className="px-4 py-4 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+          <div className="px-4 py-4 bg-gray-50 dark:bg-backgroundDark/50 text-right sm:px-6 rounded-b-lg">
             <div className="flex flex-col sm:flex-row justify-end gap-3">
               {["requested", "draft"].includes(order.status) && (
                 <button
