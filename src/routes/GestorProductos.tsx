@@ -7,7 +7,7 @@ import { deleteProduct } from '../services/productService';
 const button = (
   <Link
     to="/admin/añadirproductos"
-    className="bg-brand text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
+    className="bg-brand dark:bg-brandDark dark:hover:bg-brand dark:hover:text-white text-white rounded-full px-6 py-3 text-base font-medium hover:opacity-90 transition-colors"
   >
     + Añadir producto
   </Link>
@@ -93,11 +93,11 @@ export default function Gestorproductos() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-backgroundDark">
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         {/* Header y buscador */}
         <div className="flex flex-col gap-4 mt-6">
-          <h1 className="text-2xl font-semibold text-primary text-center mb-2">Gestión de productos</h1>
+          <h1 className="text-2xl font-semibold text-primary dark:text-white text-center mb-2">Gestión de productos</h1>
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 mb-2">
             <div className="w-full md:w-1/2">
               <input
@@ -105,7 +105,7 @@ export default function Gestorproductos() {
                 placeholder="Buscar"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-full text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 bg-white dark:bg-cardDark border border-border dark:border-cardDark rounded-full text-base text-secondary dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <div className="w-full md:w-auto flex justify-end">{button}</div>
@@ -114,9 +114,9 @@ export default function Gestorproductos() {
 
         {/* Tabla para pantallas >=640px */}
         <div className="mt-10 hidden sm:block">
-          <table className="w-full text-center border-collapse bg-white rounded-card shadow-soft border border-border">
+          <table className="w-full text-center border-collapse bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark">
             <thead>
-              <tr className="bg-gray-50">
+              <tr className="bg-gray-50 dark:bg-cardDark dark:text-white">
                 <th className="py-3 px-2">Nombre</th>
                 <th className="py-3 px-2">Propietario</th>
                 <th className="py-3 px-2">Precio</th>
@@ -138,13 +138,13 @@ export default function Gestorproductos() {
                 <tr><td colSpan={7} className="py-4 text-center text-gray-500">No se encontraron productos</td></tr>
               )}
               {filteredProducts.map(ent => (
-                <tr key={ent.id} className="relative hover:bg-gray-50">
-                  <td className="py-3 px-2 font-medium">{ent.name}</td>
-                  <td className="py-3 px-2">{ent.entrepreneurship?.name || '-'}</td>
-                  <td className="py-3 px-2">{formatPrice(ent.price)}</td>
-                  <td className="py-3 px-2">{ent.stock_quantity ?? ent.stock ?? '-'}</td>
-                  <td className="py-3 px-2">{formatDate(ent.updated_at)}</td>
-                  <td className="py-3 px-2">{formatDate(ent.created_at)}</td>
+                <tr key={ent.id} className="relative hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">{ent.name}</td>
+                  <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{ent.entrepreneurship?.name || '-'}</td>
+                  <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{formatPrice(ent.price)}</td>
+                  <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{ent.stock_quantity ?? ent.stock ?? '-'}</td>
+                  <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{formatDate(ent.updated_at)}</td>
+                  <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{formatDate(ent.created_at)}</td>
                   <td className="py-3 px-2 relative">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleActionClick(ent.id); }}
@@ -154,11 +154,11 @@ export default function Gestorproductos() {
                     </button>
                     {openMenuId === ent.id && (
                       <div
-                        className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden animate-fadeIn"
+                        className="absolute right-0 mt-1 z-50 bg-white dark:bg-cardDark dark:text-white min-w-[140px] shadow-lg border border-gray-200 dark:border-cardDark rounded-md overflow-hidden animate-fadeIn"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
-                        <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
+                        <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-sm dark:text-white">Editar</Link>
+                        <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 text-sm">Eliminar</button>
                       </div>
                     )}
                   </td>
@@ -171,14 +171,14 @@ export default function Gestorproductos() {
         {/* Cards para pantallas <640px */}
         <div className="mt-8 sm:hidden space-y-4">
           {filteredProducts.map(ent => (
-            <div key={ent.id} className="bg-white rounded-xl shadow p-4 relative border border-border">
+            <div key={ent.id} className="bg-white rounded-xl shadow p-4 relative border border-border dark:bg-cardDark dark:border-cardDark">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-lg">{ent.name}</h3>
-                  <p className="text-sm text-gray-600">Propietario: {ent.entrepreneurship?.name || '-'}</p>
-                  <p className="text-sm mt-1">Precio: <span className="font-medium">{formatPrice(ent.price)}</span></p>
+                  <h3 className="font-semibold text-lg dark:text-white">{ent.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-secondaryDark">Propietario: {ent.entrepreneurship?.name || '-'}</p>
+                  <p className="text-sm mt-1">Precio: <span className="font-medium dark:text-white">{formatPrice(ent.price)}</span></p>
                   <p className="text-sm mt-1">Stock: {ent.stock_quantity ?? ent.stock ?? '-'}</p>
-                  <p className="text-xs text-gray-500 mt-1">Última mod.: {formatDate(ent.updated_at)}</p>
+                  <p className="text-xs text-gray-500 mt-1 dark:text-secondaryDark">Última mod.: {formatDate(ent.updated_at)}</p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleActionClick(ent.id); }}
@@ -188,11 +188,11 @@ export default function Gestorproductos() {
                 </button>
                 {openMenuId === ent.id && (
                   <div
-                    className="absolute right-3 top-10 z-50 bg-white min-w-[140px] shadow-lg border border-gray-200 rounded-md overflow-hidden animate-fadeIn"
+                    className="absolute right-3 top-10 z-50 bg-white dark:bg-cardDark dark:text-white min-w-[140px] shadow-lg border border-gray-200 dark:border-cardDark rounded-md overflow-hidden animate-fadeIn"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-sm">Editar</Link>
-                    <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600 text-sm">Eliminar</button>
+                    <Link to={`/admin/Añadirproductos/${ent.id}`} className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-sm dark:text-white">Editar</Link>
+                    <button onClick={() => handleOptionClick("Eliminar", ent.id)} className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 text-sm">Eliminar</button>
                   </div>
                 )}
               </div>
@@ -202,7 +202,7 @@ export default function Gestorproductos() {
           {/* PAGINACIÓN */}
           <div className="flex justify-center mt-6 gap-2">
             <button
-              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50 dark:bg-gray-700 dark:text-brandDark dark:disabled:opacity-50"
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
@@ -211,14 +211,14 @@ export default function Gestorproductos() {
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
-                className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}`}
+                className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white dark:bg-brandDark dark:text-white' : 'bg-brand/10 text-brand dark:bg-gray-700 dark:text-brandDark'}`}
                 onClick={() => setCurrentPage(i + 1)}
               >
                 {i + 1}
               </button>
             ))}
             <button
-              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+              className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50 dark:bg-gray-700 dark:text-brandDark dark:disabled:opacity-50"
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
@@ -233,7 +233,7 @@ export default function Gestorproductos() {
           title="Confirmar eliminación"
         >
           <div className="space-y-4 text-center">
-            <p className="text-lg">¿Desea eliminar el producto <span className="font-semibold">{productToDelete?.name}</span>?</p>
+            <p className="text-lg dark:text-white">¿Desea eliminar el producto <span className="font-semibold">{productToDelete?.name}</span>?</p>
             <div className="flex justify-center gap-4 pt-4">
               <button
                 onClick={handleConfirmDelete}
@@ -243,7 +243,7 @@ export default function Gestorproductos() {
               </button>
               <button
                 onClick={() => { setShowDeleteModal(false); setProductToDelete(null); }}
-                className="px-6 py-2 bg-gray-200 text-secondary rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                className="px-6 py-2 bg-gray-200 dark:bg-cardDark text-secondary dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
               >
                 No
               </button>

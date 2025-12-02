@@ -78,11 +78,11 @@ export function Navbar() {
   return (
     <>
       <AnimatedNav className="fixed top-4 left-1/2 transform -translate-x-1/2 max-w-3xl w-full px-4 z-40">
-        <div className="bg-white rounded-[16px] shadow-soft border border-border px-6 py-3 h-14 flex items-center">
+        <div className="bg-white dark:bg-cardDark rounded-[16px] shadow-soft border border-border dark:border-cardDark px-6 py-3 h-14 flex items-center">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
             <div className="flex items-center">
-              <span className="text-xl font-bold">MiLogo</span>
+              <span className="text-xl font-bold text-primary dark:text-white">MiLogo</span>
             </div>
 
             {/* Navegación Desktop */}
@@ -91,7 +91,7 @@ export function Navbar() {
                 <Link
                   key={index}
                   to={item.href}
-                  className="text-secondary hover:text-brand font-medium transition-colors"
+                  className="text-secondary dark:text-secondaryDark hover:text-brand dark:hover:text-brandDark font-medium transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -102,14 +102,14 @@ export function Navbar() {
             <div className="flex items-center space-x-4">
               <HoverButton
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-full hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+                className="md:hidden p-2 rounded-full hover:bg-brand/10 dark:hover:bg-brandDark/20 focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-brandDark focus:ring-offset-2 dark:focus:ring-offset-cardDark"
                 aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
                 aria-expanded={isMobileMenuOpen}
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-5 h-5 text-secondary" />
+                  <X className="w-5 h-5 text-secondary dark:text-secondaryDark" />
                 ) : (
-                  <Menu className="w-5 h-5 text-secondary" />
+                  <Menu className="w-5 h-5 text-secondary dark:text-secondaryDark" />
                 )}
               </HoverButton>
             </div>
@@ -127,21 +127,21 @@ export function Navbar() {
         >
           {/* Fondo oscuro */}
           <div
-            className="fixed inset-0 bg-primary bg-opacity-50"
+            className="fixed inset-0 bg-primary dark:bg-black bg-opacity-50 dark:bg-opacity-50"
             onClick={() => setIsMobileMenuOpen(false)}
           />
 
           {/* Panel menú */}
-          <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl">
+          <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-cardDark shadow-xl">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <span className="text-xl font-bold">MiLogo</span>
+            <div className="flex items-center justify-between p-6 border-b border-border dark:border-cardDark">
+              <span className="text-xl font-bold text-primary dark:text-white">MiLogo</span>
               <HoverButton
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-full hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+                className="p-2 rounded-full hover:bg-brand/10 dark:hover:bg-brandDark/20 focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-brandDark focus:ring-offset-2 dark:focus:ring-offset-cardDark"
                 aria-label="Cerrar menú"
               >
-                <X className="w-5 h-5 text-secondary" />
+                <X className="w-5 h-5 text-secondary dark:text-secondaryDark" />
               </HoverButton>
             </div>
 
@@ -152,7 +152,7 @@ export function Navbar() {
                   key={index}
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-6 py-3 text-secondary hover:bg-brand/10 hover:text-brand font-medium transition-colors"
+                  className="block px-6 py-3 text-secondary dark:text-secondaryDark hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-brand dark:hover:text-brandDark font-medium transition-colors"
                 >
                   {item.label}
                 </Link>

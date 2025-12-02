@@ -45,9 +45,9 @@ export function PopupHeader({ title, subtitle, variant = 'info' }: PopupHeaderPr
         <div className={`w-9 h-9 rounded-full flex items-center justify-center border ${className}`}>
           <Icon sx={{ fontSize: 18 }} />
         </div>
-        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
       </div>
-      {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}
+      {subtitle && <p className="text-sm text-gray-500 mt-2 dark:text:secondaryDark">{subtitle}</p>}
     </div>
   );
 }

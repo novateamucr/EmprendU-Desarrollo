@@ -15,13 +15,13 @@ export default function Toggle(props: ToggleAccountTypeProps) {
   };
 
   return (
-    <div className="flex  gap-2 bg-gray-300 rounded-lg p-1 w-xl mb-5">
+    <div className="flex  gap-2 bg-gray-300 dark:bg-cardDark dark:text-secondaryDark rounded-lg p-1 w-xl mb-5">
       {props.options.map((option) => (
         <button
           key={option}
           onClick={() => handleClick(option)}
           className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-            selected === option ? "bg-brandDark text-white" : "text-gray-900"
+            selected === option ? "bg-brandDark dark:bg-brandDark text-white" : "text-gray-900 dark:text-secondaryDark hover:bg-gray-400/30 dark:hover:bg-gray-600/30"
           }`}
         >
           {option}

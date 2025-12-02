@@ -40,6 +40,17 @@ const GlowingCard = styled.div`
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
   }
 
+  @media (prefers-color-scheme: dark) {
+    &:hover {
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    &::before {
+      background: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.1), transparent 60%),
+                  radial-gradient(120% 120% at 100% 100%, rgba(59, 130, 246, 0.1), transparent 60%);
+    }
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -86,21 +97,21 @@ export default function FeaturedEntrepreneurOfDay({  loading }: FeaturedEntrepre
   if (!biz) {
     return (
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-primary dark:text-white mb-4 flex items-center gap-2">
           <FloatingElement>
             <Diamond sx={{ fontSize: 20 }} />
           </FloatingElement>
           Emprendimiento del Día
         </h2>
 
-        <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
+        <GlowingCard className="bg-gradient-to-r dark:from-brand/10 dark:to-cardDark from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border dark:border-cardDark">
           <div className="flex items-center gap-3">
-            <div className="w-16 h-16 bg-brand/10 rounded-md flex items-center justify-center">
+            <div className="w-16 h-16 bg-brand/10 dark:bg-brand/20 rounded-md flex items-center justify-center">
               <Palette sx={{ fontSize: 26 }} />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold text-primary">No hay emprendimiento destacado</h3>
-              <p className="text-secondary text-sm">Todavía no hay un emprendimiento seleccionado para el día.</p>
+              <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-white">No hay emprendimiento destacado</h3>
+              <p className="text-secondary dark:text-secondaryDark text-sm">Todavía no hay un emprendimiento seleccionado para el día.</p>
             </div>
           </div>
         </GlowingCard>
@@ -108,10 +119,9 @@ export default function FeaturedEntrepreneurOfDay({  loading }: FeaturedEntrepre
     );
   }
 
-  
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold text-primary mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-semibold text-primary dark:text-white mb-4 flex items-center gap-2">
         <FloatingElement>
           <Diamond sx={{ fontSize: 20 }} />
         </FloatingElement>
@@ -123,9 +133,9 @@ export default function FeaturedEntrepreneurOfDay({  loading }: FeaturedEntrepre
         className="block"
         onClick={() => window.scrollTo({ top: 0 })}
       >
-        <GlowingCard className="bg-gradient-to-r from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border">
+        <GlowingCard className="bg-gradient-to-r dark:from-brand/10 dark:to-cardDark from-brand/5 to-white rounded-lg p-4 md:p-6 border border-border dark:border-cardDark">
           <div className="flex flex-col md:flex-row gap-4 items-stretch">
-            <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="w-full md:w-40 md:h-40 h-44 bg-brand/10 dark:bg-brand/20 rounded-lg overflow-hidden flex-shrink-0">
               <img
                 src={businessOfDay.business.image_url || "https://placehold.co/400x300?text=Sin+imagen"}
                 alt={businessOfDay.business.name}
@@ -135,19 +145,19 @@ export default function FeaturedEntrepreneurOfDay({  loading }: FeaturedEntrepre
 
             <div className="flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-base font-semibold text-primary line-clamp-2">
+                <h3 className="text-base font-semibold text-primary dark:text-white line-clamp-2">
                   {businessOfDay.business.name}
                 </h3>
-                <p className="text-secondary font-medium text-sm mb-3 line-clamp-3">
+                <p className="text-secondary dark:text-secondaryDark font-medium text-sm mb-3 line-clamp-3">
                   {businessOfDay.business.description || "Descubre productos únicos de nuestro emprendimiento destacado."}
                 </p>
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="bg-white text-secondary px-3 py-1 rounded-full text-xs border flex items-center gap-1">
+                <span className="bg-white dark:bg-cardDark text-secondary dark:text-secondaryDark px-3 py-1 rounded-full text-xs border border-gray-200 dark:border-gray-700 flex items-center gap-1">
                   <Palette sx={{ fontSize: 12 }} />
                   {businessOfDay.business.category_relation?.nombre || "General"}
                 </span>
-                <span className="text-brand hover:text-brandDark text-sm font-medium">
+                <span className="text-brand dark:text-brandDark hover:text-brandDark dark:hover:text-brand text-sm font-medium">
                   Detalles →
                 </span>
               </div>

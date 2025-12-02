@@ -134,14 +134,14 @@ export default function BusinessList() {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
+      <div className="rounded-md bg-red-50 p-4 dark:bg-red-950 dark:border dark:border-red-800">
         <div className="flex">
           <div className="flex-shrink-0">
             <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error al cargar los emprendimientos</h3>
-            <p className="mt-2 text-sm text-red-700">{error}</p>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error al cargar los emprendimientos</h3>
+            <p className="mt-2 text-sm text-red-700 dark:text-red-300">{error}</p>
             <div className="mt-4">
               <Button variant="outline" onClick={loadBusinesses}>
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -170,22 +170,22 @@ export default function BusinessList() {
   }
 
   return (
-    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-full mx-auto">
+    <div className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-full mx-auto dark:bg-backgroundDark">
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-0">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold">Mis Emprendimientos</h1>
-          <p className="text-muted-foreground">Administra tus emprendimientos aquí</p>
+          <h1 className="text-2xl font-bold dark:text-white">Mis Emprendimientos</h1>
+          <p className="text-muted-foreground dark:text-secondaryDark">Administra tus emprendimientos aquí</p>
           {businesses.length > 0 && (
             <button
             onClick={() => setShowExtraModal(true)}
-            className="  hover:text-blue-500 transition-colors text-gray-400 text-sm text-decoration-line: underline mt-2"
+            className="  hover:text-blue-500 transition-colors text-gray-400 text-sm text-decoration-line: underline mt-2 dark:text-secondaryDark dark:hover:text-blue-400 pb-4"
             aria-label="Abrir información"
             >
             ¿Cómo le agrego productos a mi emprendimiento?
             </button>
             )}
         </div>
-        <Button asChild className= "text-white hover:text-white">
+        <Button asChild className= "text-white hover:text-white dark:bg-brandDark dark:hover:bg-brand">
           <Link to="/entrepreneur/business/setup" className="inline-flex items-center gap-2 px-3 py-2 rounded-md whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Emprendimiento
@@ -201,30 +201,30 @@ export default function BusinessList() {
       >
         <div className="space-y-4 text-gray-700 text-sm">
           <div>
-            <p className="font-semibold">Ingresa al Mis emprendimientos</p>
-            <p>Dirígete a Mis emprendimientos en la barra de navegación lateral</p>
+            <p className="font-semibold dark:text-white">Ingresa al Mis emprendimientos</p>
+            <p className='dark:text-secondaryDark'>Dirígete a Mis emprendimientos en la barra de navegación lateral</p>
           </div>
 
           <div>
-            <p className="font-semibold">Selecciona el ícono de ver productos </p>
-            <p>En el emprendimiento al que quieras agregarle productos, ingresa al ícono de Ver productos</p>
+            <p className="font-semibold dark:text-white">Selecciona el ícono de ver productos </p>
+            <p className='dark:text-secondaryDark'>En el emprendimiento al que quieras agregarle productos, ingresa al ícono de Ver productos</p>
           </div>
 
           <div>
-            <p className="font-semibold">Agregar Productos</p>
-            <p>En el Inventario, haz click en Agregar Producto, y completa la información solicitada; la imagen del producto, su nombre, descripción y el precio, y luego guarda</p>
+            <p className="font-semibold dark:text-white">Agregar Productos</p>
+            <p className='dark:text-secondaryDark'>En el Inventario, haz click en Agregar Producto, y completa la información solicitada; la imagen del producto, su nombre, descripción y el precio, y luego guarda</p>
           </div>
         </div>
       </ModalAnimaciones>
 
       {businesses.length === 0 ? (
         <div className="px-4 py-10 w-full">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-10 text-center max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-10 text-center max-w-6xl mx-auto dark:bg-cardDark dark:border-cardDark">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 mb-6">
               <Package className="h-10 w-10 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Aún no tienes emprendimientos</h2>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3 dark:text-white">Aún no tienes emprendimientos</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg dark:text-secondaryDark">
               Crea tu primer emprendimiento para comenzar a vender productos y llegar a más clientes en nuestra plataforma.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -241,21 +241,21 @@ export default function BusinessList() {
                 </Link>
               </Button>
             </div>
-            <div className="mt-10 pt-8 border-t border-gray-100">
-              <button className="text-sm text-decoration-line: underline font-medium text-gray-500 mb-4 hover:text-brand"
+            <div className="mt-10 pt-8 border-t border-gray-100 dark:border-gray-600">
+              <button className="text-sm text-decoration-line: underline font-medium text-gray-500 mb-4 hover:text-brand dark:text-secondaryDark dark:hover:text-blue-400"
                 onClick={() => setShowCrearEmp(true)}>¿Necesitas ayuda para comenzar?</button>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">1</div>
-                  <p className="text-sm text-gray-600">Crea tu perfil de emprendedor</p>
+                <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700/50">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto dark:bg-brandDark/20 dark:text-brandDark">1</div>
+                  <p className="text-sm text-gray-600 dark:text-secondaryDark">Crea tu perfil de emprendedor</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">2</div>
-                  <p className="text-sm text-gray-600">Agrega los detalles de tu negocio</p>
+                <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700/50">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto dark:bg-brandDark/20 dark:text-brandDark">2</div>
+                  <p className="text-sm text-gray-600 dark:text-secondaryDark">Agrega los detalles de tu negocio</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto">3</div>
-                  <p className="text-sm text-gray-600">Comienza a vender tus productos</p>
+                <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700/50">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-3 mx-auto dark:bg-brandDark/20 dark:text-brandDark">3</div>
+                  <p className="text-sm text-gray-600 dark:text-secondaryDark">Comienza a vender tus productos</p>
                 </div>
               </div>
             </div>
@@ -292,9 +292,9 @@ export default function BusinessList() {
       ) : (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto w-full">
     {businesses.map((business) => (
-      <Card key={business.id} className="overflow-hidden flex flex-col h-full">
+      <Card key={business.id} className="overflow-hidden flex flex-col h-full dark:bg-cardDark dark:border-cardDark">
         {/* Full-width banner image */}
-        <div className="w-full h-32 bg-gray-100 overflow-hidden">
+        <div className="w-full h-32 bg-gray-100 overflow-hidden dark:bg-gray-700">
           {business.image_url ? (
             <img
               src={business.image_url}
@@ -305,8 +305,8 @@ export default function BusinessList() {
               }}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-              <Package className="h-12 w-12 text-gray-400" />
+            <div className="w-full h-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center dark:from-gray-600 dark:to-gray-700">
+              <Package className="h-12 w-12 text-gray-400 dark:text-gray-500" />
             </div>
           )}
         </div>
@@ -314,42 +314,42 @@ export default function BusinessList() {
         <div className="p-4 flex-1 flex flex-col">
           {/* Business Info */}
           <div className="text-center mb-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">
+            <h3 className="text-xl font-bold text-gray-900 mb-1 dark:text-white">
               {business.name}
             </h3>
             <Badge variant={business.banned ? 'destructive' : 'success'} className="mb-2">
               {business.banned ? 'Inactivo' : 'Activo'}
             </Badge>
-            <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+            <p className="text-sm text-gray-600 line-clamp-2 mb-2 dark:text-secondaryDark">
               {business.description || 'Sin descripción'}
             </p>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-secondaryDark">
               {business.category}
             </div>
           </div>
 
           {/* Stats */}
-          <div className="mt-auto pt-3 border-t border-gray-100">
+          <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-600">
             <div className="flex items-center justify-around mb-3">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{business.products?.length || 0}</div>
-                <div className="text-xs text-gray-500">Productos</div>
+                <div className="text-2xl font-bold text-primary dark:text-brandDark">{business.products?.length || 0}</div>
+                <div className="text-xs text-gray-500 dark:text-secondaryDark">Productos</div>
               </div>
-              <div className="h-10 w-px bg-gray-200" />
+              <div className="h-10 w-px bg-gray-200 dark:bg-gray-600" />
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-500">{business.favorites?.length || 0}</div>
-                <div className="text-xs text-gray-500">Favoritos</div>
+                <div className="text-2xl font-bold text-red-500 dark:text-red-400">{business.favorites?.length || 0}</div>
+                <div className="text-xs text-gray-500 dark:text-secondaryDark">Favoritos</div>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-600">
             <div className="flex justify-between items-center">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 mr-2"
+                className="flex-1 mr-2 dark:bg-modalDark dark:border-cardDark dark:text-secondaryDark dark:hover:bg-gray-700"
                 onClick={() => navigate(`/entrepreneur/inventory?businessId=${business.id}`)}
               >
                 <Package className="h-5 w-5 mr-2" />
@@ -358,7 +358,7 @@ export default function BusinessList() {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-10 w-10"
+                className="h-10 w-10 dark:bg-modalDark dark:border-cardDark dark:text-secondaryDark dark:hover:bg-gray-700"
                 asChild
               >
                 <Link to={`/entrepreneur/business/setup?businessId=${business.id}`}>
@@ -368,14 +368,14 @@ export default function BusinessList() {
               <Button
                 variant="destructive"
                 size="icon"
-                className="h-10 w-10 ml-2"
+                className="h-10 w-10 ml-2 dark:bg-red-900 dark:hover:bg-red-800"
                 onClick={() => requestDelete(business.id)}
                 title="Eliminar emprendimiento"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="text-xs text-gray-400 text-center mt-2">
+            <div className="text-xs text-gray-400 text-center mt-2 dark:text-secondaryDark">
               Actualizado el {formatDate(business.updated_at)}
             </div>
           </div>
@@ -391,10 +391,10 @@ export default function BusinessList() {
         title="Eliminar emprendimiento"
         variant="danger">
         <div className="space-y-4">
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-secondaryDark">
             Eliminar tu emprendimiento no se puede deshacer y esto eliminará todos los productos, ventas y registros asociados.
           </p>
-          <p className="text-gray-700 font-medium">¿Deseas continuar?</p>
+          <p className="text-gray-700 font-medium dark:text-white">¿Deseas continuar?</p>
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button
               variant="outline"

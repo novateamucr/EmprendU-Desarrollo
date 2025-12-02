@@ -320,25 +320,25 @@ export default function ProductFormUpload({
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto mt-10">
+    <div className="p-6 max-w-3xl mx-auto mt-10 dark:bg-backgroundDark min-h-screen">
       {/* Toast container for notifications */}
       <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
       {loadingInitial && (
         <div className="mb-4 text-gray-600">Cargando producto...</div>
       )}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">{initialData ? "Editar Producto" : "Agregar Producto"}</h1>
-        <p className="text-sm text-gray-500 mt-1">{initialData ? "Actualiza los detalles del producto" : "Completa la información del nuevo producto"}</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{initialData ? "Editar Producto" : "Agregar Producto"}</h1>
+        <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">{initialData ? "Actualiza los detalles del producto" : "Completa la información del nuevo producto"}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-cardDark p-6 rounded-lg shadow dark:border dark:border-cardDark">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Imagen del producto</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Imagen del producto</label>
           <div className="mt-1 flex items-center">
             <div
               className={cn(
-                "flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors",
-                form.imagePreview && "border-0 p-0"
+                "flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-secondaryDark rounded-lg p-6 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors dark:bg-cardDark",
+                form.imagePreview && "border-0 p-0 dark:bg-transparent"
               )}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -358,11 +358,11 @@ export default function ProductFormUpload({
                 </div>
               ) : (
                 <>
-                  <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600 hover:text-blue-500">Sube una imagen</span> o arrástrala aquí
+                  <Upload className="h-10 w-10 text-gray-400 dark:text-gray-500 mb-2" />
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">Sube una imagen</span> o arrástrala aquí
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF hasta 5MB</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">PNG, JPG, GIF hasta 5MB</p>
                 </>
               )}
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
@@ -371,30 +371,30 @@ export default function ProductFormUpload({
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del producto <span className="text-red-500">*</span></label>
-          <Input id="name" name="name" value={form.name} onChange={handleChange} placeholder="Ej: Camiseta de algodón" className="w-full" required />
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-white">Nombre del producto <span className="text-red-500">*</span></label>
+          <Input id="name" name="name" value={form.name} onChange={handleChange} placeholder="Ej: Camiseta de algodón" className="w-full dark:bg-backgroundDark dark:text-white dark:border-backgroundDark" required />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
-          <Textarea id="description" name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Describe tu producto..." className="w-full" />
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-white">Descripción</label>
+          <Textarea id="description" name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Describe tu producto..." className="w-full dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio <span className="text-red-500">*</span></label>
+          <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-white">Precio <span className="text-red-500">*</span></label>
           <div className="relative rounded-md shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">₡</span>
+              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">₡</span>
             </div>
-            <Input id="price" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} className="pl-8 w-full" required />
+            <Input id="price" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} className="pl-8 w-full dark:bg-backgroundDark dark:text-white dark:border-cardDark" required />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="entrepreneurship_id" className="block text-sm font-medium text-gray-700">Asignar a emprendimiento</label>
+          <label htmlFor="entrepreneurship_id" className="block text-sm font-medium text-gray-700 dark:text-white">Asignar a emprendimiento</label>
           <div>
             {businessesLoading ? (
-              <div className="text-sm text-gray-500">Cargando emprendimientos...</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Cargando emprendimientos...</div>
             ) : businessesError ? (
               <div className="text-sm text-red-500">Error cargando emprendimientos</div>
             ) : (
@@ -403,7 +403,7 @@ export default function ProductFormUpload({
                 name="entrepreneurship_id"
                 value={String(form.entrepreneurship_id)}
                 onChange={(e) => setForm((p) => ({ ...p, entrepreneurship_id: parseInt(e.target.value || "0", 10) }))}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-cardDark shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-backgroundDark dark:text-white"
               >
                 <option value={"0"}>Selecciona un emprendimiento</option>
                 {/* Render fallback option if the selected entrepreneurship is not in the list */}
@@ -428,7 +428,7 @@ export default function ProductFormUpload({
           </div>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t">
+        <div className="flex justify-end space-x-3 pt-4 border-t dark:border-cardDark">
           <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting || isUploading}>Cancelar</Button>
           <Button type="submit" disabled={isSubmitting || isUploading}>
             {isUploading ? (

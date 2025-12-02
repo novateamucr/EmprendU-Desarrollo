@@ -33,11 +33,11 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 function StatusBadge({ status }: { status: OrderStatus }) {
   const styles: Record<OrderStatus, string> = {
-    pedido_solicitado: 'bg-sky-50 text-sky-700 border-sky-200',
-    pedido_aceptado: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    pedido_cancelado: 'bg-rose-50 text-rose-700 border-rose-200',
-    pedido_completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    pedido_calificado: 'bg-amber-50 text-amber-700 border-amber-200',
+    pedido_solicitado: 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+    pedido_aceptado: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+    pedido_cancelado: 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+    pedido_completado: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+    pedido_calificado: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
   };
   const icons: Record<OrderStatus, JSX.Element> = {
     pedido_solicitado: <Clock size={14} className="shrink-0" />,
@@ -226,9 +226,9 @@ export default function EntrepreneurOrders() {
 
     // Button classes
     const baseButtonClass = "flex-1 flex items-center justify-center px-2 py-1.5 rounded-md border text-xs font-medium focus:outline-none focus:ring-1 focus:ring-offset-1 transition-colors";
-    const acceptButtonClass = `${baseButtonClass} border-green-200 bg-green-50 text-green-700 hover:bg-green-100 focus:ring-green-500`;
-    const cancelButtonClass = `${baseButtonClass} border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus:ring-red-500`;
-    const completeButtonClass = `${baseButtonClass} border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 focus:ring-indigo-500`;
+    const acceptButtonClass = `${baseButtonClass} border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/50 focus:ring-green-500 dark:focus:ring-green-400`;
+    const cancelButtonClass = `${baseButtonClass} border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50 focus:ring-red-500 dark:focus:ring-red-400`;
+    const completeButtonClass = `${baseButtonClass} border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 focus:ring-indigo-500 dark:focus:ring-indigo-400`;
     const disabledClass = "opacity-50 cursor-not-allowed";
 
     return (
@@ -280,7 +280,7 @@ export default function EntrepreneurOrders() {
             </button>
           </>
         ) : (
-          <div className="text-xs text-gray-500 italic w-full text-center py-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 italic w-full text-center py-1">
             {o.status === 'pedido_completado' ? 'Completado' : 
              o.status === 'pedido_cancelado' ? 'Cancelado' : 'Sin acciones'}
           </div>
@@ -290,21 +290,21 @@ export default function EntrepreneurOrders() {
   }
 
   return (
-    <div className="pt-6 md:pt-12 pb-8 px-3 sm:px-4">
+    <div className="pt-6 md:pt-12 pb-8 px-3 sm:px-4 bg-white dark:bg-backgroundDark min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="px-3 sm:px-4">
-          <h1 className="text-2xl md:text-3xl font-semibold text-primary">Pedidos</h1>
-          <p className="text-secondary mt-1 text-sm sm:text-base">Pedidos de todos tus emprendimientos.</p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">Pedidos</h1>
+          <p className="text-secondary dark:text-secondaryDark mt-1 text-sm sm:text-base">Pedidos de todos tus emprendimientos.</p>
         </div>
 
         <div className="mt-6 px-3 sm:px-4">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-white dark:bg-cardDark p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 dark:border-cardDark">
             <div className="w-full sm:w-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="w-full sm:w-48 text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full sm:w-48 text-sm border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-brandDark focus:border-primary-500 dark:focus:border-brandDark"
               >
                 <option value="all">Todos los estados</option>
                 <option value="pedido_solicitado">Pedido solicitado</option>
@@ -315,17 +315,17 @@ export default function EntrepreneurOrders() {
               </select>
             </div>
             <div className="w-full sm:w-64">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
               <div className="relative">
                 <input
                   id="search"
                   type="text"
                   placeholder="Cliente, emprendimiento o código..."
-                  className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-brandDark focus:border-primary-500 dark:focus:border-brandDark"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-                <span className="absolute right-2.5 top-2.5 text-gray-400" title="Buscar por cliente, código o emprendimiento">
+                <span className="absolute right-2.5 top-2.5 text-gray-400 dark:text-gray-500" title="Buscar por cliente, código o emprendimiento">
                   <Info className="w-4 h-4" />
                 </span>
               </div>
@@ -333,9 +333,9 @@ export default function EntrepreneurOrders() {
           </div>
         </div>
 
-        <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mx-3 sm:mx-4">
+        <div className="mt-6 bg-white dark:bg-cardDark rounded-xl border border-gray-200 dark:border-cardDark shadow-sm overflow-hidden mx-3 sm:mx-4">
           <div className="overflow-x-auto -mx-1">
-            <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-gray-500 font-medium bg-gray-50">
+            <div className="hidden md:grid md:grid-cols-12 gap-4 px-4 py-3 border-b text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-backgroundDark/50">
               <div className="col-span-2 text-center">Emprendimiento</div>
               <div className="col-span-1 text-center">Código</div>
               <div className="col-span-1 text-center">Fecha</div>
@@ -351,27 +351,27 @@ export default function EntrepreneurOrders() {
                 <li key={i} className="px-4 py-4">
                   <div className="grid grid-cols-12 gap-4 items-center">
                     <div className="col-span-12 md:col-span-3">
-                      <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-3 w-24 bg-gray-100 rounded mt-2 animate-pulse md:hidden" />
+                      <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      <div className="h-3 w-24 bg-gray-100 dark:bg-gray-700 rounded mt-2 animate-pulse md:hidden" />
                     </div>
                     <div className="hidden md:block col-span-1">
-                      <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-4 w-24 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                     </div>
                     <div className="col-span-6 md:col-span-1">
-                      <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-4 w-24 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                     </div>
                     <div className="col-span-3 md:col-span-2">
-                      <div className="h-4 w-16 bg-gray-100 rounded animate-pulse" />
+                      <div className="h-4 w-16 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
                     </div>
                     <div className="col-span-12 md:col-span-2">
-                      <div className="h-4 w-40 bg-gray-100 rounded animate-pulse" />
-                      <div className="h-3 w-28 bg-gray-100 rounded mt-2 animate-pulse" />
+                      <div className="h-4 w-40 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+                      <div className="h-3 w-28 bg-gray-100 dark:bg-gray-700 rounded mt-2 animate-pulse" />
                     </div>
                     <div className="col-span-6 md:col-span-1">
-                      <div className="h-6 w-24 bg-gray-100 rounded-full animate-pulse" />
+                      <div className="h-6 w-24 bg-gray-100 dark:bg-gray-700 rounded-full animate-pulse" />
                     </div>
                     <div className="col-span-6 md:col-span-2">
-                      <div className="h-8 w-32 bg-gray-100 rounded-md animate-pulse" />
+                      <div className="h-8 w-32 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
                     </div>
                   </div>
                 </li>
@@ -380,21 +380,21 @@ export default function EntrepreneurOrders() {
           )}
           {!loading && filtered.length === 0 && (
             <div className="p-10 text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center mb-3">
-                <ClipboardCheck className="w-6 h-6 text-secondary" />
+              <div className="mx-auto w-14 h-14 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-3">
+                <ClipboardCheck className="w-6 h-6 text-secondary dark:text-gray-500" />
               </div>
-              <p className="text-secondary text-sm">No hay pedidos para mostrar</p>
+              <p className="text-secondary dark:text-secondaryDark text-sm">No hay pedidos para mostrar</p>
               {error && (
-                <p className="text-rose-600 text-xs mt-2">{error}</p>
+                <p className="text-rose-600 dark:text-rose-400 text-xs mt-2">{error}</p>
               )}
             </div>
           )}
           {!loading && (
-          <ul className="divide-y divide-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-cardDark">
             {paged.map((o) => (
               <li
                 key={o.id}
-                className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer transition-colors hover:bg-gray-50/80 border-b border-gray-100 last:border-0"
+                className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer transition-colors hover:bg-gray-50/80 dark:hover:bg-gray-700/40 border-b border-gray-100 dark:border-cardDark last:border-0"
                 onClick={() => navigate(`/entrepreneur/orders/${o.id}`)}
                 title="Ver detalle de pedido"
               >
@@ -402,27 +402,27 @@ export default function EntrepreneurOrders() {
                 <div className="md:hidden space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-medium text-gray-900">{o.entrepreneurshipName}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Código: {o.id}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{o.entrepreneurshipName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Código: {o.id}</div>
                     </div>
                     <StatusBadge status={o.status} />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="text-center">
-                      <div className="text-xs text-gray-500">Fecha</div>
-                      <div>{new Date(o.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Fecha</div>
+                      <div className="dark:text-white">{new Date(o.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs text-gray-500">Total</div>
-                      <div className="font-semibold">₡{o.total.toLocaleString()}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
+                      <div className="font-semibold dark:text-white">₡{o.total.toLocaleString()}</div>
                     </div>
                   </div>
                   
                   <div className="text-sm text-center">
-                    <div className="text-xs text-gray-500">Cliente</div>
-                    <div className="font-medium">{o.customer?.name || '-'}</div>
-                    <div className="text-gray-600 text-xs">{o.customer?.phone || '-'}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Cliente</div>
+                    <div className="font-medium dark:text-white">{o.customer?.name || '-'}</div>
+                    <div className="text-gray-600 dark:text-gray-400 text-xs">{o.customer?.phone || '-'}</div>
                   </div>
                   
                   <div className="pt-2">
@@ -437,18 +437,18 @@ export default function EntrepreneurOrders() {
                 {/* Desktop View */}
                 <div className="hidden md:grid md:grid-cols-12 gap-4 items-center text-sm">
                   <div className="col-span-2 text-center">
-                    <div className="font-medium text-gray-900">{o.entrepreneurshipName}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{o.entrepreneurshipName}</div>
                   </div>
-                  <div className="col-span-1 text-gray-500 text-sm text-center">{o.id}</div>
-                  <div className="col-span-1 text-gray-500 text-center">
+                  <div className="col-span-1 text-gray-500 dark:text-gray-400 text-sm text-center">{o.id}</div>
+                  <div className="col-span-1 text-gray-500 dark:text-gray-400 text-center">
                     {new Date(o.createdAt).toLocaleDateString()}
                   </div>
-                  <div className="col-span-2 text-center font-medium text-gray-900">
+                  <div className="col-span-2 text-center font-medium text-gray-900 dark:text-white">
                     ₡{o.total.toLocaleString()}
                   </div>
                   <div className="col-span-2 text-center">
-                    <div className="font-medium">{o.customer?.name || '-'}</div>
-                    <div className="text-xs text-gray-500 truncate">{o.customer?.phone || '-'}</div>
+                    <div className="font-medium dark:text-white">{o.customer?.name || '-'}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{o.customer?.phone || '-'}</div>
                   </div>
                   <div className="col-span-2 flex justify-center">
                     <StatusBadge status={o.status} />
@@ -464,35 +464,35 @@ export default function EntrepreneurOrders() {
           </ul>
           )}
           {!loading && filtered.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 bg-gray-50">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 dark:border-cardDark bg-gray-50 dark:bg-backgroundDark/50">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span className="whitespace-nowrap">Filas por página:</span>
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                  className="border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-brandDark focus:border-primary-500 dark:focus:border-brandDark"
                 >
                   {[5, 10, 20, 50].map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
-                <span className="whitespace-nowrap">
+                <span className="whitespace-nowrap dark:text-white">
                   {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} de {filtered.length}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-cardDark bg-white dark:bg-cardDark text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-brandDark focus:border-primary-500 dark:focus:border-brandDark disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
                   Anterior
                 </button>
-                <span className="text-sm text-gray-700 w-24 text-center">
+                <span className="text-sm text-gray-700 dark:text-white w-24 text-center">
                   Página {page} de {totalPages}
                 </span>
                 <button
-                  className="px-3 py-1.5 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-cardDark bg-white dark:bg-cardDark text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-brandDark focus:border-primary-500 dark:focus:border-brandDark disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >

@@ -96,8 +96,8 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
       <div className="w-full">
         <button
           onClick={onToggle}
-          className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors hover:bg-brand/10 focus-brand rounded-sm ${
-            isActive ? 'text-primary' : 'text-secondary'
+          className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors hover:bg-brand/10 dark:hover:bg-brandDark/20 focus-brand rounded-sm ${
+            isActive ? 'text-primary dark:text-white' : 'text-secondary dark:text-secondaryDark'
           }`}
           aria-expanded={isOpen}
           aria-haspopup="menu"
@@ -112,16 +112,16 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
         </button>
         
         {isOpen && (
-          <div className="pl-6 py-2 space-y-1 bg-brand/5 rounded-sm">
+          <div className="pl-6 py-2 space-y-1 bg-brand/5 dark:bg-brandDark/10 rounded-sm">
             {visibleItems.map((dropdownItem, index) => (
               <div key={index}>
                 {dropdownItem.type === 'link' ? (
                   <Link
                     to={dropdownItem.to}
-                    className={`block px-4 py-2 text-sm transition-colors hover:bg-white hover:text-primary focus-brand rounded-sm ${
+                    className={`block px-4 py-2 text-sm transition-colors hover:bg-white dark:hover:bg-cardDark hover:text-primary dark:hover:text-white focus-brand rounded-sm ${
                       location.pathname === dropdownItem.to
-                        ? 'text-primary bg-white'
-                        : 'text-secondary'
+                        ? 'text-primary dark:text-white bg-white dark:bg-cardDark'
+                        : 'text-secondary dark:text-secondaryDark'
                     }`}
                     onClick={() => { onClose(); if (onNavigate) onNavigate(); }}
                   >
@@ -132,7 +132,7 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
                   </Link>
                 ) : (
                   <div className="py-2">
-                    <div className="px-4 py-1 text-xs font-semibold text-secondary uppercase tracking-wider">
+                    <div className="px-4 py-1 text-xs font-semibold text-secondary dark:text-secondaryDark uppercase tracking-wider">
                       {dropdownItem.label}
                     </div>
                     <div className="space-y-1">
@@ -142,10 +142,10 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
                           <Link
                             key={groupIndex}
                             to={groupItem.to}
-                            className={`block px-4 py-2 text-sm transition-colors hover:bg-white hover:text-primary focus-brand rounded-sm ${
+                            className={`block px-4 py-2 text-sm transition-colors hover:bg-white dark:hover:bg-cardDark hover:text-primary dark:hover:text-white focus-brand rounded-sm ${
                               location.pathname === groupItem.to
-                                ? 'text-primary bg-white'
-                                : 'text-secondary'
+                                ? 'text-primary dark:text-white bg-white dark:bg-cardDark'
+                                : 'text-secondary dark:text-secondaryDark'
                             }`}
                             onClick={() => { onClose(); if (onNavigate) onNavigate(); }}
                           >
@@ -178,8 +178,8 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
         onClick={onToggle}
         onFocus={() => !isMobile && setIsHovered(true)}
         onBlur={() => !isMobile && setTimeout(() => setIsHovered(false), 100)}
-        className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary hover:underline hover:underline-offset-4 focus-brand rounded-sm ${
-          isActive ? 'text-primary' : 'text-secondary'
+        className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary dark:hover:text-brandDark hover:underline hover:underline-offset-4 focus-brand rounded-sm ${
+          isActive ? 'text-primary dark:text-white' : 'text-secondary dark:text-secondaryDark'
         }`}
         aria-expanded={shouldShowDropdown}
         aria-haspopup="menu"
@@ -196,7 +196,7 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
 
       {shouldShowDropdown && (
         <div 
-          className={`absolute top-full mt-2 min-w-48 bg-white border border-border rounded-card shadow-soft py-2 z-50 transition-all duration-200 ease-out ${
+          className={`absolute top-full mt-2 min-w-48 bg-white dark:bg-cardDark border border-border dark:border-cardDark rounded-card shadow-soft py-2 z-50 transition-all duration-200 ease-out ${
             item.align === 'right' ? 'right-0' : item.align === 'center' ? 'left-1/2 transform -translate-x-1/2' : 'left-0'
           } opacity-100 scale-100`}
           role="menu"
@@ -209,10 +209,10 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
               {dropdownItem.type === 'link' ? (
                 <Link
                   to={dropdownItem.to}
-                  className={`block px-4 py-2 text-sm transition-colors hover:bg-brand/10 hover:text-primary focus:bg-brand/10 focus:text-primary ${
+                  className={`block px-4 py-2 text-sm transition-colors hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-primary dark:hover:text-brandDark focus:bg-brand/10 dark:focus:bg-brandDark/20 focus:text-primary dark:focus:text-brandDark ${
                     location.pathname === dropdownItem.to
-                      ? 'text-primary bg-brand/10'
-                      : 'text-secondary'
+                      ? 'text-primary dark:text-white bg-brand/10 dark:bg-brandDark/20'
+                      : 'text-secondary dark:text-secondaryDark'
                   }`}
                   role="menuitem"
                   onClick={onClose}
@@ -224,8 +224,8 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
                 </Link>
               ) : (
                 <div className="py-2">
-                  {index > 0 && <div className="border-t border-border mx-4 mb-2" />}
-                  <div className="px-4 py-1 text-xs font-semibold text-secondary uppercase tracking-wider">
+                  {index > 0 && <div className="border-t border-border dark:border-cardDark mx-4 mb-2" />}
+                  <div className="px-4 py-1 text-xs font-semibold text-secondary dark:text-secondaryDark uppercase tracking-wider">
                     {dropdownItem.label}
                   </div>
                   <div className="space-y-1">
@@ -235,10 +235,10 @@ export function Dropdown({ item, isOpen, onToggle, onClose, isMobile = false, on
                         <Link
                           key={groupIndex}
                           to={groupItem.to}
-                          className={`block px-4 py-2 text-sm transition-colors hover:bg-brand/10 hover:text-primary focus:bg-brand/10 focus:text-primary ${
+                          className={`block px-4 py-2 text-sm transition-colors hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-primary dark:hover:text-brandDark focus:bg-brand/10 dark:focus:bg-brandDark/20 focus:text-primary dark:focus:text-brandDark ${
                             location.pathname === groupItem.to
-                              ? 'text-primary bg-brand/10'
-                              : 'text-secondary'
+                              ? 'text-primary dark:text-white bg-brand/10 dark:bg-brandDark/20'
+                              : 'text-secondary dark:text-secondaryDark'
                           }`}
                           role="menuitem"
                           onClick={onClose}

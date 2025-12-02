@@ -170,7 +170,7 @@ export default function Login() {
         type="button"
         aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
         onClick={() => setShowPassword((s) => !s)}
-        className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+        className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none dark:text-gray-300 dark:hover:text-white"
       >
         {showPassword ? (
           // Eye Off Icon
@@ -219,18 +219,18 @@ export default function Login() {
     <button
       type="button"
       onClick={() => setShowResetForm(true)}
-      className="text-brand hover:underline text-sm text-left w-full mt-2"
+      className="text-brand dark:text-brandDark hover:underline text-sm text-left w-full mt-2"
     >
       ¿Olvidaste tu contraseña?
     </button>
   );
 
   const resetForm = (
-    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-      <h3 className="font-medium text-gray-900 mb-2">Restablecer contraseña</h3>
-      <p className="text-sm text-gray-600 mb-3">
+    <div className="mt-4 p-4 bg-gray-50 rounded-lg dark:bg-cardDark">
+      <h3 className="font-medium text-gray-900 mb-2 dark:text-white">Restablecer contraseña</h3>
+      <p className="text-sm text-gray-600 mb-3 dark:text-gray-300">
         Se enviará una nueva contraseña temporal a:
-        <span className="font-medium text-gray-900"> {formValues.email}</span>
+        <span className="font-medium text-gray-900 dark:text-white"> {formValues.email}</span>
       </p>
       <form
         onSubmit={async (e) => {
@@ -240,15 +240,15 @@ export default function Login() {
         }}
         className="space-y-3"
       >
-        <div className="p-3 bg-gray-100 rounded-md text-sm">
-          <p className="font-medium">Correo electrónico:</p>
-          <p className="text-gray-700">{formValues.email}</p>
+        <div className="p-3 bg-gray-100 rounded-md text-sm dark:bg-backgroundDark">
+          <p className="font-medium dark:text-white">Correo electrónico:</p>
+          <p className="text-gray-700 dark:text-gray-300">{formValues.email}</p>
         </div>
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={isResetting}
-            className="flex-1 bg-brand hover:bg-brandDark text-white py-2 px-4 rounded-md disabled:opacity-50"
+            className="flex-1 bg-brand hover:bg-brandDark text-white py-2 px-4 rounded-md disabled:opacity-50 dark:bg-brand dark:hover:bg-brandDark"
             onClick={(e) => {
               e.preventDefault();
               handlePasswordReset(e);
@@ -261,7 +261,7 @@ export default function Login() {
             onClick={() => {
               setShowResetForm(false);
             }}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
             disabled={isResetting}
           >
             Cancelar
@@ -284,11 +284,11 @@ export default function Login() {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background dark:bg-backgroundDark">
       <div className="hidden md:block w-0 md:w-[35%] h-screen">
         {optPanelInicia}
       </div>
-      <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
+      <div className="flex flex-col items-center justify-center bg-background dark:bg-backgroundDark w-full md:w-3/4">
         <div className="w-full max-w-md p-4">
           <form onSubmit={handleSubmit} className="w-full">
             <AuthForm
@@ -303,7 +303,7 @@ export default function Login() {
                   className={`w-full bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg ${!isFormValid || isLoading
                       ? "opacity-50 cursor-not-allowed"
                       : ""
-                    } focus-brand`}
+                    } focus-brand dark:bg-brand dark:hover:bg-brandDark`}
                   disabled={!isFormValid || isLoading}
                 >
                   {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
@@ -313,15 +313,15 @@ export default function Login() {
             {showResetForm && resetForm}
           </form>
           {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm dark:bg-red-900/20 dark:text-red-300">
               {error}
             </div>
           )}
-          <div className="block md:hidden mt-6 text-center text-sm text-gray-600">
+          <div className="block md:hidden mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             ¿No tienes cuenta?{" "}
             <Link
               to="/register"
-              className="text-brand font-semibold hover:underline"
+              className="text-brand dark:text-brandDark font-semibold hover:underline"
             >
               Regístrate aquí
             </Link>

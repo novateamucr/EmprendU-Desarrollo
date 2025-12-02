@@ -30,7 +30,7 @@ export function NavbarItem({ item, isMobile = false, onNavigate }: NavbarItemPro
         <Link
           to={item.to}
           className={`block px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm ${
-            isActive ? 'text-primary bg-gray-50' : 'text-secondary'
+            isActive ? 'text-primary dark:text-white bg-gray-50' : 'text-secondary dark:text-secondaryDark'
           }`}
           onClick={() => { if (onNavigate) onNavigate(); }}
         >
@@ -46,7 +46,7 @@ export function NavbarItem({ item, isMobile = false, onNavigate }: NavbarItemPro
       <Link
         to={item.to}
         className={`text-sm font-medium transition-colors hover:text-primary hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm ${
-          isActive ? 'text-primary' : 'text-secondary'
+          isActive ? 'text-primary dark:text-white' : 'text-secondary dark:text-secondaryDark'
         }`}
       >
         <div className="flex items-center space-x-1">

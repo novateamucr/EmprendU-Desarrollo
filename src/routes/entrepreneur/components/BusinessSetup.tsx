@@ -295,13 +295,13 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl mt-10">
+    <div className="container mx-auto px-4 py-8 max-w-4xl mt-10 dark:bg-backgroundDark min-h-screen">
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-2xl font-bold mb-2 dark:text-white">
             {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground dark:text-gray-400">
             {isEditMode
               ? 'Actualiza la información de tu emprendimiento.'
               : 'Completa la información básica para crear un nuevo emprendimiento.'}
@@ -318,13 +318,13 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
         </Button>
       </div>
 
-      <Card className="p-6 max-w-4xl mx-auto">
+      <Card className="p-6 max-w-4xl mx-auto dark:bg-cardDark dark:border-cardDark">
         {/* Formulario principal del emprendimiento */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {!isEditMode && (
               <div className="flex flex-col items-center">
-                <label className="block w-full text-sm font-medium mb-3">
+                <label className="block w-full text-sm font-medium mb-3 dark:text-white">
                   Imagen del emprendimiento
                 </label>
                 <ImageUpload
@@ -334,13 +334,13 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                     setFormData(prev => ({ ...prev, image_url: imageData }));
                   }}
                 />
-                <p className="mt-2 text-xs text-muted-foreground text-center">
+                <p className="mt-2 text-xs text-muted-foreground dark:text-gray-400 text-center">
                   Sube una imagen representativa de tu emprendimiento. Formatos: JPG, PNG. Máx 5MB.
                 </p>
               </div>
             )}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">
+              <label htmlFor="name" className="block text-sm font-medium mb-1 dark:text-white">
                 Nombre del emprendimiento *
               </label>
               <Input
@@ -350,11 +350,12 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                 onChange={handleInputChange}
                 placeholder="Ej: Mi Tienda Online"
                 required
+                className="dark:bg-backgroundDark dark:text-white dark:border-cardDark"
               />
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium mb-1">
+              <label htmlFor="category" className="block text-sm font-medium mb-1 dark:text-white">
                 Categoría *
               </label>
               <select
@@ -362,7 +363,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                 required
               >
                 <option value="">Selecciona una categoría</option>
@@ -375,7 +376,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium mb-1">
+              <label htmlFor="description" className="block text-sm font-medium mb-1 dark:text-white">
                 Descripción
               </label>
               <Textarea
@@ -385,12 +386,13 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                 onChange={handleInputChange}
                 placeholder="Describe tu emprendimiento..."
                 rows={4}
+                className="dark:bg-backgroundDark dark:text-white dark:border-cardDark"
               />
             </div>
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 dark:text-white">
                 Imagen del emprendimiento
               </label>
               <div className="mt-1 flex items-center">
@@ -399,7 +401,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                     <img 
                       src={formData.image_url} 
                       alt="Vista previa" 
-                      className="h-32 w-32 object-cover rounded-md"
+                      className="h-32 w-32 object-cover rounded-md border dark:border-cardDark"
                     />
                     <button
                       type="button"
@@ -417,7 +419,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                     <label 
                       className={cn(
                         'flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer',
-                        'bg-gray-50 hover:bg-gray-100 transition-colors',
+                        'bg-gray-50 dark:bg-cardDark hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
                         isUploading && 'opacity-70 cursor-wait'
                       )}
                     >
@@ -429,10 +431,10 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                           </svg>
                         )}
-                        <p className="mb-2 text-sm text-gray-500">
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                           <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
                         </p>
-                        <p className="text-xs text-gray-500">PNG, JPG o JPEG (MAX. 5MB)</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG o JPEG (MAX. 5MB)</p>
                       </div>
                       <input 
                         id="business-image"
@@ -450,7 +452,7 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
             </div>
 
             {error && (
-              <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+              <div className="p-4 text-sm text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-200 rounded-lg">
                 {error}
               </div>
             )}
@@ -484,18 +486,18 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       </Card>
 
       <div className="mt-6">
-        <Card className="p-4 sm:p-6 w-full">
+  <Card className="p-4 sm:p-6 w-full dark:bg-cardDark dark:border-cardDark">
           {businessId ? (
             <SocialContactsEditor entrepreneurshipId={Number(businessId)} />
           ) : (
             <div className="flex flex-col gap-3">
               {/* Order explicit for mobile: 1) title+desc, 2) admin box, 3) add button */}
               <div className="order-1">
-                <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
-                <p className="text-sm text-muted-foreground">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
+                <h2 className="text-lg font-semibold dark:text-white">Redes y contactos de tu emprendimiento</h2>
+                <p className="text-sm text-muted-foreground dark:text-gray-400">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
               </div>
 
-              <div className="order-2 p-4 rounded border bg-gray-50 text-sm text-gray-600">
+              <div className="order-2 p-4 rounded border bg-gray-50 dark:bg-cardDark dark:border-cardDark text-sm text-gray-600 dark:text-gray-400">
                 Una vez crees el emprendimiento, podrás añadir WhatsApp, Teléfono, Maps, Sitio web, Email y más.
               </div>
 
@@ -517,9 +519,9 @@ export default function BusinessSetup({ initialData, onCancel }: BusinessSetupPr
       {showExitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowExitConfirm(false)} />
-          <div className="relative z-10 bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-2">¿Quieres salir del editar perfil?</h3>
-            <p className="text-sm text-muted-foreground mb-4">Puedes seguir editando o volver a tus emprendimientos.</p>
+          <div className="relative z-10 bg-white dark:bg-cardDark rounded-lg shadow-lg w-full max-w-md p-6">
+            <h3 className="text-lg font-semibold mb-2 dark:text-white">¿Quieres salir del editar perfil?</h3>
+            <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">Puedes seguir editando o volver a tus emprendimientos.</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setShowExitConfirm(false)}>
                 Seguir editando

@@ -384,19 +384,19 @@ export function Perfil() {
       <Layout>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 mt-6">
-            <div className="bg-white rounded-card shadow-soft border border-border p-6">
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
               <div className="text-center mb-6">
-                <div className="w-32 h-32 bg-brand/10 rounded-full mx-auto animate-pulse"></div>
+                <div className="w-32 h-32 bg-brand/10 dark:bg-brandDark/20 rounded-full mx-auto animate-pulse"></div>
                 <div className="mt-4 space-y-2">
-                  <div className="h-4 bg-brand/10 rounded animate-pulse"></div>
-                  <div className="h-3 bg-brand/10 rounded animate-pulse w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-brand/10 dark:bg-brandDark/20 rounded animate-pulse"></div>
+                  <div className="h-3 bg-brand/10 dark:bg-brandDark/20 rounded animate-pulse w-3/4 mx-auto"></div>
                 </div>
               </div>
             </div>
           </div>
           <div className="lg:col-span-2 mt-6">
-            <div className="bg-white rounded-card shadow-soft border border-border p-6">
-              <div className="h-6 bg-brand/10 rounded animate-pulse mb-4"></div>
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+              <div className="h-6 bg-brand/10 dark:bg-brandDark/20 rounded animate-pulse mb-4"></div>
               <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="w-[136px] h-[96px] bg-brand/10 rounded-card animate-pulse"></div>
@@ -413,11 +413,11 @@ export function Perfil() {
     return (
       <Layout>
         <div className="py-12">
-          <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
-            <p className="text-red-600 font-medium">Error al cargar el perfil: {error.message}</p>
+          <div className="rounded-xl border border-gray-200 dark:border-cardDark p-4 bg-white dark:bg-cardDark shadow-sm">
+            <p className="text-red-600 dark:text-red-400 font-medium">Error al cargar el perfil: {error.message}</p>
             <button 
               onClick={() => window.location.reload()} 
-              className="mt-2 px-4 py-2 rounded-lg border border-border hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
+              className="mt-2 px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-brand dark:hover:text-brandDark transition-colors focus-brand dark:text-white"
             >
               Reintentar
             </button>
@@ -431,11 +431,11 @@ export function Perfil() {
     return (
       <Layout>
         <div className="py-12">
-          <div className="rounded-xl border border-gray-200 p-4 bg-white shadow-sm">
-            <p className="text-gray-600 font-medium">No se pudo cargar el perfil del usuario</p>
+          <div className="rounded-xl border border-gray-200 dark:border-cardDark p-4 bg-white dark:bg-cardDark shadow-sm">
+            <p className="text-gray-600 dark:text-secondaryDark font-medium">No se pudo cargar el perfil del usuario</p>
             <button 
               onClick={() => navigate('/')} 
-              className="mt-2 px-4 py-2 rounded-lg border border-border hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
+              className="mt-2 px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-brand dark:hover:text-brandDark transition-colors focus-brand dark:text-white"
             >
               Volver al inicio
             </button>
@@ -474,7 +474,7 @@ export function Perfil() {
           title="Sobre tu información de contacto"
           variant="info"
         >
-          <div className="space-y-4 text-sm text-secondary">
+          <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
             <p>
               Tu información de contacto es visible para otros usuarios cuando interactúas 
               en la plataforma. Esto incluye tu correo electrónico y número de teléfono.
@@ -486,7 +486,7 @@ export function Perfil() {
             <div className="flex justify-end pt-4">
               <button
                 onClick={() => setShowContactModal(false)}
-                className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="px-6 py-2 bg-primary dark:bg-brandDark text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-brand transition-colors"
               >
                 Entendido
               </button>
@@ -503,7 +503,7 @@ export function Perfil() {
           title="Sobre tu ubicación"
           variant="info"
         >
-          <div className="space-y-4 text-sm text-secondary">
+          <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
             <p>
               Tu ubicación nos ayuda a conectarte con emprendimientos cercanos 
               y eventos locales en tu área.
@@ -516,7 +516,7 @@ export function Perfil() {
             <div className="flex justify-end pt-4">
               <button
                 onClick={() => setShowLocationModal(false)}
-                className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="px-6 py-2 bg-primary dark:bg-brandDark text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-brand transition-colors"
               >
                 Entendido
               </button>
@@ -545,19 +545,19 @@ export function Perfil() {
           {/* Secciones estándar (no admin) */}
           <>
               {/* Sección de Intereses */}
-              <div className="bg-white rounded-card shadow-soft border border-border p-6">
+              <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
                 <div className="mb-6">
                   <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-primary">Intereses</h2>
+                  <h2 className="text-xl font-semibold text-primary dark:text-white">Intereses</h2>
                   <button
                     onClick={() => setShowInterestModal(true)}
-                    className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:bg-brandDark transition-colors focus-brand"
+                    className="w-10 h-10 bg-brand dark:bg-brandDark text-white rounded-full flex items-center justify-center hover:bg-brandDark dark:hover:bg-brand transition-colors focus-brand"
                     aria-label="Agregar interés"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
                   </div>
-                  <h2 className="text-xs text-brand/100 mb-2">¿Cuáles son tus gustos? Dale click al botón de "+" para agregar.</h2>
+                  <h2 className="text-xs text-brand dark:text-brandDark/100 mb-2">¿Cuáles son tus gustos? Dale click al botón de "+" para agregar.</h2>
                 </div>
                 
                 <div className="flex flex-wrap gap-4">
@@ -573,16 +573,16 @@ export function Perfil() {
               </div>
 
               {/* Sección de Favoritos */}
-              <div className="bg-white rounded-card shadow-soft border border-border p-6">
-                <h2 className="text-xl font-semibold text-primary mb-1">Favoritos</h2>
-                <h2 className="text-xs text-brand/100 mb-6">Mis emprendimientos favoritos</h2>
+              <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+                <h2 className="text-xl font-semibold text-primary dark:text-white mb-1">Favoritos</h2>
+                <h2 className="text-xs text-brand dark:text-brandDark/100 mb-6">Mis emprendimientos favoritos</h2>
                 {/* Mostrar botón para ir al inicio cuando no hay favoritos */}
                 {(!(user.favorites || []) || (user.favorites || []).length === 0) ? (
                   <div className="py-6 flex flex-col items-center justify-center">
-                    <p className="text-sm text-secondary mb-4">No tienes favoritos seleccionados todavía.</p>
+                    <p className="text-sm text-secondary dark:text-secondaryDark mb-4">No tienes favoritos seleccionados todavía.</p>
                     <button
                       onClick={() => navigate('/')}
-                      className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark transition-colors"
+                      className="px-4 py-2 rounded-lg bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand transition-colors"
                     >
                       Ir al inicio
                     </button>
@@ -601,8 +601,8 @@ export function Perfil() {
                           className="block"
                           onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
                         >
-                          <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
-                            <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                          <div className="bg-white dark:bg-backgroundDark rounded-lg shadow-sm border border-gray-100 dark:border-cardDark overflow-hidden hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col">
+                            <div className="relative aspect-square bg-gray-50 dark:bg-backgroundDark overflow-hidden">
                               <img
                                 src={imgUrl}
                                 alt={title}
@@ -618,15 +618,15 @@ export function Perfil() {
                                   setShowFavRemoveModal(true);
                                 }}
                                 disabled={!!favPendingById[favorito.id]}
-                                className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white text-[#0A5B7A] border border-border shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] hover:border-[#0A5B7A]"
+                                className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white dark:bg-cardDark text-[#0A5B7A] dark:text-brandDark border border-border dark:border-cardDark shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] dark:hover:bg-brandDark hover:border-[#0A5B7A] dark:hover:border-brandDark dark:hover:text-white transition-colors"
                                 aria-label="Quitar de favoritos"
                                 title="Quitar de favoritos"
                               >
-                                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] group-hover:text-white" />
+                                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] dark:text-brandDark group-hover:text-white" />
                               </button>
                             </div>
                             <div className="p-4 flex-1 flex flex-col">
-                              <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{title}</h3>
+                              <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2">{title}</h3>
                             </div>
                           </div>
                         </Link>
@@ -648,11 +648,11 @@ export function Perfil() {
         variant="danger"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
+          <p className="text-sm text-secondary dark:text-secondaryDark">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={() => setShowFavRemoveModal(false)}
-              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+              className="px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark transition-colors"
             >
               Cancelar
             </button>
@@ -673,7 +673,7 @@ export function Perfil() {
                   }
                 });
               }}
-              className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark"
+              className="px-4 py-2 rounded-lg bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand transition-colors"
               disabled={!!(favToRemove && favPendingById[favToRemove])}
             >
               Eliminar
@@ -686,14 +686,15 @@ export function Perfil() {
         onClose={() => setShowInterestModal(false)}
         title="Editar intereses"
         variant="edit"
+        dialogClassName="hide-scrollbar"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary mb-4">
+          <p className="text-sm text-secondary dark:text-secondaryDark mb-4">
             Selecciona los temas que más te interesan para personalizar tu experiencia.
           </p>
           {loadingCategories ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand dark:border-brandDark"></div>
             </div>
           ) : categoriesData && categoriesData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -711,8 +712,8 @@ export function Perfil() {
                     onClick={() => (isSelected ? removeInterestByName(categoryName) : addInterestByCategory(cat))}
                     className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-left transition-colors ${
                       isSelected
-                        ? 'border-brand bg-brand/10'
-                        : 'border-border hover:border-brand/50 hover:bg-brand/5'
+                        ? 'border-brand dark:border-brandDark bg-brand/10 dark:bg-brandDark/20'
+                        : 'border-border dark:border-cardDark hover:border-brand/50 dark:hover:border-brandDark/50 hover:bg-brand/5 dark:hover:bg-brandDark/10'
                     }`}
                     aria-pressed={isSelected}
                   >
@@ -726,12 +727,12 @@ export function Perfil() {
                           target.src = '/default-category-icon.png';
                         }}
                       />
-                      <span className="text-sm font-medium text-gray-900 truncate">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {categoryName}
                       </span>
                     </span>
                     {isSelected && (
-                      <svg className="w-5 h-5 text-brand flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-brand dark:text-brandDark flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -740,7 +741,7 @@ export function Perfil() {
               })}
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500">
+            <div className="text-center py-4 text-gray-500 dark:text-secondaryDark">
               No se encontraron categorías disponibles.
             </div>
           )}
@@ -754,7 +755,7 @@ export function Perfil() {
         title="Sobre tu información de contacto"
         variant="info"
       >
-        <div className="space-y-4 text-sm text-secondary">
+        <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
           <p>
             Tu información de contacto es visible para otros usuarios cuando interactúas 
             en la plataforma. Esto incluye tu correo electrónico y número de teléfono.
@@ -766,7 +767,7 @@ export function Perfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setShowContactModal(false)}
-              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
+              className="px-6 py-2 bg-brand dark:bg-brandDark text-white rounded-lg font-medium hover:bg-brandDark dark:hover:bg-brand transition-colors focus-brand"
             >
               Entendido
             </button>
@@ -781,7 +782,7 @@ export function Perfil() {
         title="Sobre tu ubicación"
         variant="info"
       >
-        <div className="space-y-4 text-sm text-secondary">
+        <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
           <p>
             Tu ubicación nos ayuda a conectarte con emprendimientos cercanos 
             y eventos locales en tu área.
@@ -794,7 +795,7 @@ export function Perfil() {
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setShowLocationModal(false)}
-              className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors focus-brand"
+              className="px-6 py-2 bg-brand dark:bg-brandDark text-white rounded-lg font-medium hover:bg-brandDark dark:hover:bg-brand transition-colors focus-brand"
             >
               Entendido
             </button>

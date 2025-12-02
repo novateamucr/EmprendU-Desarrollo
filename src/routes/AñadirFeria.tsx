@@ -289,13 +289,13 @@ export default function AñadirFeria() {
 	}, [searchTerm, users]);
 
 	return (
-		<div className="container mx-auto px-4 py-8 max-w-3xl mt-10">
+		<div className="container mx-auto px-4 py-8 max-w-3xl mt-10 dark:bg-backgroundDark min-h-screen">
 			<div className="mb-8">
-				<h1 className="text-2xl font-bold mb-2">{isEdit ? 'Editar feria' : 'Nueva feria'}</h1>
-				<p className="text-muted-foreground">{isEdit ? 'Actualiza la información de la feria.' : 'Completa la información para crear una feria.'}</p>
+				<h1 className="text-2xl font-bold mb-2 dark:text-white">{isEdit ? 'Editar feria' : 'Nueva feria'}</h1>
+				<p className="text-muted-foreground dark:text-gray-400">{isEdit ? 'Actualiza la información de la feria.' : 'Completa la información para crear una feria.'}</p>
 			</div>
 
-			<Card className="p-6">
+			<Card className="p-6 dark:bg-cardDark dark:border-cardDark">
 				<form onSubmit={onSubmit}>
 					<div className="space-y-6">
 						{initialLoading ? (
@@ -304,30 +304,30 @@ export default function AñadirFeria() {
 							<>
 								{/* Title */}
 								<div>
-									<label htmlFor="title" className="block text-sm font-medium mb-1">Título *</label>
-									<Input id="title" name="title" value={form.title} onChange={onChange} placeholder="Ej: Feria de Emprendedores de San José" required />
+									<label htmlFor="title" className="block text-sm font-medium mb-1 dark:text-white">Título *</label>
+									<Input id="title" name="title" value={form.title} onChange={onChange} placeholder="Ej: Feria de Emprendedores de San José" required className="dark:bg-backgroundDark dark:text-secondaryDark dark:border-cardDark" />
 								</div>
 
 								{/* Description */}
 								<div>
-									<label htmlFor="description" className="block text-sm font-medium mb-1">Descripción</label>
-									<Textarea id="description" name="description" value={form.description} onChange={onChange} rows={4} placeholder="Describe la feria..." />
+									<label htmlFor="description" className="block text-sm font-medium mb-1 dark:text-white">Descripción</label>
+									<Textarea id="description" name="description" value={form.description} onChange={onChange} rows={4} placeholder="Describe la feria..." className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Address */}
 								<div>
-									<label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
-									<Input id="address" name="address" value={form.address} onChange={onChange} placeholder="Dirección exacta" />
+									<label htmlFor="address" className="block text-sm font-medium mb-1 dark:text-white">Dirección</label>
+									<Input id="address" name="address" value={form.address} onChange={onChange} placeholder="Dirección exacta" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Location selects */}
 								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 									<div>
-										<label className="block text-sm font-medium mb-1">Provincia *</label>
+										<label className="block text-sm font-medium mb-1 dark:text-white">Provincia *</label>
 										<select
 											value={form.province}
 											onChange={onProvinceChange}
-											className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+											className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
 										>
 											<option value="">Selecciona provincia</option>
 											{provincias.map((p) => (
@@ -336,12 +336,12 @@ export default function AñadirFeria() {
 										</select>
 									</div>
 									<div>
-										<label className="block text-sm font-medium mb-1">Cantón *</label>
+										<label className="block text-sm font-medium mb-1 dark:text-white">Cantón *</label>
 										<select
 											value={form.canton}
 											onChange={onCantonChange}
 											disabled={!form.province}
-											className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+											className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
 										>
 											<option value="">Selecciona cantón</option>
 											{cantonesFiltrados.map((c) => (
@@ -363,23 +363,37 @@ export default function AñadirFeria() {
 											))}
 										</select>
 									</div>
+															<div>
+																<label className="block text-sm font-medium mb-1 dark:text-white">Distrito *</label>
+																<select
+																	value={form.district}
+																	onChange={(e) => setForm((p) => ({ ...p, district: e.target.value }))}
+																	disabled={!form.canton}
+																	className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
+																>
+																	<option value="">Selecciona distrito</option>
+																	{distritosFiltrados.map((d) => (
+																		<option key={d.id} value={d.nombre}>{d.nombre}</option>
+																	))}
+																</select>
+															</div>
 								</div>
 
 								{/* Extra location field */}
 								<div>
-									<label htmlFor="location" className="block text-sm font-medium mb-1">Ubicación (opcional)</label>
-									<Input id="location" name="location" value={form.location} onChange={onChange} placeholder="Ej: Parque Central, frente a la iglesia" />
+									<label htmlFor="location" className="block text-sm font-medium mb-1 dark:text-white">Ubicación (opcional)</label>
+									<Input id="location" name="location" value={form.location} onChange={onChange} placeholder="Ej: Parque Central, frente a la iglesia" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Date and time */}
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 									<div>
-										<label htmlFor="date" className="block text-sm font-medium mb-1">Fecha (dd/mm/aaaa) *</label>
-										<Input id="date" name="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: enforceDDMMYYYY(e.target.value) }))} placeholder="dd/mm/aaaa" inputMode="numeric" />
+										  <label htmlFor="date" className="block text-sm font-medium mb-1 dark:text-white">Fecha (dd/mm/aaaa) *</label>
+										  <Input id="date" name="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: enforceDDMMYYYY(e.target.value) }))} placeholder="dd/mm/aaaa" inputMode="numeric" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 									</div>
 									<div>
-										<label htmlFor="time" className="block text-sm font-medium mb-1">Hora *</label>
-										<Input id="time" name="time" type="time" value={form.time} onChange={onChange} />
+										  <label htmlFor="time" className="block text-sm font-medium mb-1 dark:text-white">Hora *</label>
+										  <Input id="time" name="time" type="time" value={form.time} onChange={onChange} className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 									</div>
 								</div>
 

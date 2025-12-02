@@ -23,20 +23,20 @@ export function ImageConfirmModal({ isOpen, onClose, onConfirm, previewImage }: 
           />
         </div>
         
-        <p className="text-sm text-secondary text-center">
+        <p className="text-sm text-secondary text-center dark:text-secondaryDark">
           ¿Está seguro que desea cambiar su foto de perfil por esta imagen?
         </p>
         
         <div className="flex justify-end gap-3 pt-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-secondary rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 text-secondary rounded-lg font-medium hover:bg-gray-300 transition-colors dark:border dark:border-brandDark dark:text-white dark:bg-backgroundDark dark:hover:bg-gray-700"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors dark:bg-brandDark dark:hover:bg-brand"
           >
             Confirmar
           </button>

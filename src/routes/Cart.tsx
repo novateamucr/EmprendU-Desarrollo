@@ -77,21 +77,21 @@ export default function Cart() {
     return (
       <Layout>
         <div className="w-full max-w-4xl mx-auto p-6 mt-10">
-          <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 dark:text-white">
             <ShoppingBag className="w-6 h-6" />
             Carrito de pedidos
 
             {/* Botón pequeño junto al título */}
             <button
               onClick={() => setShowExtraModal(true)}
-              className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="ml-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-cardDark transition-colors"
               aria-label="Abrir información"
             >
-              <Info className="w-4 h-4 text-gray-600" />
+              <Info className="w-4 h-4 text-gray-600 dark:text-secondaryDark" />
             </button>
           </h1>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p className="text-gray-600 mb-4">Tu carrito está vacío</p>
+          <div className="bg-white dark:bg-cardDark rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-600 dark:text-secondaryDark mb-4">Tu carrito está vacío</p>
             <button
               onClick={() => navigate('/home')}
               className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brandDark transition-colors"
@@ -111,25 +111,25 @@ export default function Cart() {
     <Layout>
       <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-6 mt-4 sm:mt-6 md:mt-10">
         <div className="items-center justify-between mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 dark:text-white">
             <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
             <span>Carrito de pedidos</span>
           </h1>
           <button
             onClick={() => setShowExtraModal(true)}
-            className="p-1.5 sm:p-1 hover:bg-gray-100 hover:underline transition-colors text-gray-600"
+            className="p-1.5 sm:p-1 hover:bg-gray-100 dark:hover:text-brandDark dark:hover:bg-backgroundDark hover:underline transition-colors text-gray-600 dark:text-secondaryDark"
             aria-label="Abrir información"
           >¿Cómo realizar un pedido?
           </button>
         </div>
 
         {groups.map((group) => (
-          <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}`} className="mb-8 bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div key={group.groupId || `${group.entrepreneurshipId}-${Math.random()}`} className="mb-8 bg-white dark:bg-cardDark rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-border dark:border-backgroundDark bg-gray-50 dark:bg-cardDark ">
               <div className="flex justify-between items-center">
                 <button
                   onClick={() => navigate(`/business/${group.entrepreneurshipId}`)}
-                  className="text-lg font-semibold text-gray-900 hover:text-brand transition-colors flex items-center gap-2"
+                  className="text-lg font-semibold text-gray-900 dark:text-white hover:text-brand dark:hover:text-brandDark transition-colors flex items-center gap-2"
                 >
                   {group.entrepreneurshipName}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -155,7 +155,7 @@ export default function Cart() {
                 <div
                   key={item.productId}
                   onClick={() => navigate(`/product/${item.productId}`)}
-                  className="p-4 cursor-pointer bg-white md:bg-transparent rounded-md md:rounded-none border md:border-0 shadow-sm md:shadow-none mb-3 md:mb-0"
+                  className="p-4 cursor-pointer bg-white dark:bg-cardDark md:bg-transparent md:dark:bg-transparent rounded-md md:rounded-none border md:border-0 dark:border-cardDark md:dark:border-0 shadow-sm md:shadow-none mb-3 md:mb-0"
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="flex items-start md:items-center gap-3 min-w-0">
@@ -165,10 +165,10 @@ export default function Cart() {
                         className="w-16 h-16 object-cover rounded flex-shrink-0"
                       />
                       <div className="min-w-0">
-                        <h3 className="font-medium hover:underline text-sm md:text-base line-clamp-2">{item.name}</h3>
-                        <p className="text-sm text-gray-600">₡{item.price.toLocaleString()}</p>
+                        <h3 className="font-medium hover:underline text-sm md:text-base line-clamp-2 dark:text-white">{item.name}</h3>
+                        <p className="text-sm text-gray-600 dark:text-secondaryDark">₡{item.price.toLocaleString()}</p>
                         {item.selectionSummary && item.selectionSummary.length > 0 && (
-                          <ul className="mt-1 text-xs text-gray-500 list-disc pl-4 space-y-0.5">
+                          <ul className="mt-1 text-xs text-gray-500 dark:text-secondaryDark list-disc pl-4 space-y-0.5">
                             {item.selectionSummary.slice(0, 2).map((s, idx) => (
                               <li key={idx} className="truncate">{s}</li>
                             ))}
@@ -178,7 +178,7 @@ export default function Cart() {
                     </div>
 
                     <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto mt-2 md:mt-0">
-                      <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+                      <div className="flex items-center border border-gray-200 dark:border-backgroundDark dark:bg-backgroundDark rounded-full overflow-hidden">
                         {group.status !== 'requested' && (
                           <button
                             onClick={(e) => {
@@ -189,24 +189,24 @@ export default function Cart() {
                                 removeItem(group.entrepreneurshipId, item.productId);
                               }
                             }}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center bg-gray-50 dark:bg-backgroundDark hover:bg-gray-100 dark:hover:bg-brandDark/15 text-gray-600 dark:text-secondaryDark transition-colors"
                             aria-label="Disminuir cantidad"
                           >
                             {item.quantity > 1 ? (
                               <Minus className="w-3.5 h-3.5" />
                             ) : (
-                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                              <Trash2 className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
                             )}
                           </button>
                         )}
-                        <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
+                        <span className="w-8 text-center text-sm md:text-base dark:text-white">{item.quantity}</span>
                         {group.status !== 'requested' && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               updateQty(group.entrepreneurshipId, item.productId, item.quantity + 1);
                             }}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center bg-gray-50 dark:bg-backgroundDark hover:bg-gray-100 dark:hover:bg-brandDark/15 text-gray-600 dark:text-secondaryDark transition-colors"
                             aria-label="Aumentar cantidad"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -214,15 +214,15 @@ export default function Cart() {
                         )}
                       </div>
 
-                      <div className="text-right font-medium text-sm md:text-base">
+                      <div className="text-right font-medium text-sm md:text-base dark:text-white">
                         ₡{(item.price * item.quantity).toLocaleString()}
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
-              <div className="p-4 flex justify-between items-center border-t">
-                <div className="text-sm text-gray-600">
+              <div className="p-4 flex justify-between items-center border-t border-border dark:border-cardDark">
+                <div className="text-sm text-gray-600 dark:text-secondaryDark">
                   {group.items.length} {group.items.length === 1 ? 'producto' : 'productos'} • Total:
                   <span className="font-semibold ml-1">
                     ₡{group.items.reduce((total, item) => total + (item.price * item.quantity), 0).toLocaleString()}
@@ -230,14 +230,14 @@ export default function Cart() {
                 </div>
               </div>
             </div>
-            <div className="p-4 bg-gray-50 border-t border-gray-200">
+            <div className="p-4 bg-gray-50 dark:bg-cardDark border-t border-border dark:border-backgroundDark">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Subtotal:</span>
-                <span>₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</span>
+                <span className="text-gray-600 dark:text-secondaryDark">Subtotal:</span>
+                <span className="dark:text-white">₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center font-semibold text-lg">
-                <span>Total:</span>
-                <span className="text-brand">
+                <span className="dark:text-white">Total:</span>
+                <span className="text-brand dark:text-brandDark">
                   ₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
                 </span>
               </div>
@@ -247,8 +247,8 @@ export default function Cart() {
                   disabled={isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId}
                   className={`mt-4 w-full py-3 rounded-md font-medium text-sm ${
                     isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
-                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-brand text-white hover:bg-brandDark'
+                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed'
+                      : 'bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand'
                   } transition-colors`}
                 >
                   {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
@@ -270,16 +270,16 @@ export default function Cart() {
           variant="info"
         >
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-secondaryDark">
               Para realizar un pedido, necesitamos que completes tu información de perfil, incluyendo tu número de teléfono y dirección.
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-secondaryDark">
               Esta información es necesaria para que el emprendedor pueda contactarte y coordinar la entrega de tu pedido.
             </p>
             <div className="flex justify-end space-x-2 pt-2">
               <button
                 onClick={() => setShowProfileReminder(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-cardDark rounded-md hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark transition-colors"
               >
                 Cancelar
               </button>
@@ -307,24 +307,24 @@ export default function Cart() {
               description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
             }}
           >
-            <div className="space-y-4 text-gray-700 text-sm">
+            <div className="space-y-4 text-gray-700 dark:text-secondaryDark text-sm">
               <div>
-                <p className="font-semibold">Agrega productos al carrito</p>
+                <p className="font-semibold dark:text-white">Agrega productos al carrito</p>
                 <p>Agrega productos al carrito para poder realizar un pedido</p>
               </div>
 
               <div>
-                <p className="font-semibold">En el Carrito - Haz click en “Confirmar pedido”</p>
+                <p className="font-semibold dark:text-white">En el Carrito - Haz click en "Confirmar pedido"</p>
                 <p>En el carrito podrás ver los productos que agregaste al carrito</p>
               </div>
 
               <div>
-                <p className="font-semibold">Espera confirmación del emprendimiento</p>
+                <p className="font-semibold dark:text-white">Espera confirmación del emprendimiento</p>
                 <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
               </div>
 
               <div>
-                <p className="font-semibold">Revisa el estado de tu pedido</p>
+                <p className="font-semibold dark:text-white">Revisa el estado de tu pedido</p>
                 <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
               </div>
             </div>
