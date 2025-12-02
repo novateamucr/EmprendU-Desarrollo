@@ -116,19 +116,15 @@ class OrdersController extends Controller
                 'notes' => request('notes', '') // Add notes if provided
             ]);
 
-            // Add options if any
+            // Add options if any (table does not have FK columns for product options)
             if (!empty($optionsInput)) {
                 $options = [];
                 foreach ($optionsInput as $opt) {
                     $options[] = [
                         'order_item_id' => $item->id,
-                        'product_option_id' => $opt['product_option_id'] ?? null,
-                        'product_option_value_id' => $opt['product_option_value_id'] ?? null,
-                        'option_name' => $opt['option_name'],
-                        'option_value' => $opt['option_value'] ?? null,
-                        'price_delta' => $opt['price_delta'],
-                        'created_at' => now(),
-                        'updated_at' => now()
+                        'option_name'   => $opt['option_name'],
+                        'option_value'  => $opt['option_value'] ?? null,
+                        'price_delta'   => $opt['price_delta'],
                     ];
                 }
                 OrderItemOption::insert($options);
