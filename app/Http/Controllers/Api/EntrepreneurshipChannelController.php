@@ -28,27 +28,34 @@ class EntrepreneurshipChannelController extends Controller
     public function store(StoreChannelRequest $request, Entrepreneurship $entrepreneurship)
     {
         $data = $request->validated();
-        $data['entrepreneurship_id'] = $entrepreneurship->id;
 
-        // Optional: pre-check duplicates to return a friendly 422 instead of DB error
-        if (!empty($data['url'])) {
-            $exists = EntrepreneurshipChannel::where('entrepreneurship_id', $entrepreneurship->id)
-                ->where('platform_code', $data['platform_code'])
-                ->where('url', $data['url'])
-                ->exists();
-            if ($exists) {
-                return response()->json([
-                    'message' => 'Duplicate channel (platform_code + url) for this entrepreneurship.',
-                ], 422);
-            }
-        }
+        // Adaptar nombres del request (pensado para platform_code/url/handle)
+        // a las columnas reales de la tabla (channel_type/channel_url/channel_username/handle)
+        $channelType = $data['platform_code'] ?? null;
+        // La columna channel_url en BD no acepta null, así que normalizamos a '' cuando no hay URL
+        $channelUrl = array_key_exists('url', $data) && $data['url'] !== null ? $data['url'] : '';
+        $channelUsername = $data['handle'] ?? null;
+
+        $data = [
+            'entrepreneurship_id' => $entrepreneurship->id,
+            'channel_type' => $channelType,
+            'channel_url' => $channelUrl,
+            'channel_username' => $channelUsername,
+            'handle' => $data['handle'] ?? null,
+            'is_primary' => $data['is_primary'] ?? false,
+            'is_public' => $data['is_public'] ?? true,
+            'display_order' => $data['display_order'] ?? 0,
+        ];
 
         try {
             $channel = EntrepreneurshipChannel::create($data);
         } catch (QueryException $e) {
-            // handle unique constraint violation gracefully
+            $info = $e->errorInfo ?? [];
             return response()->json([
-                'message' => 'Could not create channel. It may already exist.',
+                'message' => 'Could not create channel.',
+                'sql_state' => $info[0] ?? null,
+                'sql_code' => $info[1] ?? null,
+                'sql_error' => $info[2] ?? $e->getMessage(),
             ], 422);
         }
 
@@ -65,13 +72,21 @@ class EntrepreneurshipChannelController extends Controller
 
         $data = $request->validated();
 
-        // If platform_code/url are being changed, pre-check duplicate
-        $platformCode = $data['platform_code'] ?? $channel->platform_code;
-        $url = array_key_exists('url', $data) ? $data['url'] : $channel->url;
-        if (!empty($url)) {
+        // Mapear cambios a las columnas reales
+        $channelType = $data['platform_code'] ?? $channel->channel_type;
+        if (array_key_exists('url', $data)) {
+            // Si viene url explícitamente en el request, usarla (y si es null, normalizar a '')
+            $channelUrl = $data['url'] !== null ? $data['url'] : '';
+        } else {
+            $channelUrl = $channel->channel_url;
+        }
+        $channelUsername = array_key_exists('handle', $data) ? $data['handle'] : $channel->channel_username;
+
+        // If channel_type/channel_url are being changed, pre-check duplicate
+        if (!empty($channelUrl) && !empty($channelType)) {
             $exists = EntrepreneurshipChannel::where('entrepreneurship_id', $entrepreneurship->id)
-                ->where('platform_code', $platformCode)
-                ->where('url', $url)
+                ->where('channel_type', $channelType)
+                ->where('channel_url', $channelUrl)
                 ->where('id', '!=', $channel->id)
                 ->exists();
             if ($exists) {
@@ -81,7 +96,23 @@ class EntrepreneurshipChannelController extends Controller
             }
         }
 
-        $channel->update($data);
+        $updateData = [
+            'channel_type' => $channelType,
+            'channel_url' => $channelUrl,
+            'channel_username' => $channelUsername,
+        ];
+
+        if (array_key_exists('is_primary', $data)) {
+            $updateData['is_primary'] = $data['is_primary'];
+        }
+        if (array_key_exists('is_public', $data)) {
+            $updateData['is_public'] = $data['is_public'];
+        }
+        if (array_key_exists('display_order', $data)) {
+            $updateData['display_order'] = $data['display_order'];
+        }
+
+        $channel->update($updateData);
 
         return new EntrepreneurshipChannelResource($channel->fresh()->load('platform'));
     }

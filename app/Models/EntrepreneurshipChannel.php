@@ -11,8 +11,9 @@ class EntrepreneurshipChannel extends Model
 
     protected $fillable = [
         'entrepreneurship_id',
-        'platform_code',
-        'url',
+        'channel_type',
+        'channel_url',
+        'channel_username',
         'handle',
         'is_primary',
         'is_public',
@@ -26,7 +27,7 @@ class EntrepreneurshipChannel extends Model
 
     public function platform()
     {
-        return $this->belongsTo(SocialPlatform::class, 'platform_code', 'code');
+        return $this->belongsTo(SocialPlatform::class, 'channel_type', 'code');
     }
 
     public function entrepreneurship()
