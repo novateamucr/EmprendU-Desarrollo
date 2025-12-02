@@ -28,7 +28,7 @@ export default {
         navbar: '16px',
       },
       fontFamily: {
-        // La fuente importada en CSS es 'Montserrat' — dejarla como principal para consistencia
+        
         sans: ['Montserrat', 'Inter', 'sans-serif'],
       },
 
