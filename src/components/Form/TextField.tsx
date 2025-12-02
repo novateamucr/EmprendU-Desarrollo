@@ -21,7 +21,7 @@ export function TextField({
 }: TextFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-primary mb-2">
+      <label className="block text-sm font-medium text-primary dark:text-white mb-2">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -29,8 +29,8 @@ export function TextField({
         type={type}
         placeholder={placeholder}
         {...register(name)}
-        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
-          error ? 'border-red-500' : 'border-border'
+        className={`w-full px-4 py-3 dark:bg-backgroundDark dark:text-secondaryDark dark:placeholder:text-cardDark border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
+          error ? 'border-red-500' : 'border-border dark:border-backgroundDark'
         }`}
         inputMode={name === 'phone' ? 'numeric' : undefined}
         pattern={name === 'phone' ? '[0-9]*' : undefined}

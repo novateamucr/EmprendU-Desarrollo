@@ -31,7 +31,7 @@
 
   /* Global body colors */
   body {
-    @apply bg-white text-primary;
+    @apply bg-white text-primary dark:bg-[#2C2C2C];
     /* Peso por defecto del texto del cuerpo (regular) */
     font-weight: 400; /* Montserrat 400 */
   }
@@ -86,4 +86,24 @@
   animation: fadeIn 0.2s ease-out;
 }
   
+}
+
+/* Utility: hide scrollbars across browsers */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+/* Support for existing classname typo used in Modal: "cartegory-scroll" */
+.cartegory-scroll::-webkit-scrollbar {
+  display: none;
+}
+.cartegory-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

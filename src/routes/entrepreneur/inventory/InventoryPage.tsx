@@ -160,8 +160,8 @@ export default function InventoryPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Inventario</h1>
-        <Button onClick={handleAddProduct}>
+        <h1 className="text-2xl font-bold dark:text-white">Inventario</h1>
+        <Button onClick={handleAddProduct} className='dark:bg-brandDark dark:hover:bg-brand'>
           <Plus className="mr-2 h-4 w-4" />
           Agregar Producto
         </Button>

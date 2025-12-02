@@ -152,18 +152,18 @@ export default function ForcePasswordChange() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:bg-backgroundDark flex items-center justify-center p-4">
             <Container className="w-full max-w-md">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white dark:bg-cardDark rounded-2xl shadow-xl p-8 dark:border dark:border-cardDark">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-                            <Lock className="text-orange-600" sx={{ fontSize: 32 }} />
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
+                            <Lock className="text-orange-600 dark:text-orange-300" sx={{ fontSize: 32 }} />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                             Cambio de Contraseña Requerido
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-gray-400">
                             Por seguridad, debes cambiar tu contraseña temporal antes de continuar
                         </p>
                     </div>
@@ -172,7 +172,7 @@ export default function ForcePasswordChange() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Current Password */}
                         <div>
-                            <label htmlFor="current_password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="current_password" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                                 Contraseña Actual (Temporal)
                             </label>
                             <div className="relative">
@@ -182,8 +182,7 @@ export default function ForcePasswordChange() {
                                     name="current_password"
                                     value={formData.current_password}
                                     onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.current_password ? 'border-red-500' : 'border-gray-300'
-                                        }`}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-backgroundDark dark:text-white dark:border-cardDark ${errors.current_password ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Ingresa tu contraseña temporal"
                                 />
                                 <button
@@ -201,7 +200,7 @@ export default function ForcePasswordChange() {
 
                         {/* New Password */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                                 Nueva Contraseña
                             </label>
                             <div className="relative">
@@ -211,8 +210,7 @@ export default function ForcePasswordChange() {
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-500' : 'border-gray-300'
-                                        }`}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-backgroundDark dark:text-white dark:border-cardDark ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Mínimo 8 caracteres"
                                 />
                                 <button
@@ -230,7 +228,7 @@ export default function ForcePasswordChange() {
 
                         {/* Confirm Password */}
                         <div>
-                            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                                 Confirmar Nueva Contraseña
                             </label>
                             <div className="relative">
@@ -240,8 +238,7 @@ export default function ForcePasswordChange() {
                                     name="password_confirmation"
                                     value={formData.password_confirmation}
                                     onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password_confirmation ? 'border-red-500' : 'border-gray-300'
-                                        }`}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-backgroundDark dark:text-white dark:border-cardDark ${errors.password_confirmation ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Repite tu nueva contraseña"
                                 />
                                 <button
@@ -261,7 +258,7 @@ export default function ForcePasswordChange() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:hover:bg-blue-800"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center">
@@ -281,7 +278,7 @@ export default function ForcePasswordChange() {
                             <button
                                 type="button"
                                 onClick={handleLogout}
-                                className="text-sm text-gray-600 hover:text-gray-900 underline"
+                                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
                             >
                                 Cerrar sesión
                             </button>
@@ -290,9 +287,9 @@ export default function ForcePasswordChange() {
                 </div>
 
                 {/* Security Tips */}
-                <div className="mt-6 bg-blue-50 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-blue-900 mb-2">Consejos de seguridad:</h3>
-                    <ul className="text-xs text-blue-800 space-y-1">
+                <div className="mt-6 bg-blue-50 dark:bg-cardDark rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-blue-900 dark:text-white mb-2">Consejos de seguridad:</h3>
+                    <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1">
                         <li>• Usa al menos 8 caracteres</li>
                         <li>• Combina letras mayúsculas y minúsculas</li>
                         <li>• Incluye números y símbolos</li>

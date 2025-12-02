@@ -60,8 +60,8 @@ export function Skeleton({
 
 export function SkeletonEntrepreneurCard() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-      <div className="aspect-square bg-gray-50 relative overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden dark:bg-cardDark dark:border-cardDark">
+      <div className="aspect-square bg-gray-50 relative overflow-hidden dark:bg-gray-700">
         <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
       </div>
       <div className="p-4">
@@ -82,8 +82,8 @@ export function SkeletonEntrepreneurCard() {
 
 export function SkeletonProductCard() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-      <div className="aspect-square bg-gray-50 relative overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden dark:bg-cardDark dark:border-cardDark">
+      <div className="aspect-square bg-gray-50 relative overflow-hidden dark:bg-gray-700">
         <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
       </div>
       <div className="p-4">
@@ -101,9 +101,9 @@ export function SkeletonProductCard() {
 
 export function SkeletonFeaturedEntrepreneur() {
   return (
-    <div className="bg-gradient-to-r from-brand/5 to-brand/10 rounded-xl p-6 shadow-sm border border-brand/20">
+    <div className="bg-gradient-to-r from-brand/5 to-brand/10 rounded-xl p-6 shadow-sm border border-brand/20 dark:bg-cardDark dark:border-cardDark">
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="md:w-32 md:h-32 w-full h-48 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="md:w-32 md:h-32 w-full h-48 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 dark:bg-gray-700">
           <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
         </div>
         <div className="flex-1">
@@ -130,7 +130,7 @@ export function SkeletonDashboardStats() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
           <div className="flex items-center justify-between mb-2">
             <Skeleton variant="text" width="25%" height={20} />
             <Skeleton variant="rectangular" width={50} height={50} />
@@ -147,8 +147,8 @@ export function SkeletonDashboardStats() {
 
 export function SkeletonBusinessCard() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="h-40 bg-gray-100 relative">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow dark:bg-cardDark dark:border-cardDark">
+      <div className="h-40 bg-gray-100 relative dark:bg-gray-700">
         <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
       </div>
       <div className="p-4">
@@ -194,15 +194,13 @@ export function SkeletonCategoryList({ count = 6 }: { count?: number }) {
             variant="circular" 
             width={24} 
             height={24} 
-            className="mb-2" 
-            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+            className="mb-2 bg-gray-50 dark:bg-gray-700 rounded-full"
           />
           <Skeleton 
             variant="text" 
             width={80} 
             height={20} 
-            className="rounded-md" 
-            sx={{ bgcolor: 'rgba(0, 0, 0, 0.04)' }}
+            className="rounded-md bg-gray-50 dark:bg-gray-700 w-full"
           />
         </div>
       ))}

@@ -49,10 +49,10 @@ export default function ContactUs() {
       <main className="flex-1 flex items-center justify-center px-10 md:p-12 mt-10 md:mt-4 lg:px-28 lg:pt-20">
         <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 items-center">
           <div className="flex flex-col gap-2 w-full md:w-1/2">
-            <h3 className="text-sm md:text-xl font-bold text-brand leading-tight">CONTACTO</h3>
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">Contáctanos</h1>
-            <p className="text-sm md:text-lg mt-4">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias.</p>
-            <p className="text-sm md:text-lg mt-4">Nuestro equipo revisará tu mensaje y te brindará una respuesta en el menor tiempo posible.</p>
+            <h3 className="text-sm md:text-xl font-bold text-brand dark:text-brandDark leading-tight">CONTACTO</h3>
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight dark:text-white">Contáctanos</h1>
+            <p className="text-sm md:text-lg mt-4 dark:text-secondaryDark">Por medio de este formulario puedes ponerte en contacto con nosotros para realizar consultas, comentarios o sugerencias.</p>
+            <p className="text-sm md:text-lg mt-4 dark:text-secondaryDark">Nuestro equipo revisará tu mensaje y te brindará una respuesta en el menor tiempo posible.</p>
           </div>
           <div className="w-full md:w-1/2 flex justify-center">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md">
@@ -64,9 +64,9 @@ export default function ContactUs() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base mb-1"
+                  className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base mb-1 dark:bg-cardDark dark:text-white dark:border-cardDark"
                 />
-                <p className="text-xs sm:text-sm md:text-sm text-gray-500 mt-0 pl-2 pb-2">Correo al que deseas ser contactado</p>
+                <p className="text-xs sm:text-sm md:text-sm text-gray-500 mt-0 pl-2 pb-2 dark:text-secondaryDark">Correo al que deseas ser contactado</p>
               </div>
               <input
                 type="text"
@@ -75,7 +75,7 @@ export default function ContactUs() {
                 value={formData.subject}
                 onChange={handleChange}
                 required
-                className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base"
+                className="border p-4 rounded-xl shadow-soft text-xs sm:text-sm md:text-base dark:bg-cardDark dark:text-white dark:border-cardDark"
               />
               <textarea
                 name="message"
@@ -84,11 +84,11 @@ export default function ContactUs() {
                 value={formData.message}
                 onChange={handleChange}
                 required
-                className="border p-4 rounded-xl shadow-soft resize-none text-xs sm:text-sm md:text-base"
+                className="border p-4 rounded-xl shadow-soft resize-none text-xs sm:text-sm md:text-base dark:bg-cardDark dark:text-white dark:border-cardDark"
               ></textarea>
               <button
                 type="submit"
-                className="bg-brand text-white p-2 rounded-full hover:bg-brandDark transition"
+                className="bg-brand dark:bg-brandDark text-white p-2 rounded-full hover:bg-brandDark dark:hover:bg-brand transition"
               >
                 Enviar
               </button>

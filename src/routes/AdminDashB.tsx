@@ -87,26 +87,26 @@ export default function AdminDashB() {
 	};
 
 	if (loading) {
-		return <div className="flex justify-center items-center h-96">Cargando...</div>;
+		return <div className="flex justify-center items-center h-96 dark:text-white">Cargando...</div>;
 	}
 	if (error) {
-		return <div className="text-red-500 text-center mt-8">{error}</div>;
+		return <div className="text-red-500 dark:text-red-400 text-center mt-8">{error}</div>;
 	}
 
 	return (
-  <div className="p-4 md:p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+  <div className="p-4 md:p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 dark:bg-backgroundDark min-h-screen">
     
     {/* Usuarios Card */}
-    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto md:overflow-visible">
-      <h2 className="text-lg font-semibold mb-4 text-blue-700 text-center">Usuarios creados por mes</h2>
+    <div className="bg-white dark:bg-cardDark rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto md:overflow-visible">
+      <h2 className="text-lg font-semibold mb-4 text-blue-700 dark:text-blue-400 text-center">Usuarios creados por mes</h2>
       <div className="w-full h-64 min-w-[300px] md:min-w-0">
         <Line data={usersChartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
       </div>
     </div>
 
     {/* Emprendimientos Card */}
-    <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto md:overflow-visible">
-      <h2 className="text-lg font-semibold mb-4 text-green-700 text-center">Emprendimientos creados por mes</h2>
+    <div className="bg-white dark:bg-cardDark rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto md:overflow-visible">
+      <h2 className="text-lg font-semibold mb-4 text-green-700 dark:text-green-400 text-center">Emprendimientos creados por mes</h2>
       <div className="w-full h-64 min-w-[300px] md:min-w-0">
         <Line data={entreChartData} options={{ ...chartOptions, maintainAspectRatio: false }} />
       </div>

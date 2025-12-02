@@ -60,25 +60,25 @@ export function ModalAnimaciones({
   const hasLeft = Boolean(leftContent || pointerGifSrc);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 dark:bg-black/60">
       <div
-        className={`bg-white rounded-card shadow-soft w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
+        className={`bg-white rounded-card shadow-soft w-full ${maxWidth} max-h-[90vh] overflow-y-auto dark:bg-cardDark dark:border dark:border-cardDark category-scroll`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-border dark:border-gray-600">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <PopupHeader title={title} subtitle={subtitle} variant={variant} />
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-full transition-colors hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+              className="p-1 rounded-full transition-colors hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:hover:bg-gray-700 dark:focus:ring-offset-cardDark"
               aria-label="Cerrar modal"
             >
-              <X className="w-5 h-5 text-secondary hover:text-brand" />
+              <X className="w-5 h-5 text-secondary hover:text-brand dark:text-secondaryDark dark:hover:text-brandDark" />
             </button>
           </div>
         </div>
@@ -104,7 +104,7 @@ export function ModalAnimaciones({
             {/* Columna derecha */}
             <div className="space-y-6 items-start">
               {notice && (
-                <div className="rounded-xl bg-sky-100 text-sky-900 px-4 py-3">
+                <div className="rounded-xl bg-sky-100 text-sky-900 px-4 py-3 dark:bg-sky-900/30 dark:text-sky-300">
                   <p className="font-semibold">{notice.title}</p>
                   {notice.description && (
                     <p className="text-sm opacity-90 mt-1">{notice.description}</p>

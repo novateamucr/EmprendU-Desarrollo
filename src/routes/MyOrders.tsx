@@ -200,13 +200,13 @@ export default function MyOrders() {
       <div className="pt-24 pb-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             <div className="mt-8 space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 border rounded-lg bg-white">
-                  <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                <div key={i} className="p-4 border rounded-lg bg-white dark:bg-cardDark dark:border-cardDark">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
                 </div>
               ))}
             </div>
@@ -220,13 +220,13 @@ export default function MyOrders() {
     return (
       <div className="pt-24 pb-8">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="bg-red-50 dark:bg-red-950 border-l-4 border-red-400 dark:border-red-600 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                <XCircle className="h-5 w-5 text-red-400 dark:text-red-400" aria-hidden="true" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
               </div>
             </div>
           </div>
@@ -240,23 +240,23 @@ export default function MyOrders() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">
               Mis pedidos
             </h1>
-            <p className="text-secondary mt-1">
+            <p className="text-secondary dark:text-secondaryDark mt-1">
               Historial de pedidos y sus estados.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-secondary whitespace-nowrap">
+              <label className="text-sm text-secondary dark:text-secondaryDark whitespace-nowrap">
                 Estado:
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="text-sm border border-border rounded-md px-3 py-2 bg-white w-full"
+                className="text-sm border border-border dark:border-cardDark rounded-md px-3 py-2 bg-white dark:bg-cardDark dark:text-white"
               >
                 <option value="all">Todos los estados</option>
                 <option value="solicitado">Solicitados</option>
@@ -269,12 +269,12 @@ export default function MyOrders() {
             </div>
             <div className="relative w-full md:w-64">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
+                <Search className="h-4 w-4 text-gray-400 dark:text-secondaryDark" />
               </div>
               <input
                 type="text"
                 placeholder="Buscar por emprendimiento o código..."
-                className="pl-10 w-full border border-border rounded-md px-3 py-2 text-sm"
+                className="pl-10 w-full border border-border dark:border-cardDark rounded-md px-3 py-2 text-sm bg-white dark:bg-cardDark dark:text-white dark:placeholder-secondaryDark"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -282,10 +282,10 @@ export default function MyOrders() {
           </div>
         </div>
 
-        <div className="mt-6 bg-white rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="mt-6 bg-white dark:bg-cardDark rounded-lg border border-border dark:border-backgroundDark shadow-sm overflow-hidden">
           {/* Desktop view */}
           <div className="hidden md:block">
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b text-sm font-medium text-gray-500">
+            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b dark:border-backgroundDark text-sm font-medium text-gray-500 dark:text-secondaryDark">
               <div className="col-span-3">Producto</div>
               <div className="col-span-2">Código</div>
               <div className="col-span-2">Fecha</div>
@@ -304,11 +304,11 @@ export default function MyOrders() {
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="divide-y divide-gray-200 dark:divide-cardDark">
                 {filteredOrders.map((order) => (
                   <li 
                     key={order.id} 
-                    className="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                     onClick={() => handleOrderClick(order.id)}
                   >
                     <div className="mb-2 flex justify-between items-center">
@@ -320,15 +320,15 @@ export default function MyOrders() {
                             className="h-10 w-10 rounded-full object-cover mr-3"
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+                          <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-backgroundDark flex items-center justify-center text-gray-500 dark:text-secondaryDark font-medium">
                             {order.entrepreneurshipName.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-white">
                             {order.entrepreneurshipName}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-secondaryDark">
                             {format(
                               new Date(order.createdAt),
                               "dd MMM yyyy - HH:mm",
@@ -339,7 +339,7 @@ export default function MyOrders() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-secondaryDark">
                         {order.orderNumber}
                       </div>
                     </div>
@@ -358,48 +358,48 @@ export default function MyOrders() {
                                 className="h-16 w-16 object-cover rounded"
                               />
                             ) : (
-                              <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
-                                <span className="text-xs text-gray-400">
+                              <div className="h-16 w-16 bg-gray-100 dark:bg-backgroundDark rounded flex items-center justify-center">
+                                <span className="text-xs text-gray-400 dark:text-secondaryDark">
                                   Sin imagen
                                 </span>
                               </div>
                             )}
                             <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {item.product.name}
                               </p>
-                              <p className="text-xs text-gray-500 line-clamp-1">
+                              <p className="text-xs text-gray-500 dark:text-secondaryDark line-clamp-1">
                                 {item.product.description}
                               </p>
                             </div>
                           </div>
                           <div className="col-span-2">
-                            <span className="text-sm font-mono text-gray-600">
+                            <span className="text-sm font-mono text-gray-600 dark:text-secondaryDark">
                               #{order.orderNumber}-{item.id}
                             </span>
                           </div>
-                          <div className="col-span-2 text-sm text-gray-600">
+                          <div className="col-span-2 text-sm text-gray-600 dark:text-secondaryDark">
                             {format(new Date(order.createdAt), "dd MMM yyyy", {
                               locale: es,
                             })}
                           </div>
-                          <div className="col-span-1 text-center text-sm text-gray-600">
+                          <div className="col-span-1 text-center text-sm text-gray-600 dark:text-secondaryDark">
                             {item.quantity}
                           </div>
-                          <div className="col-span-2 text-right text-sm text-gray-600">
+                          <div className="col-span-2 text-right text-sm text-gray-600 dark:text-secondaryDark">
                             ₡{parseFloat(item.unit_price).toLocaleString()}
                           </div>
-                          <div className="col-span-2 text-right font-medium text-gray-900">
+                          <div className="col-span-2 text-right font-medium text-gray-900 dark:text-white">
                             ₡{parseFloat(item.total_price).toLocaleString()}
                           </div>
                         </div>
                       ))}
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-cardDark flex justify-end">
                         <div className="text-right">
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-secondaryDark">
                             Total del pedido:
                           </p>
-                          <p className="text-lg font-semibold">
+                          <p className="text-lg font-semibold dark:text-white">
                             ₡
                             {order.total.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
@@ -427,11 +427,11 @@ export default function MyOrders() {
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-200 dark:divide-cardDark">
                 {filteredOrders.map((order) => (
                   <div 
                     key={order.id} 
-                    className="p-4"
+                    className="p-4 dark:bg-cardDark transition-colors hover:dark:bg-backgroundDark"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOrderClick(order.id);
@@ -447,17 +447,17 @@ export default function MyOrders() {
                               className="h-10 w-10 rounded-full object-cover mr-3"
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+                            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-backgroundDark flex items-center justify-center text-gray-500 dark:text-secondaryDark font-medium">
                               {order.entrepreneurshipName
                                 .charAt(0)
                                 .toUpperCase()}
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-900 dark:text-white">
                               {order.entrepreneurshipName}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-secondaryDark">
                               {order.orderNumber} •{" "}
                               {format(new Date(order.createdAt), "dd/MM/yy", {
                                 locale: es,
@@ -473,7 +473,7 @@ export default function MyOrders() {
                       {order.items.map((item) => (
                         <div
                           key={item.id}
-                          className="flex p-3 bg-gray-50 rounded-lg"
+                          className="flex p-3 bg-gray-50 dark:bg-backgroundDark rounded-lg"
                         >
                           {item.product.image_url ? (
                             <img
@@ -482,27 +482,27 @@ export default function MyOrders() {
                               className="h-16 w-16 object-cover rounded"
                             />
                           ) : (
-                            <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
-                              <span className="text-xs text-gray-400">
+                            <div className="h-16 w-16 bg-gray-100 dark:bg-cardDark rounded flex items-center justify-center">
+                              <span className="text-xs text-gray-400 dark:text-secondaryDark">
                                 Sin imagen
                               </span>
                             </div>
                           )}
                           <div className="ml-3 flex-1">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
                               {item.product.name}
                             </p>
-                            <p className="text-xs text-gray-500 line-clamp-1">
+                            <p className="text-xs text-gray-500 dark:text-secondaryDark line-clamp-1">
                               {item.product.description}
                             </p>
                             <div className="mt-1 flex justify-between items-center">
-                              <span className="text-sm font-medium">
+                              <span className="text-sm font-medium dark:text-white">
                                 ₡{parseFloat(item.unit_price).toLocaleString()}
                               </span>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-gray-500 dark:text-secondaryDark">
                                 x {item.quantity}
                               </span>
-                              <span className="text-sm font-semibold">
+                              <span className="text-sm font-semibold dark:text-white">
                                 ₡
                                 {order.total.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
@@ -514,10 +514,10 @@ export default function MyOrders() {
                         </div>
                       ))}
 
-                      <div className="pt-3 border-t border-gray-100">
+                      <div className="pt-3 border-t border-gray-100 dark:border-cardDark">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">Total:</span>
-                          <span className="text-lg font-semibold">
+                          <span className="text-sm font-medium dark:text-white">Total:</span>
+                          <span className="text-lg font-semibold dark:text-white">
                             ₡
                             {order.total.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
@@ -532,8 +532,8 @@ export default function MyOrders() {
               </div>
             )}
           </div>
-          <div className="px-4 py-3 border-t bg-white rounded-b-lg border-border">
-            <div className="text-sm text-gray-500">
+          <div className="px-4 py-3 border-t dark:border-cardDark bg-white dark:bg-cardDark rounded-b-lg">
+            <div className="text-sm text-gray-500 dark:text-secondaryDark">
               Mostrando {filteredOrders.length}{" "}
               {filteredOrders.length === 1 ? "pedido" : "pedidos"}
             </div>

@@ -32,24 +32,24 @@ export default function BusinessFeedback({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-500 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-60 flex items-center justify-center z-50 transition-all duration-500 p-4">
       {/*contenedor blanco principal */}
-      <div className={`bg-white rounded-xl w-full md:w-2/3 relative overflow-y-auto transition-all duration-500 category-scroll
+      <div className={`bg-white dark:bg-backgroundDark dark:text-white rounded-xl w-full md:w-2/3 relative overflow-y-auto transition-all duration-500 category-scroll border border-gray-100 dark:border-cardDark
           ${submitted ? "pb-6 h-[80vh]" : "pb-8 max-h-[80vh]"}`}>
 
         {/* Parte gris*/}
-        <div className={`bg-radial from-blue-400 from-40% to-white w-full flex flex-col items-center justify-center gap-2 rounded-t-xl pt-3
+        <div className={`bg-radial from-blue-400 from-40% to-white dark:from-transparent dark:to-cardDark dark:bg-backgroundDark w-full flex flex-col items-center justify-center gap-2 rounded-t-xl pt-3
             transition-all duration-500 ${submitted ? "h-[80%]" : "h-[50%]"}`}>
           
           {!submitted && (
-            <h2 className="text-lg font-bold text-slate-700 text-center mt-2">{title}</h2>
+            <h2 className="text-lg font-bold text-slate-700 dark:text-white text-center mt-2">{title}</h2>
           )}
           {!submitted && (
-            <p className="text-slate-600 text-center">{entrepreneurshipName}</p>
+            <p className="text-slate-600 dark:text-secondaryDark text-center">{entrepreneurshipName}</p>
           )}
           <img
             src={imageUrl}
-            className={`rounded-full border-2 border-slate-300 transition-all duration-500
+            className={`rounded-full border-2 border-slate-300 dark:border-cardDark transition-all duration-500
               ${submitted ? "w-60 h-60" : "w-40 h-40"} hover:scale-105 hover:-translate-y-2`}
           />
 
@@ -58,8 +58,8 @@ export default function BusinessFeedback({
           ) : (
             // Mensajes dentro de la parte gris
             <div className="flex flex-col items-center gap-2 text-center mt-4">
-              <p className="text-lg font-bold text-slate-700">¡Gracias por calificarnos!</p>
-              <p className="text-sm text-gray-500">Reseña enviada exitosamente</p>
+              <p className="text-lg font-bold text-slate-700 dark:text-white">¡Gracias por calificarnos!</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Reseña enviada exitosamente</p>
             </div>
           )}
         </div>
@@ -75,7 +75,7 @@ export default function BusinessFeedback({
                   className={`cursor-pointer text-5xl transition-transform duration-300 ${
                     star <= rating
                       ? "text-yellow-400"
-                      : "text-gray-300 hover:scale-125 hover:-translate-y-1 active:scale-90"
+                      : "text-gray-300 dark:text-gray-600 hover:scale-125 hover:-translate-y-1 active:scale-90"
                   }`}
                 >
                   ★
@@ -84,17 +84,17 @@ export default function BusinessFeedback({
             </div>
 
             {/* Comentarios */}
-            <p className="text-slate-500 self-start pl-6 md:pl-8 lg:pl-10 text-sm mt-2">Comentarios (opcional)</p>
+            <p className="text-slate-500 dark:text-secondaryDark self-start pl-6 md:pl-8 lg:pl-10 text-sm mt-2">Comentarios (opcional)</p>
             <textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              className="w-[90%] h-24 border border-gray-300 rounded-lg p-2 resize-none text-slate-500 text-sm"
+              className="w-[90%] h-24 bg-white dark:bg-backgroundDark border border-gray-300 dark:border-cardDark rounded-lg p-2 resize-none text-slate-500 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm"
               placeholder="Escribe tus comentarios aquí..."
             />
 
             {/* btn enviar*/}
             <Btn
-              style="hover:bg-green-600 bg-black text-white font-black p-2 text-sm rounded-full w-[90%]"
+              style="dark:bg-brandDark dark:hover:bg-green-600 hover:bg-green-600 bg-black text-white font-black p-2 text-sm rounded-full w-[90%]"
               key="enviarFeedback"
               text="Enviar"
               onClick={handleSubmit}
@@ -102,7 +102,7 @@ export default function BusinessFeedback({
 
             {/* Link Cancelar */}
             <button
-              className="text-gray-400 text-xs mt-1 hover:text-gray-500 hover:underline"
+              className="text-gray-400 dark:text-gray-300 text-xs mt-1 hover:text-gray-500 dark:hover:text-brandDark hover:underline"
               onClick={onCancel}
             >
               Calificar luego
@@ -111,7 +111,7 @@ export default function BusinessFeedback({
         ) : (
           <div className="flex justify-center">
             <button
-              className="text-gray-400 text-xs hover:text-gray-500 hover:underline"
+              className="text-gray-400 dark:text-gray-300 text-xs hover:text-gray-500 dark:hover:text-gray-200 hover:underline"
               onClick={onCancel}
             >
               Continuar explorando productos

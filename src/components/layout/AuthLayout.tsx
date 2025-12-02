@@ -15,8 +15,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-screen bg-gray-50">
-      <div className="w-full  space-y-8 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center w-full min-h-screen bg-gray-50 dark:bg-backgroundDark">
+      <div className="w-full  space-y-8 bg-white dark:bg-backgroundDark rounded-lg shadow-md">
         
         {children}
       </div>

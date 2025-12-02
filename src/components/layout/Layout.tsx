@@ -142,12 +142,12 @@ export function Layout({ children }: LayoutProps) {
       className="flex items-center"
       aria-label={user?.role === 3 ? 'Ir al panel de administración' : 'Ir al inicio'}
     >
-      <img src={emprendULogo} alt="EmprendeU Logo" className="h-8 w-auto" />
+      <img src={emprendULogo} alt="EmprendeU Logo" className="h-8 w-auto filter dark:invert dark:brightness-110" />
     </Link>
   );
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-slate-100">
+    <div className="flex flex-col min-h-screen w-full bg-slate-100 dark:bg-backgroundDark">
       <Navbar
         logo={logo}
         items={navItems.filter(item => item.visible === undefined || item.visible)}

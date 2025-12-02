@@ -54,12 +54,12 @@ export const TopProductsSidebar = ({ onViewAllClick }: { onViewAllClick?: () => 
     if (!topProducts || topProducts.length === 0) return null;
 
     return (
-        <Container className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm sticky top-24">
+        <Container className="bg-white dark:bg-cardDark dark:border-backgroundDark dark:rounded-xl rounded-xl border border-gray-100 p-5 shadow-sm sticky top-24">
             <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
                 <div className="bg-orange-100 p-1.5 rounded-full text-orange-600">
                     <LocalFireDepartment sx={{ fontSize: 20 }} />
                 </div>
-                <h3 className="font-bold text-gray-800 text-lg">Lo más vendido</h3>
+                <h3 className="font-bold text-gray-800 text-lg dark:text-white">Lo más vendido</h3>
             </div>
 
             <div className="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 snap-x scrollbar-hide">
@@ -69,7 +69,7 @@ export const TopProductsSidebar = ({ onViewAllClick }: { onViewAllClick?: () => 
                         to={`/product/${product.id}`}
                         className="group min-w-[85%] sm:min-w-[300px] lg:min-w-0 snap-center"
                     >
-                        <Card className="flex gap-3 items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-100 lg:border-none h-full">
+                        <Card className="flex gap-3 items-center p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-backgroundDark border border-gray-100 lg:border-none h-full">
                             <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                                 <img
                                     src={product.image_url || "https://placehold.co/100x100?text=Product"}
@@ -81,14 +81,14 @@ export const TopProductsSidebar = ({ onViewAllClick }: { onViewAllClick?: () => 
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-medium text-gray-800 line-clamp-2 group-hover:text-primary transition-colors">
+                                <h4 className="text-sm font-medium text-gray-800 dark:text-secondaryDark line-clamp-2 hover:text-primary dark:hover:text-secondaryDark transition-colors">
                                     {product.name}
                                 </h4>
                                 <div className="flex items-center justify-between mt-1">
-                                    <span className="text-sm font-bold text-primary">
+                                    <span className="text-sm font-bold text-primary dark:text-white">
                                         ₡{Number(product.price).toLocaleString()}
                                     </span>
-                                    <span className="text-[10px] text-gray-500 flex items-center gap-0.5">
+                                    <span className="text-[10px] text-gray-500 dark:text-brandDark flex items-center gap-0.5">
                                         <TrendingUp sx={{ fontSize: 12 }} />
                                         {product.total_sold || 0} ventas
                                     </span>
@@ -104,7 +104,7 @@ export const TopProductsSidebar = ({ onViewAllClick }: { onViewAllClick?: () => 
                     e.preventDefault();
                     onViewAllClick?.();
                 }}
-                className="block w-full mt-5 text-center text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-all"
+                className="block w-full mt-5 text-center text-sm font-medium text-primary dark:text-secondaryDark hover:text-primary/80 hover:underline transition-all"
             >
                 Ver todos los productos →
             </button>

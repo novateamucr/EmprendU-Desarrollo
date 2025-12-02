@@ -154,7 +154,7 @@ const Categories = React.memo(({ categories, selectedCategory, setSelectedCatego
 
   return (
     <div className="mb-8" id="categories-section">
-      <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2">
+      <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary dark:text-white mb-6 flex items-center gap-2">
         <FloatingElement>
           <Apps sx={{ fontSize: 24 }} />
         </FloatingElement>
@@ -194,22 +194,42 @@ const Categories = React.memo(({ categories, selectedCategory, setSelectedCatego
                 ? "#FFFFFF"
                 : category.color || "#5b98b8";
 
+              // Build classNames and styles for selected vs unselected states
+              const baseClass =
+                "flex-shrink-0 flex items-center gap-2 px-4 py-2 4xl:px-6 4xl:py-3 rounded-full transition-all duration-200";
+
+              if (isSelected) {
+                return (
+                  <button
+                    key={categoryName}
+                    onClick={() => setSelectedCategory(categoryName)}
+                    className={`${baseClass} shadow-md border`} 
+                    style={{
+                      backgroundColor: category.color || "#4F46E5",
+                      color: "#FFFFFF",
+                      borderColor: category.color || "#4F46E5",
+                    }}
+                  >
+                    <img
+                      src={categoryIconUrl(categoryName, "#FFFFFF")}
+                      alt={categoryName}
+                      className="w-4 h-4 3xl:w-5 3xl:h-5 4xl:w-6 4xl:h-6 flex-shrink-0"
+                    />
+                    <span className="font-medium text-sm 3xl:text-base 4xl:text-xl whitespace-nowrap">
+                      {categoryName}
+                    </span>
+                    <span className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80 text-white/90">
+                      ({category.count})
+                    </span>
+                  </button>
+                );
+              }
+
               return (
                 <button
                   key={categoryName}
                   onClick={() => setSelectedCategory(categoryName)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 4xl:px-6 4xl:py-3 rounded-full transition-all duration-200 ${isSelected
-                    ? `shadow-md`
-                    : "hover:shadow-sm hover:bg-gray-50"
-                    }`}
-                  style={{
-                    backgroundColor: isSelected
-                      ? category.color || "#4F46E5"
-                      : "#FFFFFF",
-                    color: isSelected ? "#FFFFFF" : "#374151",
-                    border: `1px solid ${isSelected ? category.color || "#4F46E5" : "#E5E7EB"
-                      }`,
-                  }}
+                  className={`${baseClass} hover:shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-cardDark text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-cardDark`}
                 >
                   <img
                     src={categoryIconUrl(categoryName, iconColor)}
@@ -219,12 +239,7 @@ const Categories = React.memo(({ categories, selectedCategory, setSelectedCatego
                   <span className="font-medium text-sm 3xl:text-base 4xl:text-xl whitespace-nowrap">
                     {categoryName}
                   </span>
-                  <span
-                    className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80"
-                    style={{
-                      color: isSelected ? "rgba(255,255,255,0.9)" : "inherit",
-                    }}
-                  >
+                  <span className="text-xs 3xl:text-sm 4xl:text-lg font-medium opacity-80">
                     ({category.count})
                   </span>
                 </button>
@@ -804,14 +819,14 @@ export default function HomePage() {
   return (
     <>
       {/* Main Content */}
-      <div className="pt-20 md:pt-24 flex flex-col min-h-full">
+      <div className="pt-20 md:pt-24 flex flex-col min-h-full dark:bg-backgroundDark">
         <div className="w-full px-4 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16 max-w-7xl 2xl:max-w-[96rem] 3xl:max-w-[110rem] 4xl:max-w-[140rem] mx-auto">
           {/* Header */}
           <AnimatedContainer className="mb-8">
-            <h1 className="text-xl sm:text-2xl md:text-3xl 3xl:text-4xl 4xl:text-6xl font-semibold text-primary mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl 3xl:text-4xl 4xl:text-6xl font-semibold text-primary dark:text-white mb-2">
               ¡Hola! ¿Qué te gustaría descubrir hoy?
             </h1>
-            <p className="text-secondary text-sm md:text-base 3xl:text-lg 4xl:text-3xl">
+            <p className="text-secondary dark:text-secondaryDark text-sm md:text-base 3xl:text-lg 4xl:text-3xl">
               Explora emprendimientos locales y encuentra productos únicos
             </p>
           </AnimatedContainer>
@@ -826,7 +841,7 @@ export default function HomePage() {
                   setShowSuggestions(false);
                 }}
                 className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${viewMode === "emprendimientos"
-                  ? "bg-white text-primary shadow-sm"
+                  ? "bg-white dark:bg-brandDark dark:text-white text-primary shadow-sm"
                   : "text-secondary hover:text-primary hover:bg-brand/10"
                   }`}
               >
@@ -839,7 +854,7 @@ export default function HomePage() {
                   setShowSuggestions(false);
                 }}
                 className={`flex-1 py-2 md:py-2.5 3xl:py-3 4xl:py-4 px-4 3xl:px-6 4xl:px-8 rounded-md text-sm 3xl:text-base 4xl:text-2xl font-medium transition-all ${viewMode === "productos"
-                  ? "bg-white text-primary shadow-sm"
+                  ? "bg-white dark:bg-brandDark dark:text-white text-primary shadow-sm"
                   : "text-secondary hover:text-primary hover:bg-brand/10"
                   }`}
               >
@@ -896,7 +911,7 @@ export default function HomePage() {
 
               {/* Search Bar + Zone Selector */}
               <div className="mb-8 rounded-lg">
-                <h2 className="text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-primary mb-2">
+                <h2 className="text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-primary dark:text-white mb-2">
                   Buscar emprendimientos
                 </h2>
 
@@ -905,7 +920,7 @@ export default function HomePage() {
                   <div className="relative flex-[1] w-full">
                     <Search
                       sx={{ fontSize: 20 }}
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary dark:text-secondaryDark"
                     />
                     <input
                       type="text"
@@ -916,11 +931,11 @@ export default function HomePage() {
                       onBlur={() =>
                         setTimeout(() => setShowSuggestions(false), 200)
                       }
-                      className="w-full pl-12 pr-4 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white text-base 3xl:text-lg 4xl:text-4xl"
+                      className="w-full pl-12 pr-4 py-3 md:py-4 3xl:py-5 4xl:py-6 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white dark:bg-cardDark dark:border-cardDark text-base dark:text-secondaryDark 3xl:text-lg 4xl:text-4xl"
                     />
                     {/* Search Suggestions */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
-                      <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                      <AnimatedContainer className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-cardDark border border-border dark:border-cardDark rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
                         {filteredSuggestions.map((suggestion, index) => (
                           <button
                             key={index}
@@ -928,13 +943,13 @@ export default function HomePage() {
                               setSearchQuery(suggestion);
                               setShowSuggestions(false);
                             }}
-                            className="w-full text-left px-4 py-3 4xl:py-4 hover:bg-brand/10 transition-colors border-b border-border last:border-b-0 flex items-center gap-3 4xl:gap-4"
+                            className="w-full text-left dark:bg-cardDark px-4 py-3 4xl:py-4 hover:bg-brand/10 dark:hover:bg-brandDark/20 transition-colors border-b border-border dark:border-cardDark last:border-b-0 flex items-center gap-3 4xl:gap-4"
                           >
                             <Search
                               sx={{ fontSize: 18 }}
-                              className="text-secondary"
+                              className="text-secondary dark:text-secondaryDark"
                             />
-                            <span className="text-primary text-sm md:text-base 3xl:text-lg 4xl:text-xl">
+                            <span className="text-primary dark:text-secondaryDark text-sm md:text-base 3xl:text-lg 4xl:text-xl">
                               {suggestion}
                             </span>
                           </button>
@@ -948,7 +963,7 @@ export default function HomePage() {
                     <select
                       value={selectedProvince || "Todos"}
                       onChange={(e) => setSelectedProvince(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white dark:bg-cardDark dark:border-cardDark dark:text-secondaryDark appearance-none text-base 3xl:text-lg 4xl:text-2xl"
                     >
                       <option value="Todos">Todas las provincias</option>
                       {provinces.map((p) => (
@@ -979,7 +994,7 @@ export default function HomePage() {
                     <select
                       value={selectedZone}
                       onChange={(e) => setSelectedZone(e.target.value)}
-                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none text-base 3xl:text-lg 4xl:text-2xl"
+                      className="w-full px-4 py-3 md:py-4 3xl:py-5 4xl:py-6 pr-10 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white dark:bg-cardDark dark:border-cardDark dark:text-secondaryDark appearance-none text-base 3xl:text-lg 4xl:text-2xl"
                     >
                       <option value="Todas">Todos los cantones</option>
                       {zones.map((z) => (
@@ -1019,7 +1034,7 @@ export default function HomePage() {
               {/* Featured Businesses/Products */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary flex items-center gap-2 4xl:gap-3">
+                  <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary dark:text-white flex items-center gap-2 4xl:gap-3">
                     <Apps sx={{ fontSize: 24 }} />
                     {viewMode === "productos"
                       ? "Productos"
@@ -1052,8 +1067,8 @@ export default function HomePage() {
                                   window.scrollTo({ top: 0, behavior: "auto" })
                                 }
                               >
-                                <AnimatedCard className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
-                                  <div className="aspect-square bg-gray-50 relative overflow-hidden">
+                                <AnimatedCard className="bg-white dark:bg-cardDark dark:border-cardDark dark:text-secondaryDark rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col">
+                                  <div className="aspect-square bg-gray-50 dark:bg-cardDark relative overflow-hidden">
                                     <img
                                       src={
                                         business.image_url ||
@@ -1067,11 +1082,11 @@ export default function HomePage() {
                                   </div>
                                   <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
                                     <div className="flex items-start justify-between gap-2 mb-2">
-                                      <h3 className=" text-gray-900 text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
+                                      <h3 className=" text-gray-900 dark:text-white text-sm 3xl:text-base 4xl:text-4xl line-clamp-2 font-semibold">
                                         {business.name}
                                       </h3>
                                       <button
-                                        className="text-secondary hover:text-brand transition-colors font-medium"
+                                        className="text-secondary dark:text-secondaryDark hover:text-brand transition-colors font-medium"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
@@ -1114,7 +1129,7 @@ export default function HomePage() {
                                         )}
                                       </button>
                                     </div>
-                                    <p className="text-gray-600 text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2 font-medium">
+                                    <p className="text-gray-600 dark:text-secondaryDark text-xs 3xl:text-sm 4xl:text-2xl mb-3 line-clamp-2 font-medium">
                                       {business.description}
                                     </p>
                                     <div className="flex items-center justify-between mt-auto">
@@ -1185,7 +1200,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Sidebar for Top Products - Desktop */}
-                    <aside className="hidden lg:block w-80 flex-shrink-0 sticky top-24">
+                    <aside className="hidden lg:block w-80 flex-shrink-0 sticky top-24 dark:bg-backgroundDark">
                       <TopProductsSidebar
                         onViewAllClick={() => {
                           setViewMode("productos");
@@ -1212,7 +1227,7 @@ export default function HomePage() {
 
               {/* Popular Products */}
               <AnimatedContainer className="mb-6">
-                <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary mb-6 flex items-center gap-2 4xl:gap-3">
+                <h2 className="text-xl md:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-primary dark:text-white mb-6 flex items-center gap-2 4xl:gap-3">
                   <FloatingElement>
                     <Star sx={{ fontSize: 24 }} />
                   </FloatingElement>
@@ -1276,7 +1291,7 @@ export default function HomePage() {
         {/* Footer */}
         <footer
           id="contacto"
-          className="bg-brand text-white py-6 rounded-t-2xl w-full"
+          className="bg-brand dark:bg-brandDark text-white py-6 rounded-t-2xl w-full"
         >
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 border-b border-white pb-4 w-full">
@@ -1286,12 +1301,8 @@ export default function HomePage() {
                   alt="Logo"
                   className="w-8 p-1 rounded-full"
                 />
-                <a href="/faqs" className="text-white text-sm">
-                  Preguntas frecuentes
-                </a>
-                <a href="/contactUs" className="text-white text-sm">
-                  Contáctanos
-                </a>
+                <Link to="/faqs" className="hover:underline dark:hover:underline hover:text-brand dark:text-white text-white text-xs md:text-sm">Preguntas frecuentes</Link>
+                <Link to="/contactUs" className="hover:underline hover:text-brand dark:hover:underline dark:text-white text-white text-xs md:text-sm">Contáctanos</Link>
               </div>
               <div className="flex gap-4 md:gap-6">
                 <a href="https://www.instagram.com/emprendecr_nova?igsh=cmhjbndjYzVhZmQy">
@@ -1319,14 +1330,14 @@ export default function HomePage() {
         variant="danger"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary">
+          <p className="text-sm text-secondary dark:text-white">
             ¿Estás seguro de que deseas eliminar este emprendimiento de tus
             favoritos?
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={() => setConfirmOpen(false)}
-              className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+              className="px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark dark:hover:text-white transition-colors"
             >
               Cancelar
             </button>
@@ -1343,7 +1354,7 @@ export default function HomePage() {
                 setConfirmOpen(false);
                 setPendingRemove(null);
               }}
-              className="px-4 py-2 rounded-lg bg-brand text-white hover:bg-brandDark"
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-brandDark dark:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
             >
               Eliminar
             </button>

@@ -116,20 +116,20 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <SearchIcon className="text-gray-400" />
                 </InputAdornment>
               ),
-              className: 'bg-white',
+              className: 'bg-white dark:bg-cardDark dark:text-white',
             }}
           />
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border dark:border-cardDark dark:bg-cardDark">
         {/* Desktop table (md and up) */}
         <div className="hidden md:block">
           <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow className="bg-gray-50 dark:bg-cardDark">
               <TableHead 
-                className="text-center cursor-pointer hover:bg-gray-100 w-[25%]"
+                className="text-center cursor-pointer hover:bg-gray-100 w-[25%] dark:hover:bg-gray-600 dark:text-secondaryDark"
                 onClick={() => onSort('name')}
               >
                 <div className="flex items-center justify-center">
@@ -137,13 +137,13 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <span className="ml-1">{getSortIndicator('name', sortConfig)}</span>
                 </div>
               </TableHead>
-              <TableHead className="w-[25%] text-center">
+              <TableHead className="w-[25%] text-center dark:text-secondaryDark">
                 <div className="flex items-center justify-center">
                   Descripción
                 </div>
               </TableHead>
               <TableHead 
-                className="text-center w-[10%] cursor-pointer hover:bg-gray-100"
+                className="text-center w-[10%] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-secondaryDark"
                 onClick={() => onSort('price')}
               >
                 <div className="flex items-center justify-center">
@@ -151,13 +151,13 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <span className="ml-1">{getSortIndicator('price', sortConfig)}</span>
                 </div>
               </TableHead>
-              <TableHead className="w-[15%] text-center">
+              <TableHead className="w-[15%] text-center dark:text-secondaryDark">
                 <div className="flex items-center justify-center">
                   Estado
                 </div>
               </TableHead>
               <TableHead 
-                className="text-center w-[15%] cursor-pointer hover:bg-gray-100"
+                className="text-center w-[15%] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-secondaryDark"
                 onClick={() => onSort('created_at')}
               >
                 <div className="flex items-center justify-center">
@@ -165,7 +165,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                   <span className="ml-1">{getSortIndicator('created_at', sortConfig)}</span>
                 </div>
               </TableHead>
-              <TableHead className="w-[15%] text-center">
+              <TableHead className="w-[15%] text-center dark:text-secondaryDark">
                 <div className="flex items-center justify-center">
                   Acciones
                 </div>
@@ -174,7 +174,7 @@ export const ProductList: React.FC<ProductListProps> = ({
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <TableRow key={product.id} className="hover:bg-gray-50">
+              <TableRow key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <TableCell className="text-center">
                   <div className="flex flex-col items-center space-y-2">
                     {product.image_url ? (
@@ -184,22 +184,22 @@ export const ProductList: React.FC<ProductListProps> = ({
                         className="h-10 w-10 rounded-md object-cover"
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
-                        <PackageIcon className="h-5 w-5 text-gray-400" />
+                      <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center dark:bg-gray-600">
+                        <PackageIcon className="h-5 w-5 text-gray-400 dark:text-gray-400" />
                       </div>
                     )}
                     <div className="text-center">
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-xs text-gray-500">ID: {product.id}</div>
+                      <div className="font-medium dark:text-white">{product.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-secondaryDark">ID: {product.id}</div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <div className="px-2">
-                    {product.description || <span className="text-gray-400">Sin descripción</span>}
+                  <div className="px-2 dark:text-white">
+                    {product.description || <span className="text-gray-400 dark:text-secondaryDark">Sin descripción</span>}
                   </div>
                 </TableCell>
-                <TableCell className="text-center font-medium">
+                <TableCell className="text-center font-medium dark:text-white">
                   ₡{Number(product.price).toFixed(2)}
                 </TableCell>
                 <TableCell className="text-center">
@@ -207,15 +207,15 @@ export const ProductList: React.FC<ProductListProps> = ({
                     <span 
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                         Number(product.stock_quantity || 0) > 0 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {Number(product.stock_quantity || 0) > 0 ? 'En stock' : 'Agotado'}
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-center text-sm text-gray-500">
+                <TableCell className="text-center text-sm text-gray-500 dark:text-secondaryDark">
                   {product.created_at 
                     ? new Date(product.created_at).toLocaleDateString('es-ES', {
                         year: 'numeric',
@@ -229,7 +229,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                     <IconButton 
                       size="small" 
                       onClick={() => onEdit(product)}
-                      className="text-blue-600 hover:bg-blue-50"
+                      className="text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                       title="Editar"
                     >
                       <EditIcon fontSize="small" />
@@ -240,7 +240,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                         e.stopPropagation();
                         handleDeleteClick(product.id, product.name);
                       }}
-                      className="text-red-600 hover:bg-red-50"
+                      className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                       disabled={isLoading}
                       title="Eliminar"
                     >
@@ -255,40 +255,40 @@ export const ProductList: React.FC<ProductListProps> = ({
         </div>
 
         {/* Mobile card list */}
-        <div className="md:hidden space-y-3 p-3">
+        <div className="md:hidden space-y-3 p-3 dark:bg-cardDark">
           {products.map((product) => (
-            <div key={product.id} className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+            <div key={product.id} className="bg-white border border-gray-100 rounded-lg p-3 shadow-sm dark:bg-gray-700 dark:border-gray-600">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="h-16 w-16 rounded-md object-cover" />
                   ) : (
-                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center">
-                      <PackageIcon className="h-6 w-6 text-gray-400" />
+                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center dark:bg-gray-600">
+                      <PackageIcon className="h-6 w-6 text-gray-400 dark:text-gray-400" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-medium text-sm">{product.name}</div>
-                      <div className="text-xs text-gray-500">ID: {product.id}</div>
+                      <div className="font-medium text-sm dark:text-white">{product.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-secondaryDark">ID: {product.id}</div>
                     </div>
-                    <div className="text-sm font-medium">${Number(product.price).toFixed(2)}</div>
+                    <div className="text-sm font-medium dark:text-white">${Number(product.price).toFixed(2)}</div>
                   </div>
-                  <div className="mt-2 text-sm text-gray-600">
-                    {product.description || <span className="text-gray-400">Sin descripción</span>}
+                  <div className="mt-2 text-sm text-gray-600 dark:text-secondaryDark">
+                    {product.description || <span className="text-gray-400 dark:text-secondaryDark">Sin descripción</span>}
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
                     <div>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        Number(product.stock_quantity || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        Number(product.stock_quantity || 0) > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                       }`}>{Number(product.stock_quantity || 0) > 0 ? 'En stock' : 'Agotado'}</span>
-                      <div className="text-xs text-gray-400 mt-1">{product.created_at ? new Date(product.created_at).toLocaleDateString('es-ES') : 'N/A'}</div>
+                      <div className="text-xs text-gray-400 mt-1 dark:text-secondaryDark">{product.created_at ? new Date(product.created_at).toLocaleDateString('es-ES') : 'N/A'}</div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <IconButton size="small" onClick={() => onEdit(product)} className="text-blue-600 hover:bg-blue-50" title="Editar">
+                      <IconButton size="small" onClick={() => onEdit(product)} className="text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20" title="Editar">
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton 
@@ -297,7 +297,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                           e.stopPropagation();
                           handleDeleteClick(product.id, product.name);
                         }} 
-                        className="text-red-600 hover:bg-red-50" 
+                        className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" 
                         disabled={isLoading} 
                         title="Eliminar"
                       >
@@ -313,8 +313,8 @@ export const ProductList: React.FC<ProductListProps> = ({
       </div>
       
       {products.length > 0 && (
-        <div className="px-6 py-3 border-t flex items-center justify-between bg-gray-50">
-          <div className="text-sm text-gray-500">
+        <div className="px-6 py-3 border-t flex items-center justify-between bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+          <div className="text-sm text-gray-500 dark:text-secondaryDark">
             Mostrando {products.length} de {products.length} productos
           </div>
         </div>
@@ -333,8 +333,8 @@ export const ProductList: React.FC<ProductListProps> = ({
               <WarningIcon className="h-5 w-5 text-yellow-500" />
             </div>
             <div className="ml-3">
-              <h3 className="text-lg font-medium text-gray-900">¿Eliminar producto?</h3>
-              <div className="mt-2 text-sm text-gray-600">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">¿Eliminar producto?</h3>
+              <div className="mt-2 text-sm text-gray-600 dark:text-secondaryDark">
                 <p>¿Estás seguro de que deseas eliminar "{productToDelete?.name || 'este producto'}"? Esta acción no se puede deshacer.</p>
               </div>
             </div>
