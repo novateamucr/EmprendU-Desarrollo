@@ -39,7 +39,8 @@ export default function BusinessChannels({ entrepreneurshipId }: Props) {
 
     const onClick = async () => {
       if (code === 'phone') {
-        const num = (c.handle || '').toString();
+        // Preferimos número en url (nuevo esquema), con fallback a handle
+        const num = (c.url || c.handle || '').toString();
         if (!num) return;
         try {
           await navigator.clipboard.writeText(num);

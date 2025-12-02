@@ -28,6 +28,8 @@ export default function RouteComponent() {
   
   // ✅ Nuevo estado para mostrar mensaje de confirmación
   const [confirmationSent, setConfirmationSent] = useState(false);
+  // ✅ Estado para detectar correo existente
+  const [emailExists, setEmailExists] = useState(false);
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -101,6 +103,7 @@ export default function RouteComponent() {
     };
 
     try {
+      setEmailExists(false); // Reset email exists state
       const result = await registerUser(userData);
       if (result) {
         // ✅ Cambiado para mostrar mensaje de confirmación en lugar de ir directo al login
@@ -110,7 +113,17 @@ export default function RouteComponent() {
     } catch (err: any) {
       console.error('Registration failed:', err);
       const errorMessage = err?.message || 'Error en el registro. Por favor intente nuevamente.';
-      toast.error(errorMessage, { position: "bottom-center" });
+      
+      // Detectar si el error es por correo existente
+      if (errorMessage.toLowerCase().includes('email') && 
+          (errorMessage.toLowerCase().includes('existe') || 
+           errorMessage.toLowerCase().includes('already') ||
+           errorMessage.toLowerCase().includes('ya está') ||
+           errorMessage.toLowerCase().includes('duplicado'))) {
+        setEmailExists(true);
+      } else {
+        toast.error(errorMessage, { position: "bottom-center" });
+      }
     }
   };
 
@@ -285,8 +298,33 @@ export default function RouteComponent() {
             </div>
           )}
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm dark:bg-red-900/20 dark:text-red-300">
+          
+          {emailExists && (
+            <div className="text-center p-6 bg-yellow-50 border-2 border-yellow-400 rounded-md mt-4">
+              <h2 className="text-lg font-semibold mb-2 text-yellow-800">Este correo ya está registrado</h2>
+              <p className="text-gray-700 mb-4">
+                Ya existe una cuenta con el correo <strong>{formValues.correo}</strong>.
+                ¿Olvidaste tu contraseña?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => navigate('/pwReset')}
+                  className="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg"
+                >
+                  Recuperar contraseña
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-bold p-3 rounded-lg"
+                >
+                  Iniciar sesión
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && !emailExists && (
+            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
             </div>
           )}
