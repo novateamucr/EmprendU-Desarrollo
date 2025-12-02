@@ -6,9 +6,7 @@ import { Facebook, WhatsApp, Twitter, Link as LinkIcon, ArrowBack, Remove, Add }
 
 import { useCart } from '../context/CartContext';
 import {
-  getProductOptions,
-  getOptionValues,
-  getCustomForms,
+  getProductBuilder,
   type ProductOption,
   type ProductOptionValue,
   type ProductCustomForm,
@@ -100,6 +98,9 @@ export default function ProductDetail() {
   // Controlled selections
   const [selectedByOption, setSelectedByOption] = useState<Record<number, number[]>>({});
   const [customValues, setCustomValues] = useState<Record<number, string | number | boolean>>({});
+  const [hasRequiredFields, setHasRequiredFields] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -107,23 +108,20 @@ export default function ProductDetail() {
       if (!product?.id) return;
       setFormLoading(true);
       try {
-        const [opts, forms] = await Promise.all([
-          getProductOptions(product.id),
-          getCustomForms(product.id),
-        ]);
+        const data = await getProductBuilder(product.id);
         if (!mounted) return;
-        setOptList(opts || []);
-        setFormList(forms || []);
-        // fetch values for each option
-        const entries = await Promise.all(
-          (opts || []).map(async (o) => {
-            const vals = await getOptionValues(product.id, o.id);
-            return [o.id, vals || []] as const;
-          })
-        );
-        if (!mounted) return;
+        const opts = data.options || [];
+        const forms = data.custom_forms || [];
+        const values = (data.values as any) || {};
+
+        setOptList(opts);
+        setFormList(forms);
+
         const map: Record<number, ProductOptionValue[]> = {};
-        entries.forEach(([id, vals]) => { map[id] = vals; });
+        Object.keys(values).forEach((k) => {
+          const key = Number(k);
+          map[key] = (values[key] || []) as ProductOptionValue[];
+        });
         setValuesByOpt(map);
       } finally {
         if (mounted) setFormLoading(false);
@@ -132,6 +130,45 @@ export default function ProductDetail() {
     load();
     return () => { mounted = false; };
   }, [product?.id]);
+
+  useEffect(() => {
+    const requiredOpts = optList.filter((o) => o.required);
+    const requiredForms = formList.filter((f) => f.required);
+    const hasReq = requiredOpts.length > 0 || requiredForms.length > 0;
+    let valid = true;
+
+    if (hasReq) {
+      for (const o of requiredOpts) {
+        const selectedIds = selectedByOption[o.id] || [];
+        if (selectedIds.length === 0) {
+          valid = false;
+          break;
+        }
+      }
+      if (valid) {
+        for (const f of requiredForms) {
+          const v = customValues[f.id];
+          if (f.input_type === 'boolean') {
+            if (v !== true) {
+              valid = false;
+              break;
+            }
+          } else {
+            if (v === undefined || v === null || String(v).trim() === '') {
+              valid = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    setHasRequiredFields(hasReq);
+    setIsFormValid(valid);
+    if (!hasReq || valid) {
+      setFormError(null);
+    }
+  }, [optList, formList, selectedByOption, customValues]);
 
   const unifiedItems = useMemo(() => {
     return [
@@ -142,6 +179,10 @@ export default function ProductDetail() {
 
   const handleOrder = () => {
     if (!product || !product.entrepreneurship) return;
+    if (hasRequiredFields && !isFormValid) {
+      setFormError('Por favor completa todos los campos requeridos antes de añadir al carrito.');
+      return;
+    }
     // Build selection summary strings
     const summary: string[] = [];
     // Options
@@ -483,9 +524,17 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
+                  {formError && (
+                    <span className="text-xs text-red-500">{formError}</span>
+                  )}
                   <button
                     onClick={handleOrder}
-                    className="px-4 py-2.5 rounded-md bg-brand text-white text-sm font-medium hover:bg-brandDark transition-colors flex items-center justify-center gap-2"
+                    disabled={hasRequiredFields && !isFormValid}
+                    className={`px-4 py-2.5 rounded-md bg-brand text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                      hasRequiredFields && !isFormValid
+                        ? 'opacity-60 cursor-not-allowed'
+                        : 'hover:bg-brandDark'
+                    }`}
                   >
                     <span>Añadir {quantity} al carrito</span>
                     {quantity > 1 && (
