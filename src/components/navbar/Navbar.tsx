@@ -97,7 +97,7 @@ export function Navbar({
       <AnimatedNav 
         className={`${sticky ? 'fixed top-4 left-1/2 transform -translate-x-1/2' : ''} ${maxWidth} w-full px-4 z-40 ${className}`}
       >
-        <div className="bg-white rounded-[16px] shadow-soft border border-border px-6 py-3 h-14 flex items-center">
+        <div className="bg-white dark:bg-cardDark rounded-[16px] shadow-soft border border-border dark:border-cardDark px-6 py-3 h-14 flex items-center">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
             <div className="flex items-center">
@@ -129,7 +129,7 @@ export function Navbar({
                   aria-expanded={isMobileMenuOpen}
                 >
                   {isMobileMenuOpen ? (
-                    <X className="w-5 h-5 text-secondary" />
+                    <X className="w-5 h-5 text-secondary dark:text-secondaryDark" />
                   ) : (
                     <Menu className="w-5 h-5 text-secondary" />
                   )}

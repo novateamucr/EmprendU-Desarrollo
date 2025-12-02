@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',  
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -13,11 +14,15 @@ export default {
       colors: {
         primary: '#0e0e0e',
         secondary: '#666666',
+        secondaryDark: '#B5B5B5',
         border: '#E6E6E6',
-        background: '#F2F2F2',
+        background: '#F2F2F2', 
+        backgroundDark: '#2C2C2C',
         brand: '#76b0cd',
-        brandDark: '#4a7fa0',
+        brandDark: '#2391C9',
         brandLight: '#81bcdaff',
+        cardDark: '#494949',
+        modalDark: '#727272',
       },
       boxShadow: {
         soft: '0 6px 20px rgba(0,0,0,0.06)',
@@ -28,7 +33,7 @@ export default {
         navbar: '16px',
       },
       fontFamily: {
-        // La fuente importada en CSS es 'Montserrat' — dejarla como principal para consistencia
+        
         sans: ['Montserrat', 'Inter', 'sans-serif'],
       },
 

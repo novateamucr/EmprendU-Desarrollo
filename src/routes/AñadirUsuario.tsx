@@ -157,13 +157,13 @@ export default function AñadirUsuario() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-backgroundDark">
       <Navbar items={navItems} maxWidth="max-w-3xl" />
       <div className="pt-20 px-4 max-w-4xl mx-auto pb-24 lg:pb-8">
         <div className="flex justify-center">
           <div className="w-full max-w-3xl mt-6">
-            <div className="bg-white rounded-card shadow-soft border border-border p-6">
-              <h1 className="text-2xl font-semibold text-primary mb-8">Añadir Usuario</h1>
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+              <h1 className="text-2xl font-semibold text-primary dark:text-white mb-8">Añadir Usuario</h1>
               <form onSubmit={profileForm.handleSubmit(onSubmitProfile)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <TextField
@@ -203,10 +203,10 @@ export default function AñadirUsuario() {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-primary mb-2">Rol</label>
+                    <label className="block text-sm font-medium text-primary dark:text-white mb-2">Rol</label>
                     <select
                       {...profileForm.register('role')}
-                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full px-4 py-2 border border-border dark:border-cardDark rounded-lg text-base text-secondary dark:text-white dark:bg-backgroundDark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-brandDark"
                     >
                       <option value="comprador">Comprador</option>
                       <option value="emprendedor">Emprendedor</option>
@@ -218,10 +218,10 @@ export default function AñadirUsuario() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     {/* Selectores dependientes de provincia, cantón y distrito */}
                     <div>
-                      <label className="block text-sm font-medium text-primary mb-2">Provincia</label>
+                      <label className="block text-sm font-medium text-primary dark:text-white mb-2">Provincia</label>
                       <select
                         {...profileForm.register('location.province', { required: true })}
-                        className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-4 py-2 border border-border dark:border-cardDark rounded-lg text-base text-secondary dark:text-white dark:bg-backgroundDark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-brandDark"
                         value={profileForm.watch('location.province')}
                         onChange={e => {
                           profileForm.setValue('location.province', e.target.value);
@@ -239,10 +239,10 @@ export default function AñadirUsuario() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-primary mb-2">Cantón</label>
+                      <label className="block text-sm font-medium text-primary dark:text-white mb-2">Cantón</label>
                       <select
                         {...profileForm.register('location.canton', { required: true })}
-                        className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-4 py-2 border border-border dark:border-cardDark rounded-lg text-base text-secondary dark:text-white dark:bg-backgroundDark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-brandDark"
                         value={profileForm.watch('location.canton')}
                         onChange={e => {
                           profileForm.setValue('location.canton', e.target.value);
@@ -260,10 +260,10 @@ export default function AñadirUsuario() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-primary mb-2">Distrito</label>
+                      <label className="block text-sm font-medium text-primary dark:text-white mb-2">Distrito</label>
                       <select
                         {...profileForm.register('location.district', { required: true })}
-                        className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-4 py-2 border border-border dark:border-cardDark rounded-lg text-base text-secondary dark:text-white dark:bg-backgroundDark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-brandDark"
                         value={profileForm.watch('location.district')}
                         onChange={e => profileForm.setValue('location.district', e.target.value)}
                         disabled={!profileForm.watch('location.canton')}
@@ -290,13 +290,13 @@ export default function AñadirUsuario() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-3 border border-border text-secondary rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                    className="px-6 py-3 border border-border dark:border-cardDark text-secondary dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+                    className="px-6 py-3 bg-primary dark:bg-brandDark text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-brand transition-colors flex items-center gap-2"
                   >
                     Crear usuario
                   </button>
@@ -312,15 +312,16 @@ export default function AñadirUsuario() {
         if (onModalClose) onModalClose();
       }} title={modalTitle} variant={modalTitle === 'Error' ? 'error' : 'success'}>
         <div className="text-center">
-          <p>{modalMessage}</p>
+          <p className="dark:text-secondaryDark">{modalMessage}</p>
           <div className="flex justify-center mt-6">
             <button
               onClick={() => {
                 setModalOpen(false);
                 if (onModalClose) onModalClose();
               }}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-6 py-2 bg-primary dark:bg-brandDark text-white rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-brand transition-colors"
             >
+              Cerrar
             </button>
           </div>
         </div>

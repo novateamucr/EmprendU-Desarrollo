@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 const button = (
   <Link
     to="/admin/usuarios/nuevo"
-    className="bg-brand text-white rounded-full px-5 py-2 md:px-6 md:py-3 text-sm md:text-base font-medium hover:bg-brandDark transition-colors focus-brand w-full md:w-auto text-center"
+    className="bg-brand dark:bg-brandDark dark:hover:bg-brand dark:hover:text-white text-white rounded-full px-5 py-2 md:px-6 md:py-3 text-sm md:text-base font-medium hover:bg-brandDark transition-colors focus-brand w-full md:w-auto text-center"
   >
     + Añadir usuario
   </Link>
@@ -203,11 +203,11 @@ export default function GestorUsuarios() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-3 sm:px-6">
+    <div className="min-h-screen bg-slate-100 dark:bg-backgroundDark px-3 sm:px-6">
       <div className="pt-20 max-w-6xl mx-auto pb-24 lg:pb-8">
         {/* ENCABEZADO */}
         <div className="flex flex-col gap-4 mt-6">
-          <h1 className="text-xl md:text-2xl font-semibold text-primary text-center mb-2">Gestión de usuarios</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-primary dark:text-white text-center mb-2">Gestión de usuarios</h1>
           <div className="h-0.5 w-24 bg-brand/40 rounded self-center md:self-start" />
 
           {/* BUSCADOR + BOTÓN */}
@@ -221,7 +221,7 @@ export default function GestorUsuarios() {
                 placeholder="Buscar"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 md:py-3 border border-border rounded-full text-sm md:text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full px-4 py-2 md:py-3 bg-white dark:bg-cardDark border border-border dark:border-cardDark rounded-full text-sm md:text-base text-secondary dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             {button}
@@ -229,9 +229,9 @@ export default function GestorUsuarios() {
         </div>
 
         {/* TABLA */}
-        <div className="mt-8 overflow-x-auto rounded-card border border-border shadow-soft bg-white hidden sm:block">
+          <div className="mt-8 overflow-x-auto rounded-card border border-border shadow-soft bg-white dark:bg-cardDark dark:border-cardDark hidden sm:block">
           <table className="min-w-full text-center border-collapse text-sm md:text-base">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-cardDark dark:text-white">
               <tr>
                 <th className="py-3 px-2">Nombre</th>
                 <th className="py-3 px-2">Correo</th>
@@ -251,17 +251,17 @@ export default function GestorUsuarios() {
                 <tr><td colSpan={7} className="py-4 text-secondary">No se encontraron usuarios</td></tr>
               ) : (
                 filteredUsers.map(user => (
-                  <tr key={user.id} className="hover:bg-brand/10">
-                    <td className="py-3 px-2 font-medium">{user.name}</td>
-                    <td className="py-3 px-2">{user.email}</td>
-                    <td className="py-3 px-2">{getRoleName(user.role)}</td>
+                  <tr key={user.id} className="hover:bg-brand/10 dark:hover:bg-gray-700">
+                    <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">{user.name}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{user.email}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{getRoleName(user.role)}</td>
                     <td className="py-3 px-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.banned ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
                         {user.banned ? 'Deshabilitado' : 'Habilitado'}
                       </span>
                     </td>
-                    <td className="py-3 px-2">{formatDate(user.updated_at)}</td>
-                    <td className="py-3 px-2">{formatDate(user.created_at)}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{formatDate(user.updated_at)}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-secondaryDark">{formatDate(user.created_at)}</td>
                     <td className="py-3 px-2 relative">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleActionClick(user.id); }}
@@ -270,12 +270,12 @@ export default function GestorUsuarios() {
                         ⋮
                       </button>
                       {openMenuId === user.id && (
-                        <div ref={menuRef} className="absolute right-0 mt-1 z-50 bg-white min-w-[140px] shadow-lg border border-border rounded-md overflow-hidden animate-fadeIn">
-                          <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</button>
-                          <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-red-600 text-sm">Eliminar</button>
+                        <div ref={menuRef} className="absolute right-0 mt-1 z-50 bg-white dark:bg-cardDark dark:text-white min-w-[140px] shadow-lg border border-border dark:border-cardDark rounded-md overflow-hidden animate-fadeIn">
+                          <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-sm dark:text-white">Editar</button>
+                          <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-red-600 dark:text-red-400 text-sm">Eliminar</button>
                           <button
                             onClick={() => handleOptionClick(user.banned ? 'Habilitar' : 'Deshabilitar', user.id)}
-                            className={`block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm ${user.banned ? 'text-green-600' : 'text-yellow-600'}`}
+                            className={`block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-sm ${user.banned ? 'text-green-600 dark:text-green-300' : 'text-yellow-600 dark:text-yellow-300'}`}
                           >
                             {user.banned ? 'Habilitar' : 'Deshabilitar'}
                           </button>
@@ -292,18 +292,18 @@ export default function GestorUsuarios() {
         {/* VISTA CARD */}
         <div className="mt-8 space-y-4 sm:hidden">
           {filteredUsers.map(user => (
-            <div key={user.id} className="bg-white rounded-xl shadow p-4 relative border border-border">
+            <div key={user.id} className="bg-white rounded-xl shadow p-4 relative border border-border dark:bg-cardDark dark:border-cardDark">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-semibold">{user.name}</h3>
-                  <p className="text-sm text-gray-600">{user.email}</p>
+                  <h3 className="text-lg font-semibold dark:text-white">{user.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-secondaryDark">{user.email}</p>
                   <p className="text-sm mt-1">Rol: <span className="font-medium">{getRoleName(user.role)}</span></p>
                   <p className="text-sm mt-1">Estado:{" "}
-                    <span className={`font-semibold ${user.banned ? "text-red-600" : "text-green-600"}`}>
+                    <span className={`font-semibold ${user.banned ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
                       {user.banned ? "Deshabilitado" : "Habilitado"}
                     </span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 dark:text-secondaryDark">
                     Última mod.: {formatDate(user.updated_at)}
                   </p>
                 </div>
@@ -315,12 +315,12 @@ export default function GestorUsuarios() {
                   ⋮
                 </button>
                 {openMenuId === user.id && (
-                  <div ref={menuRef} className="absolute right-3 top-10 z-50 bg-white min-w-[140px] shadow-lg border border-border rounded-md overflow-hidden animate-fadeIn">
-                    <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm">Editar</button>
-                    <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 text-red-600 text-sm">Eliminar</button>
+                  <div ref={menuRef} className="absolute right-3 top-10 z-50 bg-white dark:bg-cardDark dark:text-white min-w-[140px] shadow-lg border border-border dark:border-cardDark rounded-md overflow-hidden animate-fadeIn">
+                    <button onClick={() => { navigate(`/profile/edit/${user.id}`); setOpenMenuId(null); setTimeout(() => { if (window.location.pathname !== `/profile/edit/${user.id}`) window.location.href = `/profile/edit/${user.id}`; }, 120); }} className="block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-sm dark:text-white">Editar</button>
+                    <button onClick={() => handleOptionClick("Eliminar", user.id)} className="block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-red-600 dark:text-red-400 text-sm">Eliminar</button>
                     <button
                       onClick={() => handleOptionClick(user.banned ? 'Habilitar' : 'Deshabilitar', user.id)}
-                      className={`block w-full px-4 py-2 text-left hover:bg-brand/10 text-sm ${user.banned ? 'text-green-600' : 'text-yellow-600'}`}
+                      className={`block w-full px-4 py-2 text-left hover:bg-brand/10 dark:hover:bg-brand/10 text-sm ${user.banned ? 'text-green-600 dark:text-green-300' : 'text-yellow-600 dark:text-yellow-300'}`}
                     >
                       {user.banned ? 'Habilitar' : 'Deshabilitar'}
                     </button>
@@ -333,7 +333,7 @@ export default function GestorUsuarios() {
         {/* PAGINACIÓN */}
         <div className="flex flex-wrap justify-center mt-6 gap-2">
           <button
-            className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+            className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50 dark:bg-cardDark dark:text-white"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
@@ -342,14 +342,14 @@ export default function GestorUsuarios() {
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i}
-              className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white' : 'bg-brand/10 text-brand'}`}
+              className={`px-3 py-1 rounded ${currentPage === i + 1 ? 'bg-brand text-white dark:bg-brandDark' : 'bg-brand/10 text-brand dark:bg-cardDark dark:text-white'}`}
               onClick={() => setCurrentPage(i + 1)}
             >
               {i + 1}
             </button>
           ))}
           <button
-            className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50"
+            className="px-3 py-1 rounded bg-brand/10 text-brand disabled:opacity-50 dark:bg-cardDark dark:text-white"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >

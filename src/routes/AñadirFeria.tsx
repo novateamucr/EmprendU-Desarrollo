@@ -31,16 +31,18 @@ export default function AñadirFeria() {
 	const isEdit = !!editId;
 	const { toast } = useToast();
 
-		// Dynamic CR locations via public API (same approach as AñadirUsuario)
-		const [provincias, setProvincias] = useState<{ id: string; nombre: string }[]>([]);
-		const [cantonesFiltrados, setCantonesFiltrados] = useState<{ id: string; nombre: string }[]>([]);
-		const [distritosFiltrados, setDistritosFiltrados] = useState<{ id: string; nombre: string }[]>([]);
-		const [provinciaId, setProvinciaId] = useState<string>('');
+	// Dynamic CR locations via public API (same approach as AñadirUsuario)
+	const [provincias, setProvincias] = useState<{ id: string; nombre: string }[]>([]);
+	const [cantonesFiltrados, setCantonesFiltrados] = useState<{ id: string; nombre: string }[]>([]);
+	const [distritosFiltrados, setDistritosFiltrados] = useState<{ id: string; nombre: string }[]>([]);
+	const [provinciaId, setProvinciaId] = useState<string>('');
 
 	const [users, setUsers] = useState<User[]>([]);
 	const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
 	const [initialLoading, setInitialLoading] = useState<boolean>(false);
 	const [saving, setSaving] = useState<boolean>(false);
+	const [searchTerm, setSearchTerm] = useState<string>(''); // State for user search
+	const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false); // State to control dropdown visibility
 
 	const [form, setForm] = useState<FairForm>({
 		title: '',
@@ -57,7 +59,7 @@ export default function AñadirFeria() {
 		is_active: true,
 	});
 
-		// Load users for owner select
+	// Load users for owner select
 	useEffect(() => {
 		const load = async () => {
 			try {
@@ -73,119 +75,147 @@ export default function AñadirFeria() {
 		load();
 	}, []);
 
-		// Load provinces on mount
-		useEffect(() => {
-			const loadProvs = async () => {
-				try {
-					const res = await fetch('https://ubicaciones.paginasweb.cr/provincias.json');
-					const data = await res.json();
-					const provs = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
-					setProvincias(provs);
-				} catch (e) {
-					console.error('Error loading provincias', e);
-				}
-			};
-			loadProvs();
-		}, []);
+	// Load provinces on mount
+	useEffect(() => {
+		const loadProvs = async () => {
+			try {
+				const res = await fetch('https://ubicaciones.paginasweb.cr/provincias.json');
+				const data = await res.json();
+				const provs = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+				setProvincias(provs);
+			} catch (e) {
+				console.error('Error loading provincias', e);
+			}
+		};
+		loadProvs();
+	}, []);
 
-		// Load fair when editing
+	// Load fair when editing
 	useEffect(() => {
 		const loadFair = async () => {
 			if (!editId) return;
 			try {
 				setInitialLoading(true);
 				const data = await fairApi.getById(editId);
-				// Populate form
-				setForm({
-					title: data.title || '',
-					description: data.description || '',
-					address: data.address || '',
-					province: data.province || '',
-					canton: data.canton || '',
-					district: data.district || '',
-					location: data.location || '',
-					date: normalizeDateToDDMMYYYY(data.date || ''),
-					time: toHHMM(String(data.time || '')),
-					user_id: data.user_id ?? '',
-					image: data.image || null,
-					is_active: (data.is_active === 1 || data.is_active === true),
-				});
+
+				console.log('[AñadirFeria] Loaded fair data:', data); // Debugging
+
+				if (data) {
+					setForm({
+						title: data.title || '',
+						description: data.description || '',
+						address: data.address || '',
+						province: data.province || '',
+						canton: data.canton || '',
+						district: data.district || '',
+						location: data.location || '',
+						date: normalizeDateToDDMMYYYY(data.date || ''),
+						time: toHHMM(String(data.time || '')),
+						user_id: data.user_id ?? '',
+						image: data.image || null,
+						is_active: data.is_active === 1 || data.is_active === true,
+					});
+
+					// Trigger province and canton updates
+					if (data.province) {
+						const prov = findByNameOrId(provincias, data.province);
+						if (prov) {
+							setProvinciaId(prov.id);
+							const cantonesRes = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/cantones.json`);
+							const cantonesData = await cantonesRes.json();
+							const cantones = Object.entries(cantonesData).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+							setCantonesFiltrados(cantones);
+
+							if (data.canton) {
+								const canton = findByNameOrId(cantones, data.canton);
+								if (canton) {
+									const distritosRes = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/canton/${canton.id}/distritos.json`);
+									const distritosData = await distritosRes.json();
+									const distritos = Object.entries(distritosData).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+									setDistritosFiltrados(distritos);
+								}
+							}
+						}
+					}
+				} else {
+					console.error('No data returned for the fair');
+				}
 			} catch (err) {
 				console.error('Error loading fair', err);
-				// fallback toast
+				toast({ title: 'Error', description: 'No se pudo cargar la feria para editar.', variant: 'destructive' });
 			} finally {
 				setInitialLoading(false);
 			}
 		};
 		loadFair();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [editId]);
+	}, [editId, provincias]);
 
-		// When province in form changes or provinces loaded, fetch cantons
-		useEffect(() => {
-			const fetchCantones = async () => {
-					// try match by name (case/accent-insensitive) or by id (if legacy value stored)
-					const prov = findByNameOrId(provincias, form.province);
-				if (!prov) {
-					setCantonesFiltrados([]);
-					setDistritosFiltrados([]);
-					setProvinciaId('');
-					return;
-				}
-				setProvinciaId(prov.id);
-				// Normalize province to its display name if needed so the <select> value matches an option
-				if (form.province !== prov.nombre) {
-					setForm((p) => ({ ...p, province: prov.nombre }));
-				}
-				try {
-					const res = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/cantones.json`);
-					const data = await res.json();
-					const cant = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
-					setCantonesFiltrados(cant);
-						// If current canton is an id or doesn't match by name, normalize it to the option label
-						const normalizedCanton = findByNameOrId(cant, form.canton)?.nombre;
-						if (form.canton && normalizedCanton && normalizedCanton !== form.canton) {
-							setForm((p) => ({ ...p, canton: normalizedCanton }));
-						}
-				} catch (e) {
-					console.error('Error loading cantones', e);
-					setCantonesFiltrados([]);
-				}
-			};
-			if (form.province && provincias.length > 0) {
-				fetchCantones();
+	// When province in form changes or provinces loaded, fetch cantons
+	useEffect(() => {
+		const fetchCantones = async () => {
+			// try match by name (case/accent-insensitive) or by id (if legacy value stored)
+			const prov = findByNameOrId(provincias, form.province);
+			if (!prov) {
+				setCantonesFiltrados([]);
+				setDistritosFiltrados([]);
+				setProvinciaId('');
+				return;
 			}
-		}, [form.province, provincias]);
+			setProvinciaId(prov.id);
+			// Normalize province to its display name if needed so the <select> value matches an option
+			if (form.province !== prov.nombre) {
+				setForm((p) => ({ ...p, province: prov.nombre }));
+			}
+			try {
+				const res = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${prov.id}/cantones.json`);
+				const data = await res.json();
+				const cant = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+				setCantonesFiltrados(cant);
+				// If current canton is an id or doesn't match by name, normalize it to the option label
+				const normalizedCanton = findByNameOrId(cant, form.canton)?.nombre;
+				if (form.canton && normalizedCanton && normalizedCanton !== form.canton) {
+					setForm((p) => ({ ...p, canton: normalizedCanton }));
+				}
+			} catch (e) {
+				console.error('Error loading cantones', e);
+				setCantonesFiltrados([]);
+			}
+		};
+		if (form.province && provincias.length > 0) {
+			fetchCantones();
+		}
+	}, [form.province, provincias]);
 
-		// When canton changes and provinceId exists, fetch districts
-		useEffect(() => {
-			const fetchDistritos = async () => {
-				if (!provinciaId || !form.canton) {
-					setDistritosFiltrados([]);
-					return;
+	// When canton changes and provinceId exists, fetch districts
+	useEffect(() => {
+		const fetchDistritos = async () => {
+			if (!provinciaId || !form.canton) {
+				setDistritosFiltrados([]);
+				return;
+			}
+			const canton = findByNameOrId(cantonesFiltrados, form.canton);
+			if (!canton) {
+				setDistritosFiltrados([]);
+				return;
+			}
+			try {
+				const res = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${provinciaId}/canton/${canton.id}/distritos.json`);
+				const data = await res.json();
+				const dist = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
+				setDistritosFiltrados(dist);
+				// Normalize district similarly
+				const normalizedDistrict = findByNameOrId(dist, form.district)?.nombre;
+				if (form.district && normalizedDistrict && normalizedDistrict !== form.district) {
+					setForm((p) => ({ ...p, district: normalizedDistrict }));
 				}
-					const canton = findByNameOrId(cantonesFiltrados, form.canton);
-				if (!canton) {
-					setDistritosFiltrados([]);
-					return;
-				}
-				try {
-					const res = await fetch(`https://ubicaciones.paginasweb.cr/provincia/${provinciaId}/canton/${canton.id}/distritos.json`);
-					const data = await res.json();
-					const dist = Object.entries(data).map(([id, nombre]) => ({ id, nombre: String(nombre) }));
-					setDistritosFiltrados(dist);
-						// Normalize district similarly
-						const normalizedDistrict = findByNameOrId(dist, form.district)?.nombre;
-						if (form.district && normalizedDistrict && normalizedDistrict !== form.district) {
-							setForm((p) => ({ ...p, district: normalizedDistrict }));
-						}
-				} catch (e) {
-					console.error('Error loading distritos', e);
-					setDistritosFiltrados([]);
-				}
-			};
-			fetchDistritos();
-		}, [provinciaId, form.canton, cantonesFiltrados]);
+			} catch (e) {
+				console.error('Error loading distritos', e);
+				setDistritosFiltrados([]);
+			}
+		};
+		fetchDistritos();
+	}, [provinciaId, form.canton, cantonesFiltrados]);
 
 	// Handlers
 	const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -193,21 +223,21 @@ export default function AñadirFeria() {
 		setForm((p) => ({ ...p, [name]: name === 'user_id' ? (value ? Number(value) : '') : value }));
 	};
 
-		const onProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-			const prov = e.target.value;
-			setForm((p) => ({ ...p, province: prov, canton: '', district: '' }));
-			// cantones/distritos are fetched via effects
-		};
-		const onCantonChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-			const canton = e.target.value;
-			setForm((p) => ({ ...p, canton, district: '' }));
-			// distritos fetched via effects
-		};
+	const onProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const prov = e.target.value;
+		setForm((p) => ({ ...p, province: prov, canton: '', district: '' }));
+		// cantones/distritos are fetched via effects
+	};
+	const onCantonChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const canton = e.target.value;
+		setForm((p) => ({ ...p, canton, district: '' }));
+		// distritos fetched via effects
+	};
 
 	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-			// Debug: log current form before any validation/submit
-			console.log('[AñadirFeria] onSubmit -> current form state:', JSON.parse(JSON.stringify(form)));
+		// Debug: log current form before any validation/submit
+		console.log('[AñadirFeria] onSubmit -> current form state:', JSON.parse(JSON.stringify(form)));
 		// Basic validation
 		if (!form.title || !form.user_id || !form.date || !form.time || !form.province || !form.canton || !form.district) {
 			toast({ title: 'Campos requeridos', description: 'Completa título, fecha, hora, ubicación y usuario', variant: 'destructive' });
@@ -230,15 +260,15 @@ export default function AñadirFeria() {
 				is_active: form.is_active ? 1 : 0,
 			} as any;
 
-				// Debug: log payload about to be sent
-				console.log('[AñadirFeria] about to submit payload:', payload, { isEdit, editId });
+			// Debug: log payload about to be sent
+			console.log('[AñadirFeria] about to submit payload:', payload, { isEdit, editId });
 
 			if (isEdit && editId) {
-					console.log('[AñadirFeria] calling fairApi.update');
+				console.log('[AñadirFeria] calling fairApi.update');
 				await fairApi.update(editId, payload);
 				toast({ title: 'Feria actualizada', variant: 'success', description: 'Se guardaron los cambios.' });
 			} else {
-					console.log('[AñadirFeria] calling fairApi.create');
+				console.log('[AñadirFeria] calling fairApi.create');
 				await fairApi.create(payload);
 				toast({ title: 'Feria creada', variant: 'success', description: 'Se creó la feria exitosamente.' });
 			}
@@ -251,14 +281,21 @@ export default function AñadirFeria() {
 		}
 	};
 
+	// Filter users based on the search term
+	const filteredUsers = useMemo(() => {
+		return users.filter((user) =>
+			user.name.toLowerCase().includes(searchTerm.toLowerCase())
+		);
+	}, [searchTerm, users]);
+
 	return (
-		<div className="container mx-auto px-4 py-8 max-w-3xl mt-10">
+		<div className="container mx-auto px-4 py-8 max-w-3xl mt-10 dark:bg-backgroundDark min-h-screen">
 			<div className="mb-8">
-				<h1 className="text-2xl font-bold mb-2">{isEdit ? 'Editar feria' : 'Nueva feria'}</h1>
-				<p className="text-muted-foreground">{isEdit ? 'Actualiza la información de la feria.' : 'Completa la información para crear una feria.'}</p>
+				<h1 className="text-2xl font-bold mb-2 dark:text-white">{isEdit ? 'Editar feria' : 'Nueva feria'}</h1>
+				<p className="text-muted-foreground dark:text-gray-400">{isEdit ? 'Actualiza la información de la feria.' : 'Completa la información para crear una feria.'}</p>
 			</div>
 
-			<Card className="p-6">
+			<Card className="p-6 dark:bg-cardDark dark:border-cardDark">
 				<form onSubmit={onSubmit}>
 					<div className="space-y-6">
 						{initialLoading ? (
@@ -267,58 +304,72 @@ export default function AñadirFeria() {
 							<>
 								{/* Title */}
 								<div>
-									<label htmlFor="title" className="block text-sm font-medium mb-1">Título *</label>
-									<Input id="title" name="title" value={form.title} onChange={onChange} placeholder="Ej: Feria de Emprendedores de San José" required />
+									<label htmlFor="title" className="block text-sm font-medium mb-1 dark:text-white">Título *</label>
+									<Input id="title" name="title" value={form.title} onChange={onChange} placeholder="Ej: Feria de Emprendedores de San José" required className="dark:bg-backgroundDark dark:text-secondaryDark dark:border-cardDark" />
 								</div>
 
 								{/* Description */}
 								<div>
-									<label htmlFor="description" className="block text-sm font-medium mb-1">Descripción</label>
-									<Textarea id="description" name="description" value={form.description} onChange={onChange} rows={4} placeholder="Describe la feria..." />
+									<label htmlFor="description" className="block text-sm font-medium mb-1 dark:text-white">Descripción</label>
+									<Textarea id="description" name="description" value={form.description} onChange={onChange} rows={4} placeholder="Describe la feria..." className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Address */}
 								<div>
-									<label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
-									<Input id="address" name="address" value={form.address} onChange={onChange} placeholder="Dirección exacta" />
+									<label htmlFor="address" className="block text-sm font-medium mb-1 dark:text-white">Dirección</label>
+									<Input id="address" name="address" value={form.address} onChange={onChange} placeholder="Dirección exacta" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Location selects */}
-												<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 									<div>
-										<label className="block text-sm font-medium mb-1">Provincia *</label>
+										<label className="block text-sm font-medium mb-1 dark:text-white">Provincia *</label>
 										<select
 											value={form.province}
 											onChange={onProvinceChange}
-											className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+											className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
 										>
 											<option value="">Selecciona provincia</option>
-																	{provincias.map((p) => (
-																		<option key={p.id} value={p.nombre}>{p.nombre}</option>
-																	))}
+											{provincias.map((p) => (
+												<option key={p.id} value={p.nombre}>{p.nombre}</option>
+											))}
 										</select>
 									</div>
 									<div>
-										<label className="block text-sm font-medium mb-1">Cantón *</label>
+										<label className="block text-sm font-medium mb-1 dark:text-white">Cantón *</label>
 										<select
 											value={form.canton}
 											onChange={onCantonChange}
-																	disabled={!form.province}
-											className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+											disabled={!form.province}
+											className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
 										>
 											<option value="">Selecciona cantón</option>
-																	{cantonesFiltrados.map((c) => (
-																		<option key={c.id} value={c.nombre}>{c.nombre}</option>
-																	))}
+											{cantonesFiltrados.map((c) => (
+												<option key={c.id} value={c.nombre}>{c.nombre}</option>
+											))}
+										</select>
+									</div>
+									<div>
+										<label className="block text-sm font-medium mb-1">Distrito *</label>
+										<select
+											value={form.district}
+											onChange={(e) => setForm((p) => ({ ...p, district: e.target.value }))}
+											disabled={!form.canton}
+											className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+										>
+											<option value="">Selecciona distrito</option>
+											{distritosFiltrados.map((d) => (
+												<option key={d.id} value={d.nombre}>{d.nombre}</option>
+											))}
 										</select>
 									</div>
 															<div>
-																<label className="block text-sm font-medium mb-1">Distrito *</label>
+																<label className="block text-sm font-medium mb-1 dark:text-white">Distrito *</label>
 																<select
 																	value={form.district}
 																	onChange={(e) => setForm((p) => ({ ...p, district: e.target.value }))}
 																	disabled={!form.canton}
-																	className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+																	className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white"
 																>
 																	<option value="">Selecciona distrito</option>
 																	{distritosFiltrados.map((d) => (
@@ -330,52 +381,73 @@ export default function AñadirFeria() {
 
 								{/* Extra location field */}
 								<div>
-									<label htmlFor="location" className="block text-sm font-medium mb-1">Ubicación (opcional)</label>
-									<Input id="location" name="location" value={form.location} onChange={onChange} placeholder="Ej: Parque Central, frente a la iglesia" />
+									<label htmlFor="location" className="block text-sm font-medium mb-1 dark:text-white">Ubicación (opcional)</label>
+									<Input id="location" name="location" value={form.location} onChange={onChange} placeholder="Ej: Parque Central, frente a la iglesia" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 								</div>
 
 								{/* Date and time */}
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 									<div>
-										<label htmlFor="date" className="block text-sm font-medium mb-1">Fecha (dd/mm/aaaa) *</label>
-										<Input id="date" name="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: enforceDDMMYYYY(e.target.value) }))} placeholder="dd/mm/aaaa" inputMode="numeric" />
+										  <label htmlFor="date" className="block text-sm font-medium mb-1 dark:text-white">Fecha (dd/mm/aaaa) *</label>
+										  <Input id="date" name="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: enforceDDMMYYYY(e.target.value) }))} placeholder="dd/mm/aaaa" inputMode="numeric" className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 									</div>
 									<div>
-										<label htmlFor="time" className="block text-sm font-medium mb-1">Hora *</label>
-										<Input id="time" name="time" type="time" value={form.time} onChange={onChange} />
+										  <label htmlFor="time" className="block text-sm font-medium mb-1 dark:text-white">Hora *</label>
+										  <Input id="time" name="time" type="time" value={form.time} onChange={onChange} className="dark:bg-backgroundDark dark:text-white dark:border-cardDark" />
 									</div>
 								</div>
 
 								{/* Owner */}
 								<div>
-									<label htmlFor="user_id" className="block text-sm font-medium mb-1">Usuario dueño *</label>
-									<select
-										id="user_id"
-										name="user_id"
-										value={String(form.user_id)}
-										onChange={onChange}
-										disabled={loadingUsers}
-										className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-										required
-									>
-										<option value="">Selecciona un usuario</option>
-										{users.map(u => (
-											<option key={u.id} value={u.id}>{u.name}</option>
-										))}
-									</select>
+									<label htmlFor="user_id" className="block text-sm font-medium mb-1">
+										Usuario dueño *
+									</label>
+									<Input
+										id="user_search"
+										name="user_search"
+										value={searchTerm}
+										onChange={(e) => setSearchTerm(e.target.value)}
+										onFocus={() => setIsDropdownVisible(true)} // Show dropdown on focus
+										onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)} // Hide dropdown after a short delay to allow click
+										placeholder="Buscar usuario por nombre"
+										className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+									/>
+									{isDropdownVisible && (
+										<div className="relative mt-2">
+											{filteredUsers.length > 0 ? (
+												<ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md max-h-40 overflow-y-auto">
+													{filteredUsers.map((user) => (
+														<li
+															key={user.id}
+															onClick={() => {
+																setForm((prev) => ({ ...prev, user_id: user.id }));
+																setSearchTerm(user.name); // Set the search term to the selected user's name
+																setIsDropdownVisible(false); // Hide dropdown after selection
+															}}
+															className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+														>
+															{user.name}
+														</li>
+													))}
+												</ul>
+											) : (
+												<p className="text-sm text-gray-500">No se encontraron usuarios</p>
+											)}
+										</div>
+									)}
 								</div>
 
 								{/* Actions */}
-												<div className="flex justify-end gap-3 pt-2">
+								<div className="flex justify-end gap-3 pt-2">
 									<Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={saving}>Cancelar</Button>
-													<Button
-														type="submit"
-														disabled={saving}
-														onClick={() => {
-															// Debug: log on click in case HTML5 validation prevents onSubmit firing
-															console.log('[AñadirFeria] submit button clicked. Current form state:', JSON.parse(JSON.stringify(form)));
-														}}
-													>
+									<Button
+										type="submit"
+										disabled={saving}
+										onClick={() => {
+											// Debug: log on click in case HTML5 validation prevents onSubmit firing
+											console.log('[AñadirFeria] submit button clicked. Current form state:', JSON.parse(JSON.stringify(form)));
+										}}
+									>
 										{saving ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Guardando...</>) : (<><Save className="mr-2 h-4 w-4" />Guardar</>)}
 									</Button>
 								</div>

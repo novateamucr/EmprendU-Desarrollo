@@ -389,7 +389,7 @@ export function EditarPerfil() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-backgroundDark">
       <Navbar
         logo={<img src="/src/assets/logo.svg" alt="EmprendeU Logo" className="h-8 w-auto" />}
         maxWidth="max-w-2xl"
@@ -401,7 +401,7 @@ export function EditarPerfil() {
         rightContent={
           <Link
             to="/profile"
-            className="p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand text-primary bg-brand/5"
+            className="p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand text-primary bg-brand/5 dark:bg-cardDark dark:text-white"
             aria-label="Ir al perfil"
           >
             <User className="w-5 h-5" />
@@ -413,8 +413,8 @@ export function EditarPerfil() {
         <div className="flex justify-center">
           {/* Formulario principal */}
           <div className="w-full max-w-3xl mt-6">
-            <div className="bg-white rounded-card shadow-soft border border-border p-6">
-              <h1 className="text-2xl font-semibold text-primary mb-8">{isEditingOther ? `Editar Perfil: ${user?.name ?? ''}` : 'Editar Perfil'}</h1>
+            <div className="bg-white rounded-card shadow-soft border border-border p-6 dark:bg-cardDark dark:border-cardDark">
+              <h1 className="text-2xl font-semibold text-primary dark:text-white mb-8">{isEditingOther ? `Editar Perfil: ${user?.name ?? ''}` : 'Editar Perfil'}</h1>
 
               <form onSubmit={profileForm.handleSubmit(onSubmitProfile)}>
                 {/* Avatar */}
@@ -442,7 +442,7 @@ export function EditarPerfil() {
                   
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-primary mb-2">
+                    <label className="block text-sm font-medium text-primary dark:text-white mb-2">
                       Rol
                     </label>
                     <RoleSelector
@@ -493,7 +493,7 @@ export function EditarPerfil() {
               <div className="mb-8">
                 <div className="mb-4">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold text-primary">Ubicación</h3>
+                    <h3 className="text-lg font-semibold text-primary dark:text-white">Ubicación</h3>
                     <button
                       onClick={() => setShowLocationModal(true)}
                       className="p-1 hover:bg-brand/10 rounded-full transition-colors focus-brand"
@@ -507,10 +507,10 @@ export function EditarPerfil() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-primary mb-2">Provincia</label>
+                    <label className="block text-sm font-medium text-primary dark:text-white mb-2">Provincia</label>
                     <select
                       {...profileForm.register('location.province', { required: true })}
-                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-cardDark focus:outline-none focus:ring-2 focus:ring-brand dark:border-cardDark dark:bg-backgroundDark dark:text-secondaryDark"
                       value={profileForm.watch('location.province')}
                       onChange={e => {
                         profileForm.setValue('location.province', e.target.value, { shouldDirty: true });
@@ -529,10 +529,10 @@ export function EditarPerfil() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-primary mb-2">Cantón</label>
+                    <label className="block text-sm font-medium text-primary dark:text-white mb-2">Cantón</label>
                     <select
                       {...profileForm.register('location.canton', { required: true })}
-                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-cardDark focus:outline-none focus:ring-2 focus:ring-brand dark:border-cardDark dark:bg-backgroundDark dark:text-secondaryDark"
                       value={profileForm.watch('location.canton')}
                       onChange={e => {
                         profileForm.setValue('location.canton', e.target.value, { shouldDirty: true });
@@ -551,10 +551,10 @@ export function EditarPerfil() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-primary mb-2">Distrito</label>
+                    <label className="block text-sm font-medium text-primary dark:text-white mb-2">Distrito</label>
                     <select
                       {...profileForm.register('location.district', { required: true })}
-                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-base text-secondary focus:outline-none focus:ring-2 focus:ring-brand dark:border-cardDark dark:bg-backgroundDark dark:text-secondaryDark"
                       value={profileForm.watch('location.district')}
                       onChange={e => profileForm.setValue('location.district', e.target.value, { shouldDirty: true })}
                       disabled={!profileForm.watch('location.canton')}
@@ -584,7 +584,7 @@ export function EditarPerfil() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-3 border border-border text-secondary rounded-lg font-medium hover:bg-brand/10 hover:text-brand transition-colors focus-brand"
+                    className="px-6 py-3 border border-border text-secondary rounded-lg font-medium hover:bg-brandDark hover:text-brand transition-colors focus-brand dark:border-cardDark dark:text-secondaryDark dark:hover:bg-cardDark"
                   >
                     Cancelar
                   </button>
@@ -592,7 +592,7 @@ export function EditarPerfil() {
                     type="submit"
                     disabled={updateProfileMutation.isPending || !profileForm.formState.isDirty}
                     title={!profileForm.formState.isDirty ? 'No hay cambios por guardar' : undefined}
-                    className="px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
+                    className="px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand dark:bg-brandDark dark:hover:bg-brand"
                   >
                     {updateProfileMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                     Guardar cambios
@@ -602,13 +602,13 @@ export function EditarPerfil() {
 
               {/* Contraseña: solo visible cuando el usuario edita su propia cuenta */}
               {!isEditingOther && (
-              <div className="mt-8 pt-8 border-t border-border">
+              <div className="mt-8 pt-8 border-t border-border dark:border-backgroundDark">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-primary">Contraseña</h3>
+                  <h3 className="text-lg font-semibold text-primary dark:text-white">Contraseña</h3>
                   <button
                     type="button"
                     onClick={() => setShowPasswordForm(!showPasswordForm)}
-                    className="px-4 py-2 text-sm bg-brand/10 text-secondary rounded-lg hover:bg-brand/20 transition-colors focus-brand"
+                    className="px-4 py-2 text-sm bg-brand/10 text-secondary rounded-lg hover:bg-brand/20 transition-colors focus-brand dark:text-secondaryDark dark:hover:bg-cardDark"
                   >
                     {showPasswordForm ? 'Cancelar' : 'Cambiar contraseña'}
                   </button>
@@ -678,7 +678,7 @@ export function EditarPerfil() {
                       <button
                         type="submit"
                         disabled={updatePasswordMutation.isPending}
-                        className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
+                        className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brandDark dark:bg-brandDark dark:hover:bg-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-brand"
                       >
                         {updatePasswordMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                         Actualizar contraseña
@@ -784,7 +784,7 @@ export function EditarPerfil() {
 
               {/* Eliminar cuenta: solo visible cuando el usuario edita su propia cuenta */}
               {!isEditingOther && (
-                <div className="mt-8 pt-8 border-t border-border">
+                <div className="mt-8 pt-8 border-t border-border dark:border-backgroundDark">
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold text-red-600">Eliminar cuenta</h3>
                     <p className="text-sm text-secondary mt-2">

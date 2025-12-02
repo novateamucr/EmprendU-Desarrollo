@@ -14,33 +14,33 @@ import {
 
 // Skeleton component for loading state
 const ProductDetailSkeleton = () => (
-  <div className="pt-24 pb-8 px-4 md:px-8">
+  <div className="pt-24 pb-8 px-4 md:px-8 bg-white dark:bg-backgroundDark min-h-screen">
     <div className="max-w-4xl mx-auto">
       {/* Back button and image skeleton */}
       <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-        <div className="w-32 h-6 bg-gray-200 rounded"></div>
+        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+        <div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
       </div>
       
       <div className="grid md:grid-cols-2 gap-8">
         {/* Image skeleton */}
-        <div className="w-full aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+        <div className="w-full aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
         
         {/* Details skeleton */}
         <div className="space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-4 bg-gray-200 rounded w-full"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
           
           <div className="pt-4 space-y-4">
-            <div className="h-12 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             <div className="flex space-x-4">
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-              <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
             </div>
           </div>
         </div>
@@ -313,30 +313,30 @@ export default function ProductDetail() {
   }, [product, frontendProductUrl]);
 
   if (loading) return <ProductDetailSkeleton />;
-  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
-  if (!product) return <div className="text-center py-8 text-gray-500">Producto no encontrado.</div>;
+  if (error) return <div className="text-center py-8 text-red-500 dark:text-red-400 bg-white dark:bg-backgroundDark min-h-screen">{error}</div>;
+  if (!product) return <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-backgroundDark min-h-screen">Producto no encontrado.</div>;
 
   return (
-    <div className="pt-24 pb-8">
+    <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
       {/* Entrepreneurship link (avatar + name) above the card */}
       {product.entrepreneurship?.id && (
         <div className="max-w-4xl mx-auto px-4 md:px-8 mb-2">
           <Link
             to={`/business/${product.entrepreneurship.id}`}
-            className="inline-flex items-center gap-2 text-sm text-secondary hover:text-primary"
+            className="inline-flex items-center gap-2 text-sm text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white"
             title={product.entrepreneurship.name}
           >
             <ArrowBack sx={{ fontSize: 16 }} />
             <img
               src={product.entrepreneurship.image_url || 'https://placehold.co/64x64?text=E'}
               alt={product.entrepreneurship.name}
-              className="w-8 h-8 rounded-full object-cover border border-border"
+              className="w-8 h-8 rounded-full object-cover border border-border dark:border-cardDark"
             />
-            <span className="hover:underline">{product.entrepreneurship.name}</span>
+            <span className="hover:underline dark:text-brandDark">{product.entrepreneurship.name}</span>
           </Link>
         </div>
       )}
-      <div className="p-4 md:p-8 max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-border">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto bg-white dark:bg-cardDark rounded-lg shadow-sm border border-border dark:border-cardDark">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="w-full">
             <img
@@ -347,26 +347,26 @@ export default function ProductDetail() {
           </div>
           <div className="relative flex flex-col pt-6 md:pt-1">
             {product?.category_id != null && (
-              <span className="inline-block w-fit self-end mb-5 text-xs px-2 py-0.5 rounded-full bg-[#E6F4FA] text-[#0A5B7A]">
+              <span className="inline-block w-fit self-end mb-5 text-xs px-2 py-0.5 rounded-full bg-[#E6F4FA] dark:bg-blue-900/40 text-[#0A5B7A] dark:text-blue-300">
                 {catMap[Number(product.category_id)] || 'General'}
               </span>
             )}
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">{product.name}</h1>
             {product.description && (
-              <p className="text-secondary mt-2">{product.description}</p>
+              <p className="text-secondary dark:text-secondaryDark mt-2">{product.description}</p>
             )}
             {product.long_description && (
               <div className="mt-4">
-                <h2 className="text-lg font-semibold text-primary">Descripción detallada</h2>
-                <p className="text-secondary whitespace-pre-line mt-2">{product.long_description}</p>
+                <h2 className="text-lg font-semibold text-primary dark:text-white">Descripción detallada</h2>
+                <p className="text-secondary dark:text-secondaryDark whitespace-pre-line mt-2">{product.long_description}</p>
               </div>
             )}
 
             {/* Configurable form (between descriptions and price) */}
             {(formLoading || unifiedItems.length > 0) && (
               <div className="mt-5">
-                <h3 className="text-lg font-semibold text-primary mb-2">Personaliza tu pedido</h3>
-                {formLoading && <div className="text-sm text-secondary">Cargando opciones…</div>}
+                <h3 className="text-lg font-semibold text-primary dark:text-white mb-2">Personaliza tu pedido</h3>
+                {formLoading && <div className="text-sm text-secondary dark:text-secondaryDark">Cargando opciones…</div>}
                 {!formLoading && unifiedItems.length > 0 && (
                   <div className="space-y-4">
                     {unifiedItems.map((it) => (
@@ -378,9 +378,9 @@ export default function ProductDetail() {
                           if (o.type === 'select') {
                             return (
                               <div className="space-y-1">
-                                <label className="text-sm text-secondary">{o.name}{o.required ? ' *' : ''}</label>
+                                <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
                                 <select
-                                  className="w-full border rounded px-3 py-2"
+                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
                                   value={(selectedByOption[o.id]?.[0]) ?? ''}
                                   onChange={(e) => {
                                     const vId = Number(e.target.value);
@@ -398,12 +398,12 @@ export default function ProductDetail() {
                           if (o.type === 'multiselect') {
                             return (
                               <div className="space-y-1">
-                                <label className="text-sm text-secondary">{o.name}{o.required ? ' *' : ''}</label>
+                                <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
                                 <div className="flex flex-wrap gap-2">
                                   {vals.map(v => {
                                     const checked = (selectedByOption[o.id] || []).includes(v.id);
                                     return (
-                                      <label key={v.id} className="inline-flex items-center gap-2 text-sm">
+                                      <label key={v.id} className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                         <input
                                           type="checkbox"
                                           checked={checked}
@@ -420,7 +420,7 @@ export default function ProductDetail() {
                                   })}
                                 </div>
                                 {(o.min_select || o.max_select) && (
-                                  <div className="text-xs text-secondary">{o.min_select ? `Mín: ${o.min_select}` : ''} {o.max_select ? `Máx: ${o.max_select}` : ''}</div>
+                                  <div className="text-xs text-secondary dark:text-gray-400">{o.min_select ? `Mín: ${o.min_select}` : ''} {o.max_select ? `Máx: ${o.max_select}` : ''}</div>
                                 )}
                               </div>
                             );
@@ -433,9 +433,9 @@ export default function ProductDetail() {
                           if (f.input_type === 'text') {
                             return (
                               <div className="space-y-1">
-                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
                                 <input
-                                  className="w-full border rounded px-3 py-2"
+                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
                                   type="text"
                                   placeholder={f.help_text || ''}
                                   maxLength={f.max_length ?? undefined}
@@ -448,9 +448,9 @@ export default function ProductDetail() {
                           if (f.input_type === 'textarea') {
                             return (
                               <div className="space-y-1">
-                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
                                 <textarea
-                                  className="w-full border rounded px-3 py-2"
+                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
                                   rows={3}
                                   placeholder={f.help_text || ''}
                                   maxLength={f.max_length ?? undefined}
@@ -463,9 +463,9 @@ export default function ProductDetail() {
                           if (f.input_type === 'number') {
                             return (
                               <div className="space-y-1">
-                                <label className="text-sm text-secondary">{f.label}{f.required ? ' *' : ''}</label>
+                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
                                 <input
-                                  className="w-full border rounded px-3 py-2"
+                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
                                   type="number"
                                   placeholder={f.help_text || ''}
                                   value={customValues[f.id] === undefined ? '' : String(customValues[f.id])}
@@ -476,7 +476,7 @@ export default function ProductDetail() {
                           }
                           if (f.input_type === 'boolean') {
                             return (
-                              <label className="inline-flex items-center gap-2 text-sm">
+                              <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                 <input
                                   type="checkbox"
                                   checked={Boolean(customValues[f.id] ?? false)}
@@ -498,59 +498,70 @@ export default function ProductDetail() {
             <div className="mt-auto">
               <div className="mt-6 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-2xl font-semibold text-primary">₡{product.price.toLocaleString()}</p>
-                  <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
+                  <p className="text-2xl font-semibold text-primary dark:text-white">
+                    ₡{product.price.toLocaleString()}
+                  </p>
+                  <div className="flex items-center border border-gray-300 dark:border-cardDark rounded-full overflow-hidden bg-white dark:bg-backgroundDark">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleQuantityChange(-1);
                       }}
-                      className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+                      className="w-10 h-10 flex items-center justify-center bg-gray-50 dark:bg-backgroundDark hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
                       aria-label="Disminuir cantidad"
                     >
                       <Remove className="w-5 h-5" />
                     </button>
-                    <span className="w-10 text-center font-medium text-gray-800">{quantity}</span>
+                    <span className="w-10 text-center font-medium text-gray-800 dark:text-white">
+                      {quantity}
+                    </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleQuantityChange(1);
                       }}
-                      className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors"
+                      className="w-10 h-10 flex items-center justify-center bg-gray-50 dark:bg-backgroundDark hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                       aria-label="Aumentar cantidad"
                     >
                       <Add className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
+
                 <div className="flex flex-col gap-3">
                   {formError && (
                     <span className="text-xs text-red-500">{formError}</span>
                   )}
+
                   <button
                     onClick={handleOrder}
                     disabled={hasRequiredFields && !isFormValid}
-                    className={`px-4 py-2.5 rounded-md bg-brand text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                      hasRequiredFields && !isFormValid
-                        ? 'opacity-60 cursor-not-allowed'
-                        : 'hover:bg-brandDark'
-                    }`}
+                    className={`px-4 py-2.5 rounded-md text-white text-sm font-medium transition-colors flex items-center justify-center gap-2
+                      bg-brand dark:bg-brandDark
+                      ${
+                        hasRequiredFields && !isFormValid
+                          ? 'opacity-60 cursor-not-allowed'
+                          : 'hover:bg-brand/90 dark:hover:bg-brand'
+                      }`}
                   >
                     <span>Añadir {quantity} al carrito</span>
                     {quantity > 1 && (
-                      <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-white/20 dark:bg-white/10 px-2 py-0.5 rounded-full">
                         {`₡${(product.price * quantity).toLocaleString()}`}
                       </span>
                     )}
                   </button>
+
                   {/* Share caption and icon buttons (tighter spacing) */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs text-secondary">¡Comparte!</span>
+                    <span className="text-xs text-secondary dark:text-gray-400">
+                      ¡Comparte!
+                    </span>
                     <div className="flex items-center gap-3">
                       <button
                         onClick={shareToFacebook}
                         aria-label="Compartir en Facebook"
-                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        className="w-9 h-9 rounded-full border border-border dark:border-secondaryDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                         title="Compartir en Facebook"
                       >
                         <Facebook sx={{ fontSize: 18 }} />
@@ -558,7 +569,7 @@ export default function ProductDetail() {
                       <button
                         onClick={shareToTwitter}
                         aria-label="Compartir en Twitter"
-                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        className="w-9 h-9 rounded-full border border-border dark:border-secondaryDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                         title="Compartir en Twitter"
                       >
                         <Twitter sx={{ fontSize: 18 }} />
@@ -566,7 +577,7 @@ export default function ProductDetail() {
                       <button
                         onClick={shareToWhatsApp}
                         aria-label="Compartir en WhatsApp"
-                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        className="w-9 h-9 rounded-full border border-border dark:border-secondaryDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                         title="Compartir en WhatsApp"
                       >
                         <WhatsApp sx={{ fontSize: 18 }} />
@@ -574,7 +585,7 @@ export default function ProductDetail() {
                       <button
                         onClick={copyLink}
                         aria-label="Copiar link"
-                        className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                        className="w-9 h-9 rounded-full border border-border dark:border-secondaryDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                         title="Copiar link"
                       >
                         <LinkIcon sx={{ fontSize: 18 }} />

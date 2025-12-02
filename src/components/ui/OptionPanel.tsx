@@ -10,7 +10,7 @@ interface OptionPanelProps {
 export default function OptionPanel(props: OptionPanelProps) {
   return (
     <div
-      className={`relative flex flex-col justify-center items-center px-16 py-20 gap-6 shadow-lg w-[600px] max-w-full rounded-tr-2xl rounded-br-2xl bg-gradient-to-b  from-[#76b0cd] to-[#417895] ${props.style || ""}`}
+      className={`relative flex flex-col justify-center items-center px-16 py-20 gap-6 shadow-lg w-[600px] max-w-full rounded-tr-2xl rounded-br-2xl bg-gradient-to-b from-[#76b0cd] to-[#417895] dark:from-[#2a4d6b] dark:to-[#1a2f42] ${props.style || ""}`}
     >
       {props.imgSrc && (
         <a href="/">

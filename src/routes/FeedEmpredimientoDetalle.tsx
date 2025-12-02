@@ -235,7 +235,7 @@ export function FeedEmpredimientoDetalle() {
   if (!business) return <div className="text-center py-8 text-gray-500">Emprendimiento no encontrado.</div>;
 
   return (
-   <div className="w-full px-4 sm:px-6 lg:px-8 mt-16">
+   <div className="w-full px-4 sm:px-6 lg:px-8 mt-16 dark:bg-backgroundDark">
     <div className="w-full">
       <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6">
@@ -253,24 +253,24 @@ export function FeedEmpredimientoDetalle() {
               {[1, 2, 3, 4, 5].map((star) => (
                 <div key={star} className="relative group">
                   <span
-                    className={`text-4xl sm:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+                    className={`text-4xl sm:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"}`}
                   >
                     ★
                   </span>
                   {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white text-black p-3 text-xs leading-5 rounded whitespace-wrap">
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 hidden group-hover:block bg-white dark:bg-cardDark text-black dark:text-white p-3 text-xs leading-5 rounded whitespace-wrap border border-border dark:border-cardDark">
                     ¡Realiza un pedido para calificar este emprendimiento!
                   </div>
                 </div>
               ))}
             </div>
             {averageRating && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-secondaryDark mt-1">
                 {averageRating.toFixed(1)} / 5 de {reviews.length} calificaciones
               </p>
             )}
             <Btn
-              style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline"
+              style="text-gray-400 text-xs mt-2 hover:text-gray-500 hover:underline dark:hover:text-brandDark"
               key="abrirPopup"
               text="¡Califica este emprendimiento!"
               onClick={() => {
@@ -294,9 +294,9 @@ export function FeedEmpredimientoDetalle() {
                 onCancel={() => setShowPopup(false)}
               />
             )}
-            <p className='text-gray-400 text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
-            <h1 className="text-2xl md:text-3xl font-bold mt-3">{business.name}</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto px-2 md:text-base lg:text-base text-sm">{business.description}</p>
+            <p className='text-gray-400 dark:text-secondaryDark text-xs mt-2 mb-4'>Las calificaciones proporcionadas son realizadas por nuestros clientes</p>
+            <h1 className="text-2xl md:text-3xl font-bold mt-3 dark:text-white">{business.name}</h1>
+            <p className="text-gray-600 dark:text-secondaryDark max-w-2xl mx-auto px-2 md:text-base lg:text-base text-sm">{business.description}</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
@@ -320,7 +320,7 @@ export function FeedEmpredimientoDetalle() {
                     });
                   }
                 }}
-                className="px-5 py-2 bg-brand text-white rounded-full hover:bg-brandDark transition-colors inline-flex items-center gap-2"
+                className="px-5 py-2 bg-brand dark:bg-brandDark text-white rounded-full hover:bg-brandDark dark:hover:bg-brand transition-colors inline-flex items-center gap-2"
                 disabled={localPending}
                 aria-label={displayFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
               >
@@ -336,12 +336,12 @@ export function FeedEmpredimientoDetalle() {
             </div>
 
             <div className="mt-4 flex flex-col items-center gap-1">
-              <span className="text-xs text-secondary">Comparte este emprendimiento</span>
+              <span className="text-xs text-secondary dark:text-secondaryDark">Comparte este emprendimiento</span>
               <div className="flex items-center gap-3">
                 <button
                   onClick={shareToFacebook}
                   aria-label="Compartir en Facebook"
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  className="w-8 h-8 rounded-full border border-border dark:border-cardDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                   title="Compartir en Facebook"
                 >
                   <Facebook sx={{ fontSize: 18 }} />
@@ -349,7 +349,7 @@ export function FeedEmpredimientoDetalle() {
                 <button
                   onClick={shareToTwitter}
                   aria-label="Compartir en Twitter"
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  className="w-8 h-8 rounded-full border border-border dark:border-cardDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                   title="Compartir en Twitter"
                 >
                   <Twitter sx={{ fontSize: 18 }} />
@@ -357,7 +357,7 @@ export function FeedEmpredimientoDetalle() {
                 <button
                   onClick={shareToWhatsApp}
                   aria-label="Compartir en WhatsApp"
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  className="w-8 h-8 rounded-full border border-border dark:border-cardDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                   title="Compartir en WhatsApp"
                 >
                   <WhatsApp sx={{ fontSize: 18 }} />
@@ -365,7 +365,7 @@ export function FeedEmpredimientoDetalle() {
                 <button
                   onClick={copyLink}
                   aria-label="Copiar link"
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-brand/10 text-primary"
+                  className="w-8 h-8 rounded-full border border-border dark:border-cardDark flex items-center justify-center hover:bg-brand/10 dark:hover:bg-brandDark/20 text-primary dark:text-white transition-colors"
                   title="Copiar link"
                 >
                   <LinkIcon sx={{ fontSize: 18 }} />
@@ -380,13 +380,13 @@ export function FeedEmpredimientoDetalle() {
         {/* 🔍 Buscador */}
         <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
           <div className="relative w-full md:flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary dark:text-secondaryDark" />
             <input
               type="text"
               placeholder="Buscar producto..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white md:text-base lg:text-base text-sm"
+              className="w-full pl-12 pr-4 py-3 rounded-navbar border border-border dark:border-cardDark focus:border-primary dark:focus:border-primary dark:focus:ring-brandDark/20 outline-none bg-white dark:bg-cardDark text-primary dark:text-secondaryDark md:text-base lg:text-base text-sm"
             />
           </div>
 
@@ -395,14 +395,14 @@ export function FeedEmpredimientoDetalle() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full px-3 py-3 rounded-navbar border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white appearance-none md:text-base lg:text-base text-sm"
+              className="w-full px-3 py-3 rounded-navbar border border-border dark:border-cardDark focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:ring-brandDark/20 outline-none bg-white dark:bg-cardDark dark:text-white appearance-none md:text-base lg:text-base text-sm"
             >
               <option value="none">Ordenar por precio</option>
               <option value="lowToHigh">Menor a mayor</option>
               <option value="highToLow">Mayor a menor</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-500 dark:text-secondaryDark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
@@ -433,7 +433,7 @@ export function FeedEmpredimientoDetalle() {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500 text-center md:text-base lg:text-base text-sm">
+          <div className="text-gray-500 dark:text-secondaryDark text-center md:text-base lg:text-base text-sm">
             {searchQuery
               ? 'No se encontraron productos con ese nombre.'
               : 'Este emprendimiento aún no tiene productos.'}
@@ -445,16 +445,16 @@ export function FeedEmpredimientoDetalle() {
     {[1, 2, 3, 4, 5].map((star) => (
       <div key={star} className="relative group">
         <span
-          className={`text-4xl sm:text-5xl md:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300"}`}
+          className={`text-4xl sm:text-5xl md:text-5xl ${averageRating && star <= Math.round(averageRating) ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"}`}
         >
           ★
         </span>
       </div>
     ))}
     {averageRating && (
-      <p className="text-2xl mt-1 flex items-center gap-2">
+      <p className="text-2xl mt-1 flex items-center gap-2 dark:text-white">
         {averageRating.toFixed(1)}&nbsp;
-        <span className='text-xs text-gray-500'>
+        <span className='text-xs text-gray-500 dark:text-secondaryDark'>
           {reviews.length} calificaciones - {commentCount} comentarios
         </span>
       </p>
@@ -463,9 +463,9 @@ export function FeedEmpredimientoDetalle() {
 )}
           
         </div>
-          <h1 className="md:text-2xl text-lg font-bold ">Comentarios</h1>
+          <h1 className="md:text-2xl text-lg font-bold dark:text-white">Comentarios</h1>
           <Btn
-              style="text-gray-400 md:text-lg text-sm mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left"
+              style="text-gray-400 md:text-lg text-sm mt-2 hover:text-gray-500 hover:underline pb-8 border-b-2 w-full text-left dark:hover:text-brandDark"
               key="abrirPopup"
               text="Agregar una reseña"
               onClick={() => {
@@ -490,23 +490,23 @@ export function FeedEmpredimientoDetalle() {
               />
             )}
 
-        <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500">Todavía no hay comentarios.</p>)}
+        <div className="mt-6 space-y-4"> {commentedReviews.length === 0 && (<p className="text-sm text-gray-500 dark:text-secondaryDark">Todavía no hay comentarios.</p>)}
           {commentedReviews.map(r => (
-            <div key={r.id} className="border-b pb-8">
+            <div key={r.id} className="border-b border-border dark:border-cardDark pb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <div className="flex items-center min-w-0 gap-2">
-                  <span className="font-semibold truncate max-w-[110px] xs:max-w-[140px] sm:max-w-[280px]">{r.user?.name}</span>
+                  <span className="font-semibold dark:text-white truncate max-w-[110px] xs:max-w-[140px] sm:max-w-[280px]">{r.user?.name}</span>
                   <div className="flex text-yellow-400 text-sm">
                     {'★'.repeat(Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                     {'☆'.repeat(5 - Math.max(0, Math.min(5, Number(r.rating) || 0)))}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500 ml-1 mt-1 sm:mt-0 shrink-0">
+                <span className="text-xs text-gray-500 dark:text-secondaryDark ml-1 mt-1 sm:mt-0 shrink-0">
                   {new Date(r.created_at).toLocaleString()}
                 </span>
 
               </div>
-              <p className="text-sm text-gray-700 mt-2 break-words">{r.review}</p>
+              <p className="text-sm text-gray-700 dark:text-secondaryDark mt-2 break-words">{r.review}</p>
             </div>
           ))}
 
@@ -518,11 +518,11 @@ export function FeedEmpredimientoDetalle() {
           variant="danger"
         >
           <div className="space-y-4">
-            <p className="text-sm text-secondary">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
+            <p className="text-sm text-secondary dark:text-secondaryDark">¿Estás seguro de que deseas eliminar este emprendimiento de tus favoritos?</p>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setConfirmOpen(false)}
-                className="px-4 py-2 rounded-lg border border-border hover:bg-gray-50"
+                className="px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark dark:hover:text-white transition-colors"
               >
                 Cancelar
               </button>

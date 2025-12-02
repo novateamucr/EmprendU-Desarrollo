@@ -70,18 +70,18 @@ interface StatsCardProps {
 }
 
 const StatsCard = ({ title, value, icon, trend }: StatsCardProps) => (
-  <Card className="p-6 3xl:p-8 4xl:p-10">
+  <Card className="p-6 3xl:p-8 4xl:p-10 dark:bg-cardDark dark:border-cardDark">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-500">{title}</p>
-        <p className="mt-1 text-2xl md:text-3xl 3xl:text-4xl 4xl:text-5xl font-semibold text-gray-900">{value}</p>
+        <p className="text-sm md:text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-500 dark:text-secondaryDark">{title}</p>
+        <p className="mt-1 text-2xl md:text-3xl 3xl:text-4xl 4xl:text-5xl font-semibold text-gray-900 dark:text-white">{value}</p>
         {trend && (
           <p className={`mt-1 text-sm md:text-base 3xl:text-lg 4xl:text-xl ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
             {trend.isPositive ? '↑' : '↓'} {trend.value} respecto al mes pasado
           </p>
         )}
       </div>
-      <div className="rounded-lg bg-primary/10 p-3 3xl:p-4 4xl:p-5 text-primary">
+      <div className="rounded-lg bg-primary/10 p-3 3xl:p-4 4xl:p-5 text-primary dark:bg-brandDark/20 dark:text-brandDark">
         {icon}
       </div>
     </div>
@@ -450,7 +450,7 @@ export default function Dashboard() {
         
         <SkeletonDashboardStats />
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
             <Skeleton variant="text" width="180px" height={24} className="mb-4" />
             <div className="flex items-center justify-center">
               <Skeleton variant="rectangular" width="100%" height={100} className="rounded-lg" />
@@ -458,14 +458,14 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
             <Skeleton variant="text" width="180px" height={24} className="mb-4" />
             <div className="h-64 flex items-center justify-center">
               <Skeleton variant="rectangular" width="100%" height={240} className="rounded-lg" />
             </div>
           </div>
           
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
             <Skeleton variant="text" width="180px" height={24} className="mb-4" />
             <div className="h-64 flex items-center justify-center">
               <Skeleton variant="rectangular" width="100%" height={240} />
@@ -473,7 +473,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
           <div className="flex justify-between items-center mb-6">
             <Skeleton variant="text" width="200px" height={28} />
             <Skeleton variant="rectangular" width={120} height={40} className="rounded-md" />
@@ -559,7 +559,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 dark:bg-cardDark dark:border-cardDark">
           <div className="flex justify-between items-center mb-6">
             <Skeleton variant="text" width="200px" height={28} />
             <Skeleton variant="rectangular" width={120} height={40} className="rounded-md" />
@@ -587,26 +587,26 @@ export default function Dashboard() {
   // Si no hay emprendimientos o no hay uno seleccionado, se muestra un vacío con CTA
   if (!currentBusiness || businesses.length === 0) {
     return (
-  <div className="container mx-auto px-4 3xl:px-12 4xl:px-16 py-8 text-base 3xl:text-lg 4xl:text-xl">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 3xl:p-14 4xl:p-16 text-center max-w-3xl 3xl:max-w-4xl 4xl:max-w-5xl mx-auto">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 mb-6">
-            <Package className="h-10 w-10 text-blue-600" />
+  <div className="container mx-auto px-4 3xl:px-12 4xl:px-16 py-8 text-base 3xl:text-lg 4xl:text-xl bg-background dark:bg-backgroundDark min-h-screen">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 md:p-12 3xl:p-14 4xl:p-16 text-center max-w-3xl 3xl:max-w-4xl 4xl:max-w-5xl mx-auto dark:bg-cardDark dark:border-cardDark">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 mb-6 dark:bg-blue-900/20">
+            <Package className="h-10 w-10 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-2xl 3xl:text-3xl 4xl:text-4xl font-bold text-gray-900 mb-3">Aún no tienes emprendimientos</h2>
-          <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg 3xl:text-xl 4xl:text-2xl">
+          <h2 className="text-2xl 3xl:text-3xl 4xl:text-4xl font-bold text-gray-900 mb-3 dark:text-white">Aún no tienes emprendimientos</h2>
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg 3xl:text-xl 4xl:text-2xl dark:text-gray-300">
             Crea tu primer emprendimiento para comenzar a vender productos y llegar a más clientes en nuestra plataforma.
           </p>
           
            <button
               onClick={() => setShowExtraModal(true)}
-              className="transition-colors pb-4text-sm text-decoration-line: underline text-gray-500 mb-4 hover:text-brand"
+              className="transition-colors pb-4text-sm text-decoration-line: underline text-gray-500 mb-4 hover:text-brand dark:text-gray-400 dark:hover:text-blue-400"
               aria-label="Abrir información"
             >
-              Como crear un emprendimiento
+              ¿Como crear un emprendimiento?
             </button>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button asChild size="lg" className=" text-white hover:text-white">
-              <Link to="/entrepreneur/business/setup" className="flex items-center gap-2">
+              <Link to="/entrepreneur/business/setup" className="flex items-center gap-2 dark:text-white dark:bg-brandDark dark:hover:bg-brand">
                 <Plus className="h-5 w-5 3xl:h-6 3xl:w-6 4xl:h-7 4xl:w-7" />
                 Crear mi primer emprendimiento
               </Link>
@@ -625,7 +625,7 @@ export default function Dashboard() {
           title="¿Cómo agrego un emprendimiento?"
           pointerGifSrc={agregarEmprendimientoGif}
           >
-          <div className="space-y-4 text-gray-700 text-sm">
+          <div className="space-y-4 text-gray-700 text-sm dark:text-gray-300">
             <div>
                <p className="font-semibold">Ingresa a Mis Emprendimientos</p>
                <p>Dirígete a la pestaña de Mis emprendimientos en la barra de navegación</p>
@@ -651,13 +651,13 @@ export default function Dashboard() {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 3xl:p-8 4xl:p-10">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 3xl:p-8 4xl:p-10 dark:bg-backgroundDark">
       <div className="max-w-[2000px] mx-auto space-y-6">
         {/* Business Selector */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 dark:bg-cardDark dark:border dark:border-cardDark">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div className="w-full max-w-3xl">
-              <label className="block text-sm sm:text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-medium text-gray-700 mb-2">
+              <label className="block text-sm sm:text-base md:text-lg 3xl:text-xl 4xl:text-2xl font-medium text-gray-700 mb-2 dark:text-white">
                 Seleccionar emprendimiento
               </label>
               <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -717,7 +717,7 @@ export default function Dashboard() {
                 <Button 
                   asChild 
                   variant="outline" 
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto dark:text-brandDark dark:border-brandDark"
                 >
                   <Link to="/entrepreneur/business/setup" className="flex items-center justify-center gap-2">
                     <Plus className="h-4 w-4" />
@@ -764,17 +764,17 @@ export default function Dashboard() {
         </div>
         
         {/* Business Information */}
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden dark:bg-cardDark dark:border-cardDark">
           <div className="p-6 3xl:p-8 4xl:p-10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
-              <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900">
+              <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 dark:text-white">
                 Información del emprendimiento
               </h3>
               <Button 
                 asChild 
                 variant="outline" 
                 size="sm"
-                className="w-full sm:w-auto mt-4 sm:mt-0"
+                className="w-full sm:w-auto mt-4 sm:mt-0 dark:text-brandDark dark:border-brandDark"
               >
                 <Link to={`/entrepreneur/business/edit/${selectedBusiness?.id}`} className="flex items-center gap-1.5">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -795,16 +795,16 @@ export default function Dashboard() {
                       className="h-24 w-24 sm:h-32 sm:w-32 3xl:h-40 3xl:w-40 rounded-lg object-cover border border-gray-200"
                     />
                   ) : (
-                    <div className="h-24 w-24 sm:h-32 sm:w-32 3xl:h-40 3xl:w-40 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <Store className="h-12 w-12 text-gray-400" />
+                    <div className="h-24 w-24 sm:h-32 sm:w-32 3xl:h-40 3xl:w-40 rounded-lg bg-gray-100 flex items-center justify-center dark:bg-cardDark dark:border dark:border-gray-600">
+                      <Store className="h-12 w-12 text-gray-400 dark:text-secondaryDark" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-gray-900 mb-2">
+                  <h4 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-semibold text-gray-900 mb-2 dark:text-white">
                     {currentBusiness.name}
                   </h4>
-                  <p className="text-gray-600 text-sm sm:text-base 3xl:text-lg 4xl:text-xl">
+                  <p className="text-gray-600 text-sm sm:text-base 3xl:text-lg 4xl:text-xl dark:text-secondaryDark">
                     {currentBusiness.description || 'Sin descripción'}
                   </p>
                   {currentBusiness.address && (
@@ -813,7 +813,7 @@ export default function Dashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span className="text-sm sm:text-base 3xl:text-lg 4xl:text-xl text-gray-600">
+                      <span className="text-sm sm:text-base 3xl:text-lg 4xl:text-xl text-gray-600 dark:text-secondaryDark">
                         {currentBusiness.address}
                       </span>
                     </div>
@@ -821,32 +821,32 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-6 border-t border-gray-100 dark:border-gray-600">
                 {currentBusiness.phone && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Teléfono</p>
+                  <div className="bg-gray-50 p-4 rounded-lg dark:bg-cardDark dark:border dark:border-gray-600">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-secondaryDark">Teléfono</p>
                     <a 
                       href={`tel:${currentBusiness.phone.replace(/\D/g, '')}`}
-                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors dark:text-white dark:hover:text-blue-400"
                     >
                       {currentBusiness.phone}
                     </a>
                   </div>
                 )}
                 {currentBusiness.email && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Email</p>
+                  <div className="bg-gray-50 p-4 rounded-lg dark:bg-cardDark dark:border dark:border-gray-600">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-secondaryDark">Email</p>
                     <a 
                       href={`mailto:${currentBusiness.email}`}
-                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors break-all"
+                      className="text-base 3xl:text-lg 4xl:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors break-all dark:text-white dark:hover:text-blue-400"
                     >
                       {currentBusiness.email}
                     </a>
                   </div>
                 )}
                 {currentBusiness.website && (
-                  <div className="bg-gray-50 p-4 rounded-lg sm:col-span-2 lg:col-span-1">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Sitio web</p>
+                  <div className="bg-gray-50 p-4 rounded-lg sm:col-span-2 lg:col-span-1 dark:bg-cardDark dark:border dark:border-gray-600">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-secondaryDark">Sitio web</p>
                     <a 
                       href={currentBusiness.website.startsWith('http') ? currentBusiness.website : `https://${currentBusiness.website}`}
                       target="_blank" 
@@ -864,15 +864,15 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="mb-8">
-          <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-6">
+          <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-6 dark:text-white">
             Estadísticas
           </h3>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 3xl:gap-8 4xl:gap-10">
             {/* Products Chart */}
-            <Card className="p-6 3xl:p-8 4xl:p-10">
+            <Card className="p-6 3xl:p-8 4xl:p-10 dark:bg-cardDark dark:border-cardDark">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2">
+                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2 dark:text-white">
                   <BarChart2 className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10 text-blue-600" />
                   Productos por categoría
                 </h4>
@@ -907,7 +907,7 @@ export default function Dashboard() {
                     }}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-500 text-lg">
+                  <div className="h-full flex items-center justify-center text-gray-500 text-lg dark:text-secondaryDark">
                     No hay datos de productos disponibles
                   </div>
                 )}
@@ -915,9 +915,9 @@ export default function Dashboard() {
             </Card>
 
             {/* Sales Chart */}
-            <Card className="p-6 3xl:p-8 4xl:p-10">
+            <Card className="p-6 3xl:p-8 4xl:p-10 dark:bg-cardDark dark:border-cardDark">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2">
+                <h4 className="text-lg sm:text-xl 3xl:text-2xl 4xl:text-3xl font-medium flex items-center gap-2 dark:text-white">
                   <LineChart className="h-6 w-6 3xl:h-8 3xl:w-8 4xl:h-10 4xl:w-10 text-green-600" />
                   Ventas mensuales
                 </h4>
@@ -947,7 +947,7 @@ export default function Dashboard() {
                     }}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-500 text-lg">
+                  <div className="h-full flex items-center justify-center text-gray-500 text-lg dark:text-secondaryDark">
                     No hay datos de ventas disponibles
                   </div>
                 )}
@@ -959,78 +959,78 @@ export default function Dashboard() {
         {/* Recent Customers */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-4 sm:mb-0">
+            <h3 className="text-xl sm:text-2xl 3xl:text-3xl 4xl:text-4xl font-medium text-gray-900 mb-4 sm:mb-0 dark:text-white">
               Clientes Recientes
             </h3>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => navigate('/entrepreneur/customers')}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto dark:text-brandDark dark:border-brandDark"
             >
               Ver todos
             </Button>
           </div>
           
-          <Card>
+          <Card className="dark:bg-backgroundDark dark:border-cardDark">
             {/* Desktop/Tablet View */}
             <div className="hidden md:block">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                <thead className="bg-gray-50 dark:bg-cardDark">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-secondaryDark">
                       Cliente
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-secondaryDark">
                       Última compra
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-secondaryDark">
                       Total gastado
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-secondaryDark">
                       Compras
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200 dark:bg-cardDark dark:divide-gray-600">
                   {recentCustomers.length > 0 ? (
                     recentCustomers.map((customer) => (
                       <tr 
                         key={customer.id} 
-                        className="hover:bg-gray-50 cursor-pointer"
+                        className="hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700"
                         onClick={() => navigate(`/entrepreneur/customers/${customer.id}`)}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-600 font-medium">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center dark:bg-gray-600">
+                              <span className="text-gray-600 font-medium dark:text-white">
                                 {customer.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                              <div className="text-sm text-gray-500">{customer.email}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">{customer.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-secondaryDark">{customer.email}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm text-gray-900 dark:text-white">
                             {new Date(customer.lastPurchase).toLocaleDateString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             ₡{/* Format total spent */}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-secondaryDark">
                           {customer.totalPurchases}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">
+                      <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-secondaryDark">
                         No hay clientes recientes para mostrar
                       </td>
                     </tr>
@@ -1042,30 +1042,30 @@ export default function Dashboard() {
             {/* Mobile View */}
             <div className="md:hidden">
               {recentCustomers.length > 0 ? (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200 dark:divide-gray-600">
                   {recentCustomers.map((customer) => (
                     <div 
                       key={customer.id}
-                      className="p-4 hover:bg-gray-50 cursor-pointer"
+                      className="p-4 hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-700"
                       onClick={() => navigate(`/entrepreneur/customers/${customer.id}`)}
                     >
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-600 text-lg font-medium">
+                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center dark:bg-gray-600">
+                          <span className="text-gray-600 text-lg font-medium dark:text-white">
                             {customer.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="ml-4 flex-1">
                           <div className="flex justify-between">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                              <div className="text-sm text-gray-500">{customer.email}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">{customer.name}</div>
+                              <div className="text-sm text-gray-500 dark:text-secondaryDark">{customer.email}</div>
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-secondaryDark">
                               {customer.totalPurchases} compras
                             </div>
                           </div>
-                          <div className="mt-2 text-sm text-gray-500">
+                          <div className="mt-2 text-sm text-gray-500 dark:text-secondaryDark">
                             Última compra: {new Date(customer.lastPurchase).toLocaleDateString()}
                           </div>
                         </div>
@@ -1074,7 +1074,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center text-sm text-gray-500">
+                <div className="p-8 text-center text-sm text-gray-500 dark:text-secondaryDark">
                   No hay clientes recientes para mostrar
                 </div>
               )}

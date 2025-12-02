@@ -62,11 +62,11 @@ type Order = {
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const statusMap = {
-    requested: { label: 'Solicitado', color: 'bg-yellow-100 text-yellow-800' },
-    accepted: { label: 'Aceptado', color: 'bg-blue-100 text-blue-800' },
-    completed: { label: 'Completado', color: 'bg-green-100 text-green-800' },
-    canceled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' },
-    rated: { label: 'Calificado', color: 'bg-purple-100 text-purple-800' },
+    requested: { label: 'Solicitado', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' },
+    accepted: { label: 'Aceptado', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' },
+    completed: { label: 'Completado', color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' },
+    canceled: { label: 'Cancelado', color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' },
+    rated: { label: 'Calificado', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300' },
   };
 
   return (
@@ -214,11 +214,11 @@ export default function MyOrderDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-backgroundDark py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-lg text-gray-600">Cargando información del pedido...</p>
+            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Cargando información del pedido...</p>
           </div>
         </div>
       </div>
@@ -227,17 +227,17 @@ export default function MyOrderDetail() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-backgroundDark py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="bg-white dark:bg-cardDark shadow overflow-hidden sm:rounded-lg dark:border dark:border-cardDark">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Error</h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Error</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                 {error || 'No se encontró el pedido solicitado'}
               </p>
               <button
                 onClick={() => navigate(-1)}
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-700 dark:hover:bg-blue-600"
               >
                 Volver atrás
               </button>
@@ -251,31 +251,31 @@ export default function MyOrderDetail() {
   const canCancelOrder = order.status === 'requested' && order.items?.length > 0;
 
   return (
-    <div className="pt-24 pb-8">
+    <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-primary">
+            <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">
               Pedido #{order.id}
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-secondaryDark">
               {formatDate(order.created_at)}
             </p>
           </div>
           <Link
             to="/orders"
-            className="px-3 py-1.5 rounded-md border border-gray-300 text-sm hover:bg-gray-50"
+            className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-cardDark text-sm hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-brandDark transition-colors duration-200"
           >
             Volver a mis pedidos
           </Link>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white dark:bg-cardDark shadow overflow-hidden sm:rounded-lg dark:border dark:border-cardDark">
           {/* Order Status */}
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-cardDark">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-medium text-gray-900">Estado del pedido</h2>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Estado del pedido</h2>
                 <div className="mt-1">
                   <StatusBadge status={order.status} />
                 </div>
@@ -283,7 +283,7 @@ export default function MyOrderDetail() {
               {canCancelOrder && (
                 <button
                   onClick={() => setCancelOpen(true)}
-                  className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-700 text-sm font-medium rounded-md text-red-700 dark:text-red-300 bg-white dark:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-cardDark focus:ring-red-500"
                 >
                   Cancelar pedido
                 </button>
@@ -291,149 +291,181 @@ export default function MyOrderDetail() {
             </div>
           </div>
 
-          {/* Order Summary (no payment details) */}
-          <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 border-b border-gray-200">
+          {/* Order Summary (sin detalles de pago) */}
+          <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 border-b border-gray-200 dark:border-cardDark">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Emprendimiento</h3>
-              <p className="mt-1 text-sm text-gray-900">{order.entrepreneurship_name}</p>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Emprendimiento</h3>
+              <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                {order.entrepreneurship_name}
+              </p>
             </div>
+
             <div className="mt-4 sm:mt-0 sm:col-span-2">
-              <h3 className="text-sm font-medium text-gray-500">Cliente</h3>
-              <p className="mt-1 text-sm text-gray-900">{order.customer_name}</p>
-              <p className="text-sm text-gray-600">{order.customer_email}</p>
-              <p className="text-sm text-gray-600">Tel: {order.customer_phone_8}</p>
-            </div>
-          </div>
-
-          {/* Order Items */}
-          <div className="px-4 py-5 sm:px-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Productos</h3>
-
-            {order.items && order.items.length > 0 ? (
-              <div className="space-y-6">
-                {order.items.map((item) => {
-                  const formOptions =
-                    item.order_options && item.order_options.length > 0
-                      ? item.order_options
-                      : item.options && Array.isArray(item.options)
-                        ? item.options
-                        : [];
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-                    >
-                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100">
-                        {item.product_details?.image_url ? (
-                          <img
-                            src={item.product_details.image_url}
-                            className="h-full w-full object-cover object-center"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
-                            Sin imagen
-                          </div>
-                        )}
-                      </div>
-                      <div className="ml-4 flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900">
-                              {item.product_details?.name || item.product_name || `Producto #${item.product_id}`}
-                            </h4>
-                            {item.product_details?.description && (
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                                {item.product_details.description}
-                              </p>
-                            )}
-
-                            {formOptions && formOptions.length > 0 && (
-                              <div className="mt-2 bg-gray-50 rounded-md px-3 py-2">
-                                <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                                  Detalles del formulario
-                                </p>
-                                <dl className="space-y-2">
-                                  {formOptions.map((option: any, idx: number) => (
-                                    <div key={idx} className="text-xs border-l border-gray-200 pl-2">
-                                      <dt className="text-[11px] font-semibold text-gray-800">
-                                        {option.option_name}
-                                      </dt>
-                                      <dd className="mt-0.5 text-[11px] text-gray-700 break-words">
-                                        <span className="text-gray-800">{option.option_value}</span>
-                                        {option.price_delta > 0 && (
-                                          <span className="text-[10px] text-green-600 ml-1 font-medium">
-                                            (+₡{option.price_delta.toLocaleString()})
-                                          </span>
-                                        )}
-                                      </dd>
-                                    </div>
-                                  ))}
-                                </dl>
-                              </div>
-                            )}
-                          </div>
-                          <p className="ml-4 text-sm font-medium text-gray-900">
-                            ₡{(item.unit_price * item.quantity).toLocaleString()}
-                          </p>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-2">
-                          Cantidad: {item.quantity} × ₡{item.unit_price?.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">No hay productos en este pedido.</p>
-            )}
-            {/* Simple Total Summary */}
-            <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
-              <p className="text-base font-medium text-gray-900">Total del pedido</p>
-              <p className="text-xl font-semibold text-gray-900">
-                ₡{(order.grand_total ?? order.items_total)?.toLocaleString()}
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Cliente</h3>
+              <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                {order.customer_name}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {order.customer_email}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Tel: {order.customer_phone_8}
               </p>
             </div>
           </div>
 
-          {/* Cancel Order Dialog */}
-          <Dialog
-            open={cancelOpen}
-            onClose={() => !isSubmitting && setCancelOpen(false)}
-            className="relative z-50"
-          >
-            <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-            <div className="fixed inset-0 flex items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6">
-                <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
-                  ¿Estás seguro de que deseas cancelar este pedido?
-                </Dialog.Title>
-                <p className="text-sm text-gray-600 mb-6">
-                  Esta acción no se puede deshacer. El pedido se marcará como cancelado.
-                </p>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setCancelOpen(false)}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                  >
-                    No, mantener el pedido
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelOrder}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'Cancelando...' : 'Sí, cancelar pedido'}
-                  </button>
+          {/* Order Items */}
+          <div className="border-t border-gray-200 dark:border-cardDark">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                Productos
+              </h3>
+
+              {order.items && order.items.length > 0 ? (
+                <div className="space-y-6">
+                  {order.items.map((item) => {
+                    const formOptions =
+                      item.order_options && item.order_options.length > 0
+                        ? item.order_options
+                        : item.options && Array.isArray(item.options)
+                          ? item.options
+                          : [];
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-start border-b border-gray-100 dark:border-cardDark pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700">
+                          {item.product_details?.image_url ? (
+                            <img
+                              src={item.product_details.image_url}
+                              className="h-full w-full object-cover object-center"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
+                              Sin imagen
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                                {item.product_details?.name ||
+                                  item.product_name ||
+                                  `Producto #${item.product_id}`}
+                              </h4>
+
+                              {item.product_details?.description && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                  {item.product_details.description}
+                                </p>
+                              )}
+
+                              {formOptions && formOptions.length > 0 && (
+                                <div className="mt-2 bg-gray-50 dark:bg-backgroundDark/50 rounded-md px-3 py-2">
+                                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Detalles del formulario
+                                  </p>
+                                  <dl className="space-y-2">
+                                    {formOptions.map((option: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="text-xs border-l border-gray-200 dark:border-cardDark pl-2"
+                                      >
+                                        <dt className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
+                                          {option.option_name}
+                                        </dt>
+                                        <dd className="mt-0.5 text-[11px] text-gray-700 dark:text-gray-300 break-words">
+                                          <span className="text-gray-800 dark:text-gray-100">
+                                            {option.option_value}
+                                          </span>
+                                          {option.price_delta > 0 && (
+                                            <span className="text-[10px] text-green-600 dark:text-green-400 ml-1 font-medium">
+                                              (+₡{option.price_delta.toLocaleString()})
+                                            </span>
+                                          )}
+                                        </dd>
+                                      </div>
+                                    ))}
+                                  </dl>
+                                </div>
+                              )}
+                            </div>
+
+                            <p className="ml-4 text-sm font-medium text-gray-900 dark:text-white">
+                              ₡{(item.unit_price * item.quantity).toLocaleString()}
+                            </p>
+                          </div>
+
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                            Cantidad: {item.quantity} × ₡{item.unit_price?.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </Dialog.Panel>
+              ) : (
+                <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                  No hay productos en este pedido.
+                </p>
+              )}
             </div>
-          </Dialog>
+          </div>
+
+          {/* Order Totals (simple, funcionalidad tuya) */}
+          <div className="bg-gray-50 dark:bg-backgroundDark/50 px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-cardDark">
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-cardDark flex justify-between items-center">
+              <p className="text-base font-medium text-gray-900 dark:text-white">
+                Total del pedido
+              </p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                ₡{(order.grand_total ?? order.items_total)?.toLocaleString()}
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* Cancel Order Dialog */}
+        <Dialog
+          open={cancelOpen}
+          onClose={() => !isSubmitting && setCancelOpen(false)}
+          className="relative z-50"
+        >
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-cardDark p-6 dark:border dark:border-cardDark">
+              <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                ¿Estás seguro de que deseas cancelar este pedido?
+              </Dialog.Title>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Esta acción no se puede deshacer. El pedido se marcará como cancelado.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setCancelOpen(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-cardDark border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-cardDark focus:ring-blue-500 disabled:opacity-50"
+                >
+                  No, mantener el pedido
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelOrder}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-700 border border-transparent rounded-md shadow-sm hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-cardDark focus:ring-red-500 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Cancelando...' : 'Sí, cancelar pedido'}
+                </button>
+              </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+
       </div>
     </div>
   );

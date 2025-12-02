@@ -98,7 +98,7 @@ export function ProductCard(props: ProductCardProps) {
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full relative"
+      className="bg-white dark:bg-cardDark dark:border-cardDark rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full relative"
       onClick={handleCardClick}
     >
       <div className="aspect-square bg-gray-50 relative overflow-hidden">
@@ -134,12 +134,12 @@ export function ProductCard(props: ProductCardProps) {
             </div>
           </div>
         )}
-        <h3 className="font-semibold text-gray-900 text-sm 3xl:text-base 4xl:text-3xl mb-1 ">{props.title}</h3>
-        <p className="font-medium text-gray-600 text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
+        <h3 className="font-semibold text-gray-900 dark:text-white text-sm 3xl:text-base 4xl:text-3xl mb-1 ">{props.title}</h3>
+        <p className="font-medium text-gray-600 dark:text-secondaryDark text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
-          <p className="text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-gray-900 text-center">
+          <p className="text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-gray-900 dark:text-white text-center">
             ₡{props.price.toLocaleString()}
           </p>
           
@@ -180,7 +180,7 @@ export function ProductCard(props: ProductCardProps) {
           ) : (
             <button
               onClick={handleAddToCart}
-              className="mt-1 px-3 4xl:px-4 py-1.5 4xl:py-2 rounded-md bg-brand text-white text-xs 3xl:text-sm 4xl:text-base font-medium hover:bg-brandDark transition-colors"
+              className="mt-1 px-3 4xl:px-4 py-1.5 4xl:py-2 rounded-md bg-brand dark:bg-brandDark dark:hover:bg-brand text-white text-xs 3xl:text-sm 4xl:text-base font-medium hover:bg-brandDark transition-colors"
             >
               Hacer pedido
             </button>

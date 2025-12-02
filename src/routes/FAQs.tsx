@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import Footer from "../components/footer/Footer";
 
@@ -74,17 +75,15 @@ export default function FAQ() {
           <div className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-24 lg:gap-40 items-center px-2 sm:px-8 md:px-20 ">
             {/* TITULOS */}
             <div className="flex flex-col gap-3 p-6" style={{ minWidth: 260 }}>
-              <h1 className="text-5xl md:text-6xl font-bold text-brand leading-tight">
+              <h1 className="text-5xl md:text-6xl font-bold text-brand dark:text-brandDark leading-tight">
                 Preguntas
               </h1>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+              <h1 className="text-5xl dark:text-white md:text-6xl font-bold leading-tight">
                 Frecuentes
               </h1>
-              <p className="text-sm md:text-base mt-2">
+              <p className="text-sm md:text-base mt-2 dark:text-secondaryDark ">
                 ¿Tienes más preguntas?{" "}
-                <a href="/contactUs" className="hover:underline text-brand">
-                  Contáctanos
-                </a>
+                <Link to="/contactUs" className="hover:underline hover:text-brand dark:hover:text-brandDark dark:text-secondaryDark text-gray-500 text-xs md:text-sm">Contáctanos</Link>
               </p>
             </div>
             {/* BLOQUE DE PREGUNTAS */}
@@ -103,7 +102,7 @@ export default function FAQ() {
                     <div
                       key={realIndex}
                       className="
-                        bg-white p-7 border rounded-3xl shadow-soft
+                        bg-white  dark:bg-cardDark p-7 dark:border-cardDark border rounded-3xl shadow-soft
                         transition-all duration-300 ease-in-out cursor-pointer
                         hover:-translate-y-1
                         snap-start
@@ -113,11 +112,11 @@ export default function FAQ() {
                       onClick={() => toggleFAQ(realIndex)}
                     >
                       <div className="flex justify-between items-start">
-                        <h3 className="font-semibold text-sm md:text-base">
+                        <h3 className="font-semibold text-sm md:text-base dark:text-white">
                           {faq.question}
                         </h3>
                         <button
-                          className="bg-brand text-white rounded-full p-2 hover:bg-brandDark transition ease-in-out duration-300"
+                          className="bg-brand dark:bg-brandDark text-white rounded-full p-2 hover:bg-brandDark transition ease-in-out duration-300"
                           aria-label={openIndex === realIndex ? "Cerrar" : "Abrir"}
                           type="button"
                           tabIndex={-1}
@@ -131,7 +130,7 @@ export default function FAQ() {
                       </div>
                       <p
                         className={`
-                          text-xs md:text-sm mt-3 text-gray-600
+                          text-xs md:text-sm mt-3 text-gray-600 dark:text-secondaryDark
                           transition-all duration-300 
                           overflow-hidden
                           ${openIndex === realIndex ? "max-h-40 opacity-100 overflow-y-auto" : "max-h-0 opacity-0"}
@@ -153,7 +152,7 @@ export default function FAQ() {
                     onClick={() => handlePageChange(idx + 1)}
                     className={`
                       w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold
-                      ${currentPage === idx + 1 ? "bg-blue-900" : "bg-brand hover:bg-brandDark"}
+                      ${currentPage === idx + 1 ? "bg-blue-900" : "bg-brand dark:bg-brandDark hover:bg-brandDark"}
                       transition
                       focus:outline-none
                     `}

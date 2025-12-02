@@ -66,18 +66,18 @@ function AddFieldDropdown({
         disabled={disabled}
         variant="outline"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 dark:bg-brandDark dark:text-white dark:border-brandDark dark:hover:bg-brand dark:hover:border-brand"
       >
         <span>+</span>
         Tipo de campo
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-20">
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-20 dark:bg-cardDark dark:border-cardDark">
           {types.map((t) => (
             <button
               key={t.key}
-              className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+              className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm dark:text-white dark:hover:bg-gray-700"
               onClick={() => {
                 onSelect(t.key);
                 setOpen(false);
@@ -712,16 +712,16 @@ export default function EditProductPage() {
 
   // ===== RENDER =====
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 dark:bg-backgroundDark min-h-screen">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Editar producto</h1>
-        <Button variant="outline" onClick={() => navigate(-1)}>
+        <h1 className="text-2xl font-bold dark:text-white">Editar producto</h1>
+        <Button className='dark:bg-brandDark dark:text-white dark:border-brandDark dark:hover:bg-brand dark:hover:border-brand' variant="outline" onClick={() => navigate(-1)}>
           Volver
         </Button>
       </div>
 
       {/* Tabs */}
-      <div className="border-b flex gap-4">
+      <div className="border-b flex gap-4 dark:border-gray-600">
         {[
           { key: 'general', label: 'Datos generales' },
           { key: 'form', label: 'Formulario del producto' },
@@ -731,8 +731,8 @@ export default function EditProductPage() {
             onClick={() => setActiveTab(t.key as 'general' | 'form')}
             className={`py-2 px-4 -mb-px border-b-2 text-sm font-medium ${
               activeTab === t.key
-                ? 'border-brand text-brandDark'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-brand text-brandDark dark:text-brandDark'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
             {t.label}
@@ -743,24 +743,24 @@ export default function EditProductPage() {
       {/* TAB GENERAL */}
       {activeTab === 'general' && (
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2>
-              <p className="text-sm text-gray-500 mt-1">Información básica del producto</p>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-cardDark dark:border-cardDark">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-600">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Datos Generales</h2>
+              <p className="text-sm text-gray-500 mt-1 dark:text-secondaryDark">Información básica del producto</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Imagen */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-white">
                     Imagen del producto
                   </label>
                   {formData.image_url && (
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                      className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1 dark:text-red-400 dark:hover:text-red-300"
                     >
                       <X className="w-4 h-4" />
                       <span>Eliminar</span>
@@ -784,15 +784,15 @@ export default function EditProductPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg transition-colors hover:border-blue-400">
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg transition-colors hover:border-blue-400 dark:border-gray-600 dark:hover:border-blue-500 dark:bg-gray-700/20">
                       <div className="space-y-1 text-center">
                         <div className="flex justify-center">
-                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                          <Upload className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
                         </div>
-                        <div className="flex text-sm text-gray-600">
+                        <div className="flex text-sm text-gray-600 dark:text-gray-400">
                           <label
                             htmlFor="image"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none dark:bg-cardDark dark:text-blue-400 dark:hover:text-blue-300"
                           >
                             <span>Sube una imagen</span>
                             <input
@@ -833,7 +833,7 @@ export default function EditProductPage() {
               {/* Campos */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-white">
                     Nombre del producto<span className="text-red-500 ml-0.5">*</span>
                   </label>
                   <Input
@@ -843,12 +843,12 @@ export default function EditProductPage() {
                     onChange={handleChange}
                     placeholder="Ej: Camiseta de algodón"
                     required
-                    className="mt-1"
+                    className="mt-1 dark:bg-backgroundDark dark:text-secondaryDark dark:placeholder:text-secondaryDark"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-white">
                     Descripción
                   </label>
                   <Textarea
@@ -864,12 +864,12 @@ export default function EditProductPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-white">
                       Precio<span className="text-red-500 ml-0.5">*</span>
                     </label>
                     <div className="relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
+                        <span className="text-gray-500 sm:text-sm dark:text-gray-400">$</span>
                       </div>
                       <Input
                         id="price"
@@ -880,7 +880,7 @@ export default function EditProductPage() {
                         value={formData.price}
                         onChange={handleChange}
                         required
-                        className="pl-7"
+                        className="pl-7 dark:bg-backgroundDark dark:text-secondaryDark dark:placeholder:text-secondaryDark"
                         placeholder="0.00"
                       />
                     </div>
@@ -889,7 +889,7 @@ export default function EditProductPage() {
               </div>
 
               {/* Acciones */}
-              <div className="flex items-center justify-end pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-end pt-4 border-t border-gray-100 dark:border-gray-600">
                 <div className="flex items-center gap-3">
                   {(isSubmitting || isUploading) && (
                     <div className="flex items-center text-sm text-blue-600">
@@ -906,7 +906,7 @@ export default function EditProductPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting || isUploading}
-                    className="min-w-[120px] justify-center"
+                    className="min-w-[120px] justify-center dark:bg-brandDark dark:hover:bg-brand"
                   >
                     {isUploading ? 'Subiendo...' : isSubmitting ? 'Guardando...' : 'Guardar cambios'}
                   </Button>
@@ -919,20 +919,20 @@ export default function EditProductPage() {
 
       {/* TAB FORM BUILDER */}
       {activeTab === 'form' && (
-        <div className="bg-white rounded-xl p-6 shadow space-y-6">
+        <div className="bg-white rounded-xl p-6 shadow space-y-6 dark:bg-cardDark dark:border dark:border-cardDark">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-semibold">Formulario del producto</h2>
-              <p className="text-xs text-gray-500">
+              <h2 className="font-semibold dark:text-white">Formulario del producto</h2>
+              <p className="text-xs text-gray-500 dark:text-secondaryDark">
                 Configura los campos que verá el cliente al hacer el pedido.
               </p>
 
-              <div className='flex flex-row sm:flex-row flex-wrap gap-x-1 gap-y-1 pt-1 text-xs text-gray-500'>
-                <p className="text-xs text-gray-500 ">¿Quieres saber cómo puedes usarlos?</p>
-                <button onClick = {() => setmodalSelectorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">Selector y multiselector, </button>
-                <button  onClick = {() => setmodalTextoOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">texto corto y amplio, </button>
-                <button  onClick = {() => setmodalNumeroOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">número, </button>
-                <button  onClick = {() => setmodalInterruptorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs">e interruptor. </button>
+              <div className='flex flex-row sm:flex-row flex-wrap gap-x-1 gap-y-1 pt-1 text-xs text-gray-500 dark:text-secondaryDark'>
+                <p className="text-xs text-gray-500 dark:text-secondaryDark">¿Quieres saber cómo puedes usarlos?</p>
+                <button onClick = {() => setmodalSelectorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs dark:text-secondaryDark dark:hover:text-brandDark" >Selector y multiselector, </button>
+                <button  onClick = {() => setmodalTextoOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs dark:text-secondaryDark dark:hover:text-brandDark">texto corto y amplio, </button>
+                <button  onClick = {() => setmodalNumeroOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs dark:text-secondaryDark dark:hover:text-brandDark">número, </button>
+                <button  onClick = {() => setmodalInterruptorOpen(true)} className="hover:underline hover:text-brand text-gray-500 text-xs md:text-xs dark:text-secondaryDark dark:hover:text-brandDark">e interruptor. </button>
               </div>
             </div>
            <ModalAnimaciones
@@ -953,14 +953,14 @@ export default function EditProductPage() {
                 description: 'También puedes guardar el borrador o descartar los cambios'
               }}
             >
-              <div className="space-y-4 text-gray-700 text-sm">
+              <div className="space-y-4 text-gray-700 text-sm dark:text-gray-300">
                 <div>
-                  <p className="font-semibold">+ Selector</p>
+                  <p className="font-semibold dark:text-white">+ Selector</p>
                   <p>El selector da la opción al usuario de escoger solamente una de las opciones agregadas al formulario. </p>
                 </div>
 
                 <div>
-                  <p className="font-semibold">+ Multiselector</p>
+                  <p className="font-semibold dark:text-white">+ Multiselector</p>
                   <p>Funciona igual al selector, con la diferencia de que el usuario puede escoger más de una opción</p>
                 </div>
               </div>
@@ -984,14 +984,14 @@ export default function EditProductPage() {
                 description: 'También puedes guardar el borrador o descartar los cambios'
               }}
             >
-              <div className="space-y-4 text-gray-700 text-sm">
+              <div className="space-y-4 text-gray-700 text-sm dark:text-gray-300">
                 <div>
-                  <p className="font-semibold">+ Texto corto</p>
+                  <p className="font-semibold dark:text-white">+ Texto corto</p>
                   <p>El texto corto le da la opción al usuario de personalizar un texto corto en un producto</p>
                 </div>
 
                 <div>
-                  <p className="font-semibold">+ Texto Amplio</p>
+                  <p className="font-semibold dark:text-white">+ Texto Amplio</p>
                   <p>El texto amplio funciona igual; le da la opción al usuario de personalizar un texto en un producto, con la diferencia de que es un texto más largo</p>
                 </div>
               </div>
@@ -1015,9 +1015,9 @@ export default function EditProductPage() {
                 description: 'También puedes guardar el borrador o descartar los cambios'
               }}
             >
-              <div className="space-y-4 text-gray-700 text-sm">
+              <div className="space-y-4 text-gray-700 text-sm dark:text-gray-300">
                 <div>
-                  <p className="font-semibold">+ Número</p>
+                  <p className="font-semibold dark:text-white">+ Número</p>
                   <p>Con el formulario de número, puedes preguntarle al cliente la cantidad de elementos que le desea agregar a un producto</p>
                 </div>
               </div>
@@ -1041,9 +1041,9 @@ export default function EditProductPage() {
                 description: 'También puedes guardar el borrador o descartar los cambios'
               }}
             >
-              <div className="space-y-4 text-gray-700 text-sm">
+              <div className="space-y-4 text-gray-700 text-sm dark:text-gray-300">
                 <div>
-                  <p className="font-semibold">+ Interruptor</p>
+                  <p className="font-semibold dark:text-white">+ Interruptor</p>
                   <p>Con el interruptor le puede realizar preguntas de si o no al cliente</p>
                 </div>
               </div>
@@ -1051,7 +1051,7 @@ export default function EditProductPage() {
 
             <div className="flex items-center gap-3 relative flex-wrap justify-end">
               {showDraftPrompt && hasDraftLS && (
-                <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-full px-2 py-1 mr-2 flex items-center gap-2">
+                <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-full px-2 py-1 mr-2 flex items-center gap-2 dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
                   <span>Encontramos un borrador</span>
                   <Button variant="outline" onClick={continueDraft} size="sm">
                     Continuar
@@ -1080,7 +1080,7 @@ export default function EditProductPage() {
           {isBuilderLoading ? (
               <div className="mt-4 space-y-4">
                 {/* Tarjeta que imita el cambo del formulario */}
-                <div className="border rounded-lg bg-gray-50 p-4 space-y-4">
+                <div className="border rounded-lg bg-gray-50 p-4 space-y-4 dark:bg-gray-700 dark:border-gray-600">
                   {/* Fila superior: "Orden: 1 · Selector" + botones ↑ ↓ Eliminar */}
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-gray-500">
@@ -1120,7 +1120,7 @@ export default function EditProductPage() {
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500">Cargando formulario del producto...</p>
+                <p className="text-xs text-gray-500 dark:text-secondaryDark">Cargando formulario del producto...</p>
               </div>
             ) :formForbidden ? (
             <div className="p-4 rounded bg-red-50 text-red-700 text-sm">
@@ -1218,7 +1218,7 @@ export default function EditProductPage() {
               return (
                 <div className="space-y-3">
                   {items.length === 0 && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-secondaryDark">
                       Aún no hay campos. Agrega uno arriba.
                     </div>
                   )}
@@ -1237,10 +1237,10 @@ export default function EditProductPage() {
                   {items.map((it, idx) => (
                     <div
                       key={`${it.kind}-${it.id}`}
-                      className="border rounded p-4 space-y-3 bg-gray-50"
+                      className="border rounded p-4 space-y-3 bg-gray-50 dark:bg-modalDark dark:border-modalDark"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-secondaryDark">
                           Orden: {it.order} · {getItemLabel(it)}
                         </div>
 
@@ -1309,7 +1309,7 @@ export default function EditProductPage() {
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_auto] gap-3 items-end">
                             <div>
-                              <label className="text-sm text-gray-700">Título</label>
+                              <label className="text-sm text-gray-700 dark:text-white">Título</label>
                               <Input
                                 defaultValue={(it.data as ProductOption).name}
                                 onChange={(e) => {
@@ -1337,7 +1337,7 @@ export default function EditProductPage() {
                                   setHasInteracted(true);
                                 }}
                               />
-                              <span className="text-sm">Requerido</span>
+                              <span className="text-sm dark:text-white">Requerido</span>
                             </div>
                           </div>
 
@@ -1345,7 +1345,7 @@ export default function EditProductPage() {
                           {(it.data as ProductOption).type === 'multiselect' && (
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-sm text-gray-700">Mín. selección</label>
+                                <label className="text-sm text-gray-700 dark:text-white">Mín. selección</label>
                                 <Input
                                   type="number"
                                   defaultValue={(it.data as ProductOption).min_select ?? 0}
@@ -1363,7 +1363,7 @@ export default function EditProductPage() {
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-700">Máx. selección</label>
+                                <label className="text-sm text-gray-700 dark:text-white">Máx. selección</label>
                                 <Input
                                   type="number"
                                   defaultValue={(it.data as ProductOption).max_select ?? 0}
@@ -1385,6 +1385,7 @@ export default function EditProductPage() {
 
                           <div>
                             <Button
+                              className='dark:bg-brandDark dark:hover:bg-brand dark:text-white dark:border-brandDark dark:hover:border-brand'
                               variant="outline"
                               onClick={() =>
                                 setExpandedOptionId(
@@ -1402,8 +1403,9 @@ export default function EditProductPage() {
                             <div className="mt-3 space-y-3">
                               {/* Header de valores */}
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-700">Valores</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-white">Valores</span>
                                 <Button
+                                  className='dark:bg-brandDark dark:hover:bg-brand'
                                   onClick={() => {
                                     const vals = draftValues[it.id] || [];
                                     const lastOrder = vals.length ? vals[vals.length - 1].display_order : 0;
@@ -1513,7 +1515,7 @@ export default function EditProductPage() {
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_auto] gap-3 items-end">
                             <div>
-                              <label className="text-sm text-gray-700">Título</label>
+                              <label className="text-sm text-gray-700 dark:text-white">Título</label>
                               <Input
                                 defaultValue={(it.data as ProductCustomForm).label}
                                 onChange={(e) => {
@@ -1541,7 +1543,7 @@ export default function EditProductPage() {
                                   setHasInteracted(true);
                                 }}
                               />
-                              <span className="text-sm">Requerido</span>
+                              <span className="text-sm dark:text-white">Requerido</span>
                             </div>
                           </div>
 
@@ -1551,7 +1553,7 @@ export default function EditProductPage() {
                           ) && (
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-sm text-gray-700">
+                                <label className="text-sm text-gray-700 dark:text-white">
                                   Máx. caracteres
                                 </label>
                                 <Input
@@ -1575,7 +1577,7 @@ export default function EditProductPage() {
                                 />
                               </div>
                               <div>
-                                <label className="text-sm text-gray-700">
+                                <label className="text-sm text-gray-700 dark:text-white">
                                   Texto de ayuda
                                 </label>
                                 <Input
@@ -1777,11 +1779,11 @@ export default function EditProductPage() {
               {(draftOpts.length + draftForms.length) > 0 &&
                 (hasInteracted || hasDraftLS) &&
                 showSaveMenu && (
-                  <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-md z-10">
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white border dark:bg-modalDark dark:border-modalDark border-gray-200 rounded-lg shadow-md z-10">
                     <div className="py-1 text-sm">
                       {hasInteracted && (draftOpts.length + draftForms.length) > 0 && (
                         <button
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white"
                           onClick={() => {
                             const payload = {
                               options: draftOpts,
@@ -1809,7 +1811,7 @@ export default function EditProductPage() {
                       )}
                       {hasDraftLS && !(baselineKind === 'draft' && hasInteracted) && (
                         <button
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-brandDark/50 dark:text-white"
                           onClick={() => {
                             discardDraftPrompt();
                             setShowSaveMenu(false);
@@ -1820,7 +1822,7 @@ export default function EditProductPage() {
                       )}
                       {hasInteracted && (draftOpts.length + draftForms.length) > 0 && (
                         <button
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50  dark:hover:bg-gray-700 dark:text-white"
                           onClick={() => {
                             if (!baselineSnapshot) {
                               setShowSaveMenu(false);

@@ -381,25 +381,25 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl mt-10">
+    <div className="container mx-auto px-4 py-8 max-w-3xl mt-10 dark:bg-backgroundDark min-h-screen">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">
+        <h1 className="text-2xl font-bold mb-2 dark:text-white">
           {isEditMode ? 'Editar emprendimiento' : 'Nuevo emprendimiento'}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground dark:text-gray-400">
           {isEditMode
             ? 'Actualiza la información de tu emprendimiento.'
             : 'Completa la información básica para crear un nuevo emprendimiento.'}
         </p>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 dark:bg-cardDark dark:border-cardDark">
         <form onSubmit={handleSubmit}>
           <div className="max-w-4xl mx-auto space-y-6">
             
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">
+              <label htmlFor="name" className="block text-sm font-medium mb-1 dark:text-white">
                 Nombre del emprendimiento *
               </label>
               <Input
@@ -413,7 +413,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium mb-1">
+              <label htmlFor="category" className="block text-sm font-medium mb-1 dark:text-white">
                 Categoría *
               </label>
               <select
@@ -421,7 +421,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                 required
               >
                 <option value="">Selecciona una categoría</option>
@@ -434,7 +434,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             </div>
 
             <div>
-              <label htmlFor="user_id" className="block text-sm font-medium mb-1">
+              <label htmlFor="user_id" className="block text-sm font-medium mb-1 dark:text-white">
                 Propietario del emprendimiento *
               </label>
               <select
@@ -442,7 +442,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
                 name="user_id"
                 value={formData.user_id ?? ''}
                 onChange={handleInputChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                 required
                 disabled={isLoadingUsers}
               >
@@ -456,7 +456,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium mb-1">
+              <label htmlFor="description" className="block text-sm font-medium mb-1 dark:text-white">
                 Descripción
               </label>
               <div className="relative">
@@ -472,13 +472,13 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
                   required
                 />
                 <div className={`absolute bottom-2 right-2 text-xs ${
-                  formData.description.length < 150 ? 'text-yellow-600' : 'text-gray-500'
+                  formData.description.length < 150 ? 'text-yellow-600' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                   {formData.description.length}/150
                 </div>
               </div>
               {formData.description.length > 0 && formData.description.length < 150 && (
-                <p className="mt-1 text-sm text-yellow-600">
+                <p className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
                   La descripción debe tener al menos 150 caracteres (actualmente: {formData.description.length})
                 </p>
               )}
@@ -486,7 +486,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
 
             {/* Image Upload */}
             <div>
-              <label htmlFor="image" className="block text-sm font-medium mb-1">
+              <label htmlFor="image" className="block text-sm font-medium mb-1 dark:text-white">
                 Imagen del emprendimiento
               </label>
               <div className="mt-1 flex items-center">
@@ -510,15 +510,15 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
                   </div>
                 ) : (
                   <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-cardDark hover:bg-gray-100 dark:hover:bg-gray-700">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                         </svg>
-                        <p className="mb-2 text-sm text-gray-500">
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                           <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
                         </p>
-                        <p className="text-xs text-gray-500">PNG, JPG o JPEG (MAX. 5MB)</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG o JPEG (MAX. 5MB)</p>
                       </div>
                       <input 
                         id="image" 
@@ -562,16 +562,16 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
       </Card>
       {/* Redes y contactos (Admin) */}
       <div className="mt-6 max-w-4xl mx-auto">
-        <Card className="p-6">
+        <Card className="p-6 dark:bg-cardDark dark:border-cardDark">
           {isEditMode && (formData.id || id) ? (
             <SocialContactsEditor entrepreneurshipId={Number(formData.id || id)} />
           ) : (
             <div className="space-y-2">
               <div>
-                <h2 className="text-lg font-semibold">Redes y contactos de tu emprendimiento</h2>
-                <p className="text-sm text-muted-foreground">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
+                <h2 className="text-lg font-semibold dark:text-white">Redes y contactos de tu emprendimiento</h2>
+                <p className="text-sm text-muted-foreground dark:text-gray-400">Guarda primero la información básica para habilitar la administración de redes y contactos.</p>
               </div>
-              <div className="p-4 rounded border bg-gray-50 text-sm text-gray-600">
+              <div className="p-4 rounded border bg-gray-50 dark:bg-cardDark dark:border-cardDark text-sm text-gray-600 dark:text-gray-400">
                 Una vez crees el emprendimiento, podrás añadir WhatsApp, Teléfono, Maps, Sitio web, Email y más.
               </div>
             </div>

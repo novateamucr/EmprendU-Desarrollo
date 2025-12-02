@@ -28,6 +28,8 @@ export default function RouteComponent() {
   
   // ✅ Nuevo estado para mostrar mensaje de confirmación
   const [confirmationSent, setConfirmationSent] = useState(false);
+  // ✅ Estado para detectar correo existente
+  const [emailExists, setEmailExists] = useState(false);
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -101,6 +103,7 @@ export default function RouteComponent() {
     };
 
     try {
+      setEmailExists(false); // Reset email exists state
       const result = await registerUser(userData);
       if (result) {
         // ✅ Cambiado para mostrar mensaje de confirmación en lugar de ir directo al login
@@ -110,7 +113,17 @@ export default function RouteComponent() {
     } catch (err: any) {
       console.error('Registration failed:', err);
       const errorMessage = err?.message || 'Error en el registro. Por favor intente nuevamente.';
-      toast.error(errorMessage, { position: "bottom-center" });
+      
+      // Detectar si el error es por correo existente
+      if (errorMessage.toLowerCase().includes('email') && 
+          (errorMessage.toLowerCase().includes('existe') || 
+           errorMessage.toLowerCase().includes('already') ||
+           errorMessage.toLowerCase().includes('ya está') ||
+           errorMessage.toLowerCase().includes('duplicado'))) {
+        setEmailExists(true);
+      } else {
+        toast.error(errorMessage, { position: "bottom-center" });
+      }
     }
   };
 
@@ -141,11 +154,11 @@ export default function RouteComponent() {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background dark:bg-backgroundDark">
       <div className="hidden md:block w-0 md:w-[35%] h-screen">
         {optPanelRegister}
       </div>
-      <div className="flex flex-col items-center justify-center bg-background w-full md:w-3/4">
+      <div className="flex flex-col items-center justify-center bg-background dark:bg-backgroundDark w-full md:w-3/4">
         <div className="w-full max-w-md p-4">
           <AuthForm
             style="w-full"
@@ -180,7 +193,7 @@ export default function RouteComponent() {
                     type="button"
                     aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     onClick={() => setShowPassword((s) => !s)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none dark:text-gray-300 dark:hover:text-white"
                   >
                     {showPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -200,8 +213,8 @@ export default function RouteComponent() {
                   <p
                     className={`text-sm mt-1 ${
                       passwordMessage === "La contraseña es válida"
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
                     }`}
                   >
                     {passwordMessage}
@@ -223,7 +236,7 @@ export default function RouteComponent() {
                     type="button"
                     aria-label={showConfirm ? "Ocultar confirmación" : "Mostrar confirmación"}
                     onClick={() => setShowConfirm((s) => !s)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none"
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-600 hover:text-gray-800 focus:outline-none dark:text-gray-300 dark:hover:text-white"
                   >
                     {showConfirm ? (
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -243,8 +256,8 @@ export default function RouteComponent() {
                   <p
                     className={`text-sm mt-1 ${
                       confirmMessage === "Las contraseñas coinciden"
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
                     }`}
                   >
                     {confirmMessage}
@@ -259,7 +272,7 @@ export default function RouteComponent() {
                   key="register"
                   type="button"
                   onClick={handleSubmit}
-                  className="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg w-full disabled:opacity-50 focus-brand"
+                  className="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg w-full disabled:opacity-50 focus-brand dark:bg-brand dark:hover:bg-brandDark"
                   disabled={
                     loading ||
                     passwordMessage !== "La contraseña es válida" ||
@@ -273,29 +286,54 @@ export default function RouteComponent() {
 
           {/* ✅ Mensaje de confirmación de correo */}
           {confirmationSent && (
-            <div className="text-center p-6 bg-green-100 rounded-md mt-4">
-              <h2 className="text-lg font-semibold mb-2">¡Registro exitoso!</h2>
-              <p>Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.</p>
+            <div className="text-center p-6 bg-green-100 rounded-md mt-4 dark:bg-green-900/20">
+              <h2 className="text-lg font-semibold mb-2 dark:text-green-300">¡Registro exitoso!</h2>
+              <p className="dark:text-gray-300">Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.</p>
               <button
                 onClick={() => navigate('/login')}
-                className="mt-4 bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg"
+                className="mt-4 bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg dark:bg-brand dark:hover:bg-brandDark"
               >
                 Ir a Login
               </button>
             </div>
           )}
 
-          {error && (
+          
+          {emailExists && (
+            <div className="text-center p-6 bg-yellow-50 border-2 border-yellow-400 rounded-md mt-4">
+              <h2 className="text-lg font-semibold mb-2 text-yellow-800">Este correo ya está registrado</h2>
+              <p className="text-gray-700 mb-4">
+                Ya existe una cuenta con el correo <strong>{formValues.correo}</strong>.
+                ¿Olvidaste tu contraseña?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => navigate('/pwReset')}
+                  className="bg-brand hover:bg-brandDark text-white font-bold p-3 rounded-lg"
+                >
+                  Recuperar contraseña
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-bold p-3 rounded-lg"
+                >
+                  Iniciar sesión
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && !emailExists && (
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
             </div>
           )}
 
-          <div className="block md:hidden mt-6 text-center text-sm text-gray-600">
+          <div className="block md:hidden mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             ¿Ya tienes cuenta?{" "}
             <a
               href="/login"
-              className="text-brand font-semibold hover:underline"
+              className="text-brand dark:text-brandDark font-semibold hover:underline"
               onClick={e => { e.preventDefault(); navigate('/login'); }}
             >
               Inicia sesión aquí
