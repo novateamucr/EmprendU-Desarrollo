@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { useAuth } from '../context/AuthContext';
 import { getOrder, cancelOrder } from '../services/orderService';
-import { getProductsByIds } from '../services/productService';
+import { getProductsByIds, type Product } from '../services/productService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ type OrderItem = {
   order_id: number;
   product_id: number;
   product_name: string | null;
+
   product_details?: {
     id: number;
     name: string;
@@ -32,6 +33,7 @@ type OrderItem = {
   options_total: number;
   subtotal: number;
   order_options: any[];
+  options?: any[];
 };
 
 type Order = {
@@ -289,164 +291,150 @@ export default function MyOrderDetail() {
             </div>
           </div>
 
-          {/* Order Summary */}
+          {/* Order Summary (sin detalles de pago) */}
           <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 border-b border-gray-200 dark:border-cardDark">
             <div>
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Emprendimiento</h3>
-              <p className="mt-1 text-sm text-gray-900 dark:text-white">{order.entrepreneurship_name}</p>
+              <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                {order.entrepreneurship_name}
+              </p>
             </div>
-            <div className="mt-4 sm:mt-0">
+
+            <div className="mt-4 sm:mt-0 sm:col-span-2">
               <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Cliente</h3>
-              <p className="mt-1 text-sm text-gray-900 dark:text-white">{order.customer_name}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{order.customer_email}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Tel: {order.customer_phone_8}</p>
-            </div>
-            <div className="mt-4 sm:mt-0">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Detalles del pago</h3>
-              <p className="mt-1 text-sm text-gray-900 dark:text-white">Efectivo al recoger</p>
+              <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                {order.customer_name}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {order.customer_email}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Tel: {order.customer_phone_8}
+              </p>
             </div>
           </div>
 
           {/* Order Items */}
           <div className="border-t border-gray-200 dark:border-cardDark">
             <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Productos</h3>
-            </div>
-            <div className="border-t border-gray-200 dark:border-cardDark divide-y divide-gray-200 dark:divide-cardDark">
-              {order.items && Array.isArray(order.items) && order.items.length > 0 ? (
-                order.items.map((item) => {
-                  console.log('Order item:', item); // Debug log
-                  const totalPrice = (item.unit_price * item.quantity) + (item.options_total || 0);
-                  
-                  return (
-                    <div key={item.id} className="px-4 py-4 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start">
-                            <div className="h-16 w-16 flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
-                              {item.product_details?.image_url ? (
-                                <img
-                                  src={item.product_details.image_url}
-                                  alt={item.product_details.name}
-                                  className="h-full w-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.onerror = null;
-                                    target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiA5Q0EwQjkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1wYWNrYWdlIj48cGF0aCBkPSJNMTYuNSA5LjQgNy41IDRjLTEgLjU3Ni0xLjYxNiAxLjQyLTEuNjE2IDIuNnY2LjgxYzAgMS4xOCAuNjE2IDIuMDI0IDEuNjE2IDIuNmw5IDUuNGMxIC41NzYgMi42MTYuNTc2IDMuNjE2IDBsOS01LjRjMS0uNTc2IDEuNjE2LTEuNDIgMS42MTYtMi42di02LjgxYzAtMS4xOC0uNjE2LTIuMDI0LTEuNjE2LTIuNmwtOS01LjRhMS44MTUgMS44MTUgMCAwIDAtMS44MzggMGwtLjE2Mi4wOTciLz48cGF0aCBkPSJtMTYuNSA5LjQtOS01LjQiLz48cGF0aCBkPSJNMTYuNSA5LjR2Ni44MWMwIDEuMTgtLjYxNiAyLjAyNC0xLjYxNiAyLjZsLTkgNS40Ii8+PHBhdGggZD0ibTE2LjUgOS40LTkgNS40Ii8+PC9zdmc+'
-                                  }}
-                                />
-                              ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                                  <svg
-                                    className="h-8 w-8 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={1}
-                                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                    />
-                                  </svg>
-                                </div>
-                              )}
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                Productos
+              </h3>
+
+              {order.items && order.items.length > 0 ? (
+                <div className="space-y-6">
+                  {order.items.map((item) => {
+                    const formOptions =
+                      item.order_options && item.order_options.length > 0
+                        ? item.order_options
+                        : item.options && Array.isArray(item.options)
+                          ? item.options
+                          : [];
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-start border-b border-gray-100 dark:border-cardDark pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700">
+                          {item.product_details?.image_url ? (
+                            <img
+                              src={item.product_details.image_url}
+                              className="h-full w-full object-cover object-center"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
+                              Sin imagen
                             </div>
-                          <div className="ml-4">
+                          )}
+                        </div>
+
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                                {item.product_details?.name || item.product_name || `Producto #${item.product_id}`}
+                                {item.product_details?.name ||
+                                  item.product_name ||
+                                  `Producto #${item.product_id}`}
                               </h4>
+
                               {item.product_details?.description && (
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                                   {item.product_details.description}
                                 </p>
                               )}
+
+                              {formOptions && formOptions.length > 0 && (
+                                <div className="mt-2 bg-gray-50 dark:bg-backgroundDark/50 rounded-md px-3 py-2">
+                                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">
+                                    Detalles del formulario
+                                  </p>
+                                  <dl className="space-y-2">
+                                    {formOptions.map((option: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="text-xs border-l border-gray-200 dark:border-cardDark pl-2"
+                                      >
+                                        <dt className="text-[11px] font-semibold text-gray-800 dark:text-gray-200">
+                                          {option.option_name}
+                                        </dt>
+                                        <dd className="mt-0.5 text-[11px] text-gray-700 dark:text-gray-300 break-words">
+                                          <span className="text-gray-800 dark:text-gray-100">
+                                            {option.option_value}
+                                          </span>
+                                          {option.price_delta > 0 && (
+                                            <span className="text-[10px] text-green-600 dark:text-green-400 ml-1 font-medium">
+                                              (+₡{option.price_delta.toLocaleString()})
+                                            </span>
+                                          )}
+                                        </dd>
+                                      </div>
+                                    ))}
+                                  </dl>
+                                </div>
+                              )}
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Cantidad: {item.quantity} × ₡{item.unit_price?.toLocaleString()}
+
+                            <p className="ml-4 text-sm font-medium text-gray-900 dark:text-white">
+                              ₡{(item.unit_price * item.quantity).toLocaleString()}
                             </p>
-                            {item.product_details && (
-                              <Link
-                                to={`/product/${item.product_id}`}
-                                className="inline-flex items-center mt-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
-                              >
-                                Ver producto
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </Link>
-                            )}
-                            
-                            {/* Display options if they exist */}
-                            {item.order_options && item.order_options.length > 0 && (
-                              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                {item.order_options.map((option, idx) => (
-                                  <div key={idx}>
-                                    {option.option_name}: {option.option_value}
-                                    {option.price_delta > 0 && ` (+₡${option.price_delta.toLocaleString()})`}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {item.options_total > 0 && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Opciones: ₡{item.options_total.toLocaleString()}
-                              </p>
-                            )}
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            ₡{totalPrice.toLocaleString()}
+
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                            Cantidad: {item.quantity} × ₡{item.unit_price?.toLocaleString()}
                           </p>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="px-4 py-4 sm:px-6 text-center text-gray-500 dark:text-gray-400">
-                  No hay productos en este pedido
+                    );
+                  })}
                 </div>
+              ) : (
+                <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                  No hay productos en este pedido.
+                </p>
               )}
             </div>
           </div>
 
-          {/* Order Totals */}
+          {/* Order Totals (simple, funcionalidad tuya) */}
           <div className="bg-gray-50 dark:bg-backgroundDark/50 px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-cardDark">
-            <div className="flex justify-between text-base font-medium text-gray-900 dark:text-white">
-              <p>Subtotal</p>
-              <p>₡{order.items_total?.toLocaleString() || '0'}</p>
-            </div>
-            <div className="mt-2 flex justify-between text-sm text-gray-500 dark:text-gray-400">
-              <p>Envío</p>
-              <p>₡{order.shipping_total?.toLocaleString() || '0'}</p>
-            </div>
-            {order.discount_total > 0 && (
-              <div className="mt-2 flex justify-between text-sm text-green-600 dark:text-green-400">
-                <p>Descuento</p>
-                <p>-₡{order.discount_total?.toLocaleString() || '0'}</p>
-              </div>
-            )}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-cardDark flex justify-between text-lg font-medium text-gray-900 dark:text-white">
-              <p>Total</p>
-              <p>₡{order.grand_total?.toLocaleString() || '0'}</p>
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-cardDark flex justify-between items-center">
+              <p className="text-base font-medium text-gray-900 dark:text-white">
+                Total del pedido
+              </p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                ₡{(order.grand_total ?? order.items_total)?.toLocaleString()}
+              </p>
             </div>
           </div>
-
-          {/* Order Notes */}
-          {order.notes && (
-            <div className="px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-cardDark">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white">Notas del pedido</h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{order.notes}</p>
-            </div>
-          )}
         </div>
 
         {/* Cancel Order Dialog */}
-        <Dialog open={cancelOpen} onClose={() => !isSubmitting && setCancelOpen(false)} className="relative z-50">
+        <Dialog
+          open={cancelOpen}
+          onClose={() => !isSubmitting && setCancelOpen(false)}
+          className="relative z-50"
+        >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
             <Dialog.Panel className="w-full max-w-md rounded-lg bg-white dark:bg-cardDark p-6 dark:border dark:border-cardDark">
@@ -477,6 +465,7 @@ export default function MyOrderDetail() {
             </Dialog.Panel>
           </div>
         </Dialog>
+
       </div>
     </div>
   );

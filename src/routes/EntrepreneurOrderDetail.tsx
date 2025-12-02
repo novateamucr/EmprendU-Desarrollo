@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { getOrder, updateOrderStatus } from "../services/orderService";
+import { getProductsByIds, type Product } from "../services/productService";
 import {
   CheckCircle2,
   XCircle,
@@ -64,6 +65,7 @@ type Order = {
   items: OrderItem[];
   created_at: string;
   updated_at: string;
+  order_number?: string | number;
 };
 
 function mapStatus(s?: string) {
@@ -156,9 +158,17 @@ export default function EntrepreneurOrderDetail() {
           const optionsTotal = Number(item?.options_total || 0);
           const subtotal = unitPrice * quantity + optionsTotal;
 
+          // Prefer stored product_name, but fall back to related product.name or generic label
           const productName =
             item?.product_name ||
+            item?.product?.name ||
             `Producto #${item?.product_id || item?.id || ""}`;
+
+          // Prefer any explicit product_image, then product.image_url if available
+          const productImage =
+            item?.product_image ||
+            item?.product?.image_url ||
+            undefined;
 
           return {
             ...item,
@@ -166,6 +176,7 @@ export default function EntrepreneurOrderDetail() {
             order_id: item?.order_id || 0,
             product_id: item?.product_id || 0,
             product_name: productName,
+            product_image: productImage,
             quantity: quantity,
             unit_price: unitPrice,
             options_total: optionsTotal,
@@ -181,6 +192,36 @@ export default function EntrepreneurOrderDetail() {
           (sum: number, item: any) => sum + (item.subtotal || 0),
           0 as number
         );
+
+        // Enrich items with fresh product data (name & image) when possible
+        let enrichedItems = processedItems;
+        try {
+          const rawProductIds = processedItems
+            .map((it: any) => it.product_id)
+            .filter(
+              (id: any): id is number => typeof id === "number" && id > 0
+            );
+
+          const productIds: number[] = Array.from(new Set<number>(rawProductIds));
+
+          if (productIds.length > 0) {
+            const products: Product[] = await getProductsByIds(productIds);
+            enrichedItems = processedItems.map((it: any) => {
+              const product = products.find((p) => p.id === it.product_id);
+              return {
+                ...it,
+                // Prefer always the current product name from catalog when available
+                product_name:
+                  product?.name ||
+                  it.product_name ||
+                  `Producto #${it.product_id || it.id || ""}`,
+                product_image: it.product_image || product?.image_url || undefined,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn("Failed to enrich items with product data", e);
+        }
 
         // Create the final order object with all required fields
         const processedOrder = {
@@ -206,7 +247,7 @@ export default function EntrepreneurOrderDetail() {
           notes: orderData.notes || null,
           created_at: orderData.created_at || new Date().toISOString(),
           updated_at: orderData.updated_at || new Date().toISOString(),
-          items: processedItems,
+          items: enrichedItems,
           order_number: orderData.order_number || orderData.id,
           entrepreneurship: orderData.entrepreneurship || {
             id: orderData.entrepreneurship_id,
@@ -372,60 +413,76 @@ export default function EntrepreneurOrderDetail() {
             </h4>
             <div className="space-y-6">
               {order.items?.length > 0 ? (
-                order.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100">
-                      {item.product_image ? (
-                        <img
-                          src={item.product_image}
-                          alt={item.product_name}
-                          className="h-full w-full object-cover object-center"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-gray-400">
-                          <Package className="h-6 w-6" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {item.product_name}
-                          </h4>
-                          {item.options && item.options.length > 0 && (
-                            <div className="mt-1 space-y-1">
-                              {item.options?.map((option) => (
-                                <div
-                                  key={option.id}
-                                  className="text-xs text-gray-500"
-                                >
-                                  {option.option_name}: {option.option_value}
-                                  {option.price_delta > 0 && (
-                                    <span className="text-green-600 ml-1">
-                                      (+₡{option.price_delta.toLocaleString()})
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="ml-4 text-sm font-medium text-gray-900">
-                          ₡{(item.unit_price * item.quantity).toLocaleString()}
-                        </p>
+                order.items.map((item) => {
+                  const formOptions =
+                    item.order_options && item.order_options.length > 0
+                      ? item.order_options
+                      : (item as any).options && Array.isArray((item as any).options)
+                        ? (item as any).options
+                        : [];
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                    >
+                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100">
+                        {item.product_image ? (
+                          <img
+                            src={item.product_image}
+                            className="h-full w-full object-cover object-center"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-gray-400">
+                            <Package className="h-6 w-6" />
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500">
-                        <span>Cantidad: {item.quantity}</span>
-                        <span className="mx-2">•</span>
-                        <span>₡{item.unit_price.toLocaleString()} c/u</span>
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {item.product_name || `Producto #${item.product_id}`}
+                            </h4>
+
+                            {formOptions && formOptions.length > 0 && (
+                              <div className="mt-2 bg-gray-50 rounded-md px-3 py-2">
+                                <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                                  Detalles del formulario
+                                </p>
+                                <dl className="space-y-2">
+                                  {formOptions.map((option: OrderItem["order_options"][number]) => (
+                                    <div key={option.id} className="text-xs border-l border-gray-200 pl-2">
+                                      <dt className="text-[11px] font-semibold text-gray-800">
+                                        {option.option_name}
+                                      </dt>
+                                      <dd className="mt-0.5 text-[11px] text-gray-700 break-words">
+                                        <span className="text-gray-800">{option.option_value}</span>
+                                        {option.price_delta > 0 && (
+                                          <span className="text-[10px] text-green-600 ml-1 font-medium">
+                                            (+₡{option.price_delta.toLocaleString()})
+                                          </span>
+                                        )}
+                                      </dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              </div>
+                            )}
+                          </div>
+                          <p className="ml-4 text-sm font-medium text-gray-900">
+                            ₡{(item.unit_price * item.quantity).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                          <span>Cantidad: {item.quantity}</span>
+                          <span className="mx-2">•</span>
+                          <span>₡{item.unit_price.toLocaleString()} c/u</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   No hay productos en este pedido
@@ -437,25 +494,7 @@ export default function EntrepreneurOrderDetail() {
           {/* Order Summary */}
           <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
             <div className="space-y-3">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Subtotal</span>
-                <span>₡{order.items_total?.toLocaleString() || "0"}</span>
-              </div>
-              {order.shipping_total > 0 && (
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Envío</span>
-                  <span>₡{order.shipping_total.toLocaleString()}</span>
-                </div>
-              )}
-              {order.discount_total > 0 && (
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Descuento</span>
-                  <span className="text-green-600">
-                    -₡{order.discount_total.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between text-base font-medium text-gray-900 pt-2 border-t border-gray-200 mt-2">
+              <div className="flex justify-between text-base font-medium text-gray-900 pt-2">
                 <span>Total</span>
                 <span>
                   ₡
@@ -484,7 +523,7 @@ export default function EntrepreneurOrderDetail() {
                 <button
                   onClick={() => doUpdate("accepted")}
                   disabled={!!updating}
-                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:bg-brandDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updating === "accepted" ? "Procesando..." : "Aceptar pedido"}
                 </button>

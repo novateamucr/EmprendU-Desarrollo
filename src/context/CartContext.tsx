@@ -21,7 +21,7 @@ export type CartGroup = {
   entrepreneurshipId: string;
   entrepreneurshipName: string;
   groupId: string;
-  status: 'requested';
+  status: 'draft' | 'requested';
   orderId?: number;
   items: CartItem[];
   notes?: string;
@@ -266,28 +266,50 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       
       for (const item of group.items) {
         try {
-          // Prepare order item options from selections
-          const options = item.selections?.options?.flatMap(option => {
-            if (!option.optionId || !option.valueIds?.length) return [];
-            return option.valueIds.map(valueId => ({
-              option_id: option.optionId,
-              value_ids: [valueId]
-            }));
-          }) || [];
-          
-          // Prepare custom fields from selections
-          const customFields = item.selections?.customs?.map(custom => ({
-            form_id: custom.formId,
-            value: custom.value
-          })) || [];
-          
+          // Prepare order item options from selections (what the backend expects)
+          const orderItemOptions: {
+            product_option_id?: number;
+            product_option_value_id?: number;
+            option_name: string;
+            option_value?: string;
+            price_delta: number;
+          }[] = [];
+
+          // 1) Options (select/multiselect) -> cada valor seleccionado se vuelve una opción
+          item.selections?.options?.forEach(option => {
+            const { optionId, optionName, valueIds, valueLabels } = option;
+            if (!optionId || !valueIds || valueIds.length === 0) return;
+
+            valueIds.forEach((valueId, idx) => {
+              const label = valueLabels && valueLabels[idx] ? valueLabels[idx] : undefined;
+              orderItemOptions.push({
+                product_option_id: optionId,
+                product_option_value_id: valueId,
+                option_name: optionName || 'Opción',
+                option_value: label,
+                price_delta: 0,
+              });
+            });
+          });
+
+          // 2) Custom forms (preguntas de formulario) -> una opción por campo
+          item.selections?.customs?.forEach(custom => {
+            const value = custom.value;
+            if (value === undefined || value === null || String(value).trim() === '') return;
+
+            orderItemOptions.push({
+              option_name: custom.formLabel || 'Campo',
+              option_value: String(value),
+              price_delta: 0,
+            });
+          });
+
           // Add the item to the order
           await cartApi.addOrderItem(orderId, {
             product_id: parseInt(item.productId, 10),
             quantity: item.quantity,
             unit_price: item.price,
-            options,
-            custom_fields: customFields
+            order_item_options: orderItemOptions,
           });
           
           console.log(`Added item ${item.productId} to order ${orderId}`);
