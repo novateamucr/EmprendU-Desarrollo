@@ -305,7 +305,6 @@ class UserController extends Controller
             'banned' => 'boolean',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'avatar_url' => 'nullable|string',
-            'role' => 'nullable|exists:roles,id',
         ];
 
         // If _method is present, it's a form submission

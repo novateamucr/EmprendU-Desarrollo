@@ -629,7 +629,7 @@ class EntrepreneurshipController extends Controller
 
        public function destroy($id, R2FileUploadService $fileUploadService)
     {
-        $entrepreneurship = Entrepreneurship::withTrashed()->findOrFail($id);
+        $entrepreneurship = Entrepreneurship::findOrFail($id);
         
         DB::beginTransaction();
         try {
@@ -643,6 +643,7 @@ class EntrepreneurshipController extends Controller
             // Remove or detach related records to avoid FK issues
             // ... [previous related records deletion code] ...
 
+            // Hard delete
             $entrepreneurship->delete();
 
             DB::commit();
