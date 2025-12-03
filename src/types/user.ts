@@ -7,6 +7,17 @@ export interface Ubicacion {
   direccionBreve?: string;
 }
 
+export interface AdditionalLocation {
+  id: number;
+  user_id: number;
+  provincia: string;
+  canton: string;
+  distrito: string;
+  direccion_breve: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Favorito {
   id: string;
   nombre: string;

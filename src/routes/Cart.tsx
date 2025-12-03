@@ -1,26 +1,51 @@
 import { useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, Plus, Minus, Info, CheckCircle } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, Info, CheckCircle, MapPin } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Layout } from '../components/layout/Layout';
 import { ModalAnimaciones } from '../components/ui/ModalAnimaciones';
 import useScrollTop from '../hooks/useScrollTop';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import RealizarPedidoGif from '../assets/animaciones/AnimacionRealizarPedido.gif';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import { listUserLocations, type Ubicacion } from '../services/ubicacionService';
 export default function Cart() {
-  const { 
-    groups, 
-    removeItem, 
-    updateQty, 
-    placeOrder, 
-    isPlacingOrder, 
+  const {
+    groups,
+    removeItem,
+    updateQty,
+    placeOrder,
+    isPlacingOrder,
     orderError,
-    isPlaced
+    isPlaced,
+    setGroupLocation
   } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [showProfileReminder, setShowProfileReminder] = useState(false);
   const [showExtraModal, setShowExtraModal] = useState(false);
   const [currentOrderingGroup, setCurrentOrderingGroup] = useState<string | null>(null);
+  const [userLocations, setUserLocations] = useState<Ubicacion[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+
+  // Fetch user's additional locations
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!user?.id) return;
+
+      setLoadingLocations(true);
+      try {
+        const locations = await listUserLocations(user.id);
+        setUserLocations(locations);
+      } catch (error) {
+        console.error('Error fetching user locations:', error);
+      } finally {
+        setLoadingLocations(false);
+      }
+    };
+
+    fetchLocations();
+  }, [user?.id]);
 
   const handlePlaceOrder = useCallback(async (entrepreneurshipId: string) => {
     setCurrentOrderingGroup(entrepreneurshipId);
@@ -39,7 +64,7 @@ export default function Cart() {
           className: 'bg-green-50 text-green-800 flex items-center',
           progressClassName: 'bg-green-500',
         });
-        
+
         // The cart will be automatically cleared by the CartContext
         // Navigate to the orders page or home
         navigate('/orders');
@@ -137,14 +162,14 @@ export default function Cart() {
                   </svg>
                 </button>
                 {group.status === 'requested' ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Pedido realizado
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Pedido en carrito
-                    </span>
-                  )}
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Pedido realizado
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Pedido en carrito
+                  </span>
+                )}
               </div>
               {orderError && group.entrepreneurshipId === currentOrderingGroup && (
                 <div className="mt-2 text-sm text-red-600">{orderError}</div>
@@ -231,6 +256,37 @@ export default function Cart() {
               </div>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-cardDark border-t border-border dark:border-backgroundDark">
+              {/* Location Selector */}
+              {group.status !== 'requested' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+                    <MapPin className="w-4 h-4 inline mr-1" />
+                    Dirección de entrega
+                  </label>
+                  <select
+                    value={group.selectedLocationId || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setGroupLocation(
+                        group.entrepreneurshipId,
+                        value ? parseInt(value, 10) : null
+                      );
+                    }}
+                    className="w-full px-3 py-2 border border-border dark:border-backgroundDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-brandDark"
+                  >
+                    <option value="">Usar dirección del perfil</option>
+                    {userLocations.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.province}, {location.canton}, {location.district}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingLocations && (
+                    <p className="text-xs text-gray-500 dark:text-secondaryDark mt-1">Cargando ubicaciones...</p>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600 dark:text-secondaryDark">Subtotal:</span>
                 <span className="dark:text-white">₡{group.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</span>
@@ -245,11 +301,10 @@ export default function Cart() {
                 <button
                   onClick={() => handlePlaceOrder(group.entrepreneurshipId)}
                   disabled={isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId}
-                  className={`mt-4 w-full py-3 rounded-md font-medium text-sm ${
-                    isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
-                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed'
-                      : 'bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand'
-                  } transition-colors`}
+                  className={`mt-4 w-full py-3 rounded-md font-medium text-sm ${isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId
+                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300 cursor-not-allowed'
+                    : 'bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand'
+                    } transition-colors`}
                 >
                   {isPlacingOrder && currentOrderingGroup === group.entrepreneurshipId ? (
                     'Procesando tu pedido...'
@@ -298,37 +353,37 @@ export default function Cart() {
 
         {/* Modal extra (info) - reutilizado en la vista con contenido */}
         <ModalAnimaciones
-            isOpen={showExtraModal}
-            onClose={() => setShowExtraModal(false)}
-            title="¿Cómo realizar un pedido?"
-            pointerGifSrc={RealizarPedidoGif}
-            notice={{
-              title: 'Completa la Información de tu perfil',
-              description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
-            }}
-          >
-            <div className="space-y-4 text-gray-700 dark:text-secondaryDark text-sm">
-              <div>
-                <p className="font-semibold dark:text-white">Agrega productos al carrito</p>
-                <p>Agrega productos al carrito para poder realizar un pedido</p>
-              </div>
-
-              <div>
-                <p className="font-semibold dark:text-white">En el Carrito - Haz click en "Confirmar pedido"</p>
-                <p>En el carrito podrás ver los productos que agregaste al carrito</p>
-              </div>
-
-              <div>
-                <p className="font-semibold dark:text-white">Espera confirmación del emprendimiento</p>
-                <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
-              </div>
-
-              <div>
-                <p className="font-semibold dark:text-white">Revisa el estado de tu pedido</p>
-                <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
-              </div>
+          isOpen={showExtraModal}
+          onClose={() => setShowExtraModal(false)}
+          title="¿Cómo realizar un pedido?"
+          pointerGifSrc={RealizarPedidoGif}
+          notice={{
+            title: 'Completa la Información de tu perfil',
+            description: 'Para poder realizar un pedido, debes de tener completa toda la información de tu perfil'
+          }}
+        >
+          <div className="space-y-4 text-gray-700 dark:text-secondaryDark text-sm">
+            <div>
+              <p className="font-semibold dark:text-white">Agrega productos al carrito</p>
+              <p>Agrega productos al carrito para poder realizar un pedido</p>
             </div>
-          </ModalAnimaciones>
+
+            <div>
+              <p className="font-semibold dark:text-white">En el Carrito - Haz click en "Confirmar pedido"</p>
+              <p>En el carrito podrás ver los productos que agregaste al carrito</p>
+            </div>
+
+            <div>
+              <p className="font-semibold dark:text-white">Espera confirmación del emprendimiento</p>
+              <p>El emprendimiento se puede poner en contacto a la hora de visualizar tu pedido, o te lo puede confirmar sin necesidad de contacto</p>
+            </div>
+
+            <div>
+              <p className="font-semibold dark:text-white">Revisa el estado de tu pedido</p>
+              <p>Este paso es importante para que el emprendimiento te deje saber si puede aceptar el pedido</p>
+            </div>
+          </div>
+        </ModalAnimaciones>
       </div>
     </Layout>
 

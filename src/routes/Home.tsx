@@ -201,7 +201,7 @@ const Categories = React.memo(({ categories, selectedCategory, setSelectedCatego
                   <button
                     key={categoryName}
                     onClick={() => setSelectedCategory(categoryName)}
-                    className={`${baseClass} shadow-md border`} 
+                    className={`${baseClass} shadow-md border`}
                     style={{
                       backgroundColor: category.color || "#4F46E5",
                       color: "#FFFFFF",

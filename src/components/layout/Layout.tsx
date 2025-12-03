@@ -16,21 +16,21 @@ export function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
   const { getItemCount, showJustAdded } = useCart();
   const cartItemCount = getItemCount();
-  
+
   const navItems = [
-   
-    { 
-      type: 'link' as const, 
-      label: 'Inicio', 
+
+    {
+      type: 'link' as const,
+      label: 'Inicio',
       to: '/home',
       // Only show to entrepreneurs (role 2) and clients (role 1)
       visible: user?.role === 2 || user?.role === 1
     },
-    { 
-      type: 'link' as const, 
-      label: 'Ferias y Actividades', 
+    {
+      type: 'link' as const,
+      label: 'Ferias y Actividades',
       to: '/ferias/actividades',
-      
+
       visible: user?.role === 1
     },
     {
@@ -61,17 +61,17 @@ export function Layout({ children }: LayoutProps) {
       ],
       visible: user?.role === 2
     },
-    { 
-      type: 'link' as const, 
-      label: 'Ferias y Actividades', 
+    {
+      type: 'link' as const,
+      label: 'Ferias y Actividades',
       to: '/ferias',
       // Only show to entrepreneurs (role 2)
       visible: user?.role === 2
     },
-    
-    { 
-      type: 'link' as const, 
-      label: 'Dashboard', 
+
+    {
+      type: 'link' as const,
+      label: 'Dashboard',
       to: '/admin/dashboard',
       // Only show to admins (role 3)
       visible: user?.role === 3
@@ -80,35 +80,35 @@ export function Layout({ children }: LayoutProps) {
       type: 'dropdown' as const,
       label: 'Gestión',
       items: [
-        { 
-          type: 'link' as const, 
-          label: 'CRUD Usuarios', 
+        {
+          type: 'link' as const,
+          label: 'CRUD Usuarios',
           to: '/admin/usuarios',
           // Only show to admins (role 3)
           visible: user?.role === 3
         },
-        { 
-          type: 'link' as const, 
-          label: 'CRUD Emprendimientos', 
+        {
+          type: 'link' as const,
+          label: 'CRUD Emprendimientos',
           to: '/admin/emprendimientos',
           // Only show to admins (role 3)
           visible: user?.role === 3
         },
-        { 
-          type: 'link' as const, 
-          label: 'CRUD Productos', 
+        {
+          type: 'link' as const,
+          label: 'CRUD Productos',
           to: '/admin/productos',
           // Only show to admins (role 3)
           visible: user?.role === 3
         },
-        { 
-          type: 'link' as const, 
-          label: 'CRUD Ferias', 
+        {
+          type: 'link' as const,
+          label: 'CRUD Ferias',
           to: '/admin/ferias',
           // Only show to admins (role 3)
           visible: user?.role === 3
         },
-    ],
+      ],
       visible: user?.role === 3
     },
   ];
@@ -137,8 +137,8 @@ export function Layout({ children }: LayoutProps) {
   );
 
   const logo = (
-    <Link 
-      to={user?.role === 3 ? '/admin/dashboard' : '/home'} 
+    <Link
+      to={user?.role === 3 ? '/admin/dashboard' : '/home'}
       className="flex items-center"
       aria-label={user?.role === 3 ? 'Ir al panel de administración' : 'Ir al inicio'}
     >
@@ -167,7 +167,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       )}
-      <main className="flex-1 w-full overflow-auto">
+      <main className="flex-1 w-full">
         <div className="max-w-full mx-auto w-full h-full px-8 pt-6 pb-0 flex flex-col min-h-full ">
           {children}
         </div>

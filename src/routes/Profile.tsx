@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import useScrollTop from '../hooks/useScrollTop';
-import { Plus } from 'lucide-react';
+import { Plus, MapPin, Edit2, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/layout/Layout';
@@ -17,6 +17,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { categoryApi, entrepreneurshipApi, type Entrepreneurship } from '../services/entrepreneurshipService';
 import { categoryIconUrl } from '../utils/categoryIcons';
 import { Favorite } from '@mui/icons-material';
+import { listUserLocations, createLocation, updateLocation, deleteLocation, type Ubicacion } from '../services/ubicacionService';
+import { useLocations } from '../hooks/useLocations';
 
 interface ProfileData extends Omit<UserProfile, 'interests'> {
   role_relation?: {
@@ -64,7 +66,7 @@ export function Perfil() {
       try {
         const response = await categoryApi.getAll();
         console.log('Categories API Response:', response);
-        
+
         // Handle different response formats
         if (Array.isArray(response)) {
           return response as ICategory[];
@@ -86,7 +88,7 @@ export function Perfil() {
     staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
-  
+
   const categories = categoriesData || [];
   const [showConfetti, setShowConfetti] = useState(false);
   // Carga y reintentos por sección
@@ -94,6 +96,21 @@ export function Perfil() {
   const [interestsRetry, setInterestsRetry] = useState(0);
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
   const [favoritesRetry, setFavoritesRetry] = useState(0);
+
+  // Additional Locations state
+  const [userLocations, setUserLocations] = useState<Ubicacion[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [showAddLocationModal, setShowAddLocationModal] = useState(false);
+  const [showEditLocationModal, setShowEditLocationModal] = useState(false);
+  const [showDeleteLocationModal, setShowDeleteLocationModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Ubicacion | null>(null);
+  const [locationFormData, setLocationFormData] = useState({
+    province: '',
+    canton: '',
+    district: '',
+    direccion_breve: ''
+  });
+  const { provincias, cantones, distritos, loading: locationsLoading, loadCantones, loadDistritos } = useLocations();
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -111,7 +128,7 @@ export function Perfil() {
   // Fetch user data
   const fetchUserData = useCallback(async (force = false) => {
     if (!authUser) return; // Don't fetch if no authenticated user
-    
+
     // Skip initial fetch if we already have the data from auth context
     if (initialLoad && authUser && !force) {
       setInitialLoad(false);
@@ -122,7 +139,7 @@ export function Perfil() {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const apiClient = createApiClient();
       console.log(`Fetching user data for ID: ${authUser.id}`);
@@ -144,10 +161,10 @@ export function Perfil() {
         if (!error.response) {
           throw new Error('No se pudo conectar al servidor. Por favor verifica tu conexión a internet.');
         }
-        
+
         throw new Error(error.response.data?.message || 'Error al cargar el perfil');
       });
-      
+
       console.log('User data response:', response.data);
       setUser(mapApiResponseToProfile(response.data));
     } catch (err) {
@@ -266,6 +283,88 @@ export function Perfil() {
     loadFavoriteDetails();
   }, [user?.favorites, favDetailMap]);
 
+  // Fetch user's additional locations
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!authUser?.id) return;
+
+      setLoadingLocations(true);
+      try {
+        const locations = await listUserLocations(authUser.id);
+        setUserLocations(locations);
+      } catch (error) {
+        console.error('Error fetching user locations:', error);
+      } finally {
+        setLoadingLocations(false);
+      }
+    };
+
+    fetchLocations();
+  }, [authUser?.id]);
+
+  // Handle adding a new location
+  const handleAddLocation = async () => {
+    if (!authUser?.id) return;
+    if (!locationFormData.province || !locationFormData.canton || !locationFormData.district) {
+      setError(new Error('Por favor completa todos los campos'));
+      return;
+    }
+
+    try {
+      const newLocation = await createLocation({
+        user_id: authUser.id,
+        province: locationFormData.province,
+        canton: locationFormData.canton,
+        district: locationFormData.district
+      });
+      setUserLocations(prev => [...prev, newLocation]);
+      setShowAddLocationModal(false);
+      setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+    } catch (err) {
+      console.error('Error creating location:', err);
+      setError(new Error('No se pudo agregar la ubicación'));
+    }
+  };
+
+  // Handle editing a location
+  const handleEditLocation = async () => {
+    if (!selectedLocation) return;
+    if (!locationFormData.province || !locationFormData.canton || !locationFormData.district) {
+      setError(new Error('Por favor completa todos los campos'));
+      return;
+    }
+
+    try {
+      const updated = await updateLocation(selectedLocation.id, {
+        province: locationFormData.province,
+        canton: locationFormData.canton,
+        district: locationFormData.district
+      });
+      setUserLocations(prev => prev.map(loc => loc.id === selectedLocation.id ? updated : loc));
+      setShowEditLocationModal(false);
+      setSelectedLocation(null);
+      setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+    } catch (err) {
+      console.error('Error updating location:', err);
+      setError(new Error('No se pudo actualizar la ubicación'));
+    }
+  };
+
+  // Handle deleting a location
+  const handleDeleteLocation = async () => {
+    if (!selectedLocation) return;
+
+    try {
+      await deleteLocation(selectedLocation.id);
+      setUserLocations(prev => prev.filter(loc => loc.id !== selectedLocation.id));
+      setShowDeleteLocationModal(false);
+      setSelectedLocation(null);
+    } catch (err) {
+      console.error('Error deleting location:', err);
+      setError(new Error('No se pudo eliminar la ubicación'));
+    }
+  };
+
   // Map API response to profile data
   const mapApiResponseToProfile = (data: any): ProfileData => {
     const interestsRaw = data.interests || [];
@@ -312,14 +411,14 @@ export function Perfil() {
   // Add interest by category (user_interests)
   const addInterestByCategory = async (category: { id: number; name: string }) => {
     if (!authUser || !user) return;
-    
+
     // Optimistically update UI
     const categoryName = category.name;
-    setUser(prev => prev ? { 
-      ...prev, 
-      interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
+    setUser(prev => prev ? {
+      ...prev,
+      interests: Array.from(new Set([...(prev.interests || []), categoryName]))
     } : prev);
-    
+
     try {
       await api.post('/interests', { user_id: authUser.id, category_id: category.id });
       // Invalidate caches so Home reflects updated interests
@@ -327,9 +426,9 @@ export function Perfil() {
       queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
     } catch (err: any) {
       // Revert UI on error
-      setUser(prev => prev ? { 
-        ...prev, 
-        interests: (prev.interests || []).filter(i => i !== categoryName) 
+      setUser(prev => prev ? {
+        ...prev,
+        interests: (prev.interests || []).filter(i => i !== categoryName)
       } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo agregar el interés'));
     }
@@ -338,42 +437,42 @@ export function Perfil() {
   // Remove interest by category name: find record by category_id then delete
   const removeInterestByName = async (categoryName: string) => {
     if (!authUser || !user) return;
-    
+
     // Find category_id by name
     const cat = (categories || []).find(c => (c.name || '').toLowerCase() === categoryName.toLowerCase());
     if (!cat) {
       setError(new Error('Categoría no encontrada'));
       return;
     }
-    
+
     // Optimistically update UI
-    setUser(prev => prev ? { 
-      ...prev, 
-      interests: (prev.interests || []).filter(i => i !== categoryName) 
+    setUser(prev => prev ? {
+      ...prev,
+      interests: (prev.interests || []).filter(i => i !== categoryName)
     } : prev);
-    
+
     try {
       // Find the interest record by querying with user_id and category_id
-      const res = await api.get('/interests', { 
-        params: { user_id: authUser.id, category_id: cat.id } 
+      const res = await api.get('/interests', {
+        params: { user_id: authUser.id, category_id: cat.id }
       });
-      
-      const records = Array.isArray(res.data?.data) ? res.data.data : 
-                     (Array.isArray(res.data) ? res.data : []);
-      
+
+      const records = Array.isArray(res.data?.data) ? res.data.data :
+        (Array.isArray(res.data) ? res.data : []);
+
       const target = records[0];
       if (target?.id) {
         await api.delete(`/interests/${target.id}`);
       }
-      
+
       // Invalidate caches so Home reflects updated interests
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.invalidateQueries({ queryKey: ['interests', 'home', authUser.id] });
     } catch (err: any) {
       // Revert UI on error
-      setUser(prev => prev ? { 
-        ...prev, 
-        interests: Array.from(new Set([...(prev.interests || []), categoryName])) 
+      setUser(prev => prev ? {
+        ...prev,
+        interests: Array.from(new Set([...(prev.interests || []), categoryName]))
       } : prev);
       setError(new Error(err?.response?.data?.message || 'No se pudo eliminar el interés'));
     }
@@ -415,8 +514,8 @@ export function Perfil() {
         <div className="py-12">
           <div className="rounded-xl border border-gray-200 dark:border-cardDark p-4 bg-white dark:bg-cardDark shadow-sm">
             <p className="text-red-600 dark:text-red-400 font-medium">Error al cargar el perfil: {error.message}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="mt-2 px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-brand dark:hover:text-brandDark transition-colors focus-brand dark:text-white"
             >
               Reintentar
@@ -433,8 +532,8 @@ export function Perfil() {
         <div className="py-12">
           <div className="rounded-xl border border-gray-200 dark:border-cardDark p-4 bg-white dark:bg-cardDark shadow-sm">
             <p className="text-gray-600 dark:text-secondaryDark font-medium">No se pudo cargar el perfil del usuario</p>
-            <button 
-              onClick={() => navigate('/')} 
+            <button
+              onClick={() => navigate('/')}
               className="mt-2 px-4 py-2 rounded-lg border border-border dark:border-cardDark hover:bg-brand/10 dark:hover:bg-brandDark/20 hover:text-brand dark:hover:text-brandDark transition-colors focus-brand dark:text-white"
             >
               Volver al inicio
@@ -476,11 +575,11 @@ export function Perfil() {
         >
           <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
             <p>
-              Tu información de contacto es visible para otros usuarios cuando interactúas 
+              Tu información de contacto es visible para otros usuarios cuando interactúas
               en la plataforma. Esto incluye tu correo electrónico y número de teléfono.
             </p>
             <p>
-              Puedes controlar qué información compartes en la configuración de privacidad 
+              Puedes controlar qué información compartes en la configuración de privacidad
               de tu perfil.
             </p>
             <div className="flex justify-end pt-4">
@@ -494,7 +593,7 @@ export function Perfil() {
           </div>
         </Modal>
 
-      
+
 
         {/* Modal de Información de Ubicación */}
         <Modal
@@ -505,12 +604,12 @@ export function Perfil() {
         >
           <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
             <p>
-              Tu ubicación nos ayuda a conectarte con emprendimientos cercanos 
+              Tu ubicación nos ayuda a conectarte con emprendimientos cercanos
               y eventos locales en tu área.
             </p>
             <p>
-              La información de ubicación es opcional y puedes elegir qué tan 
-              específica quieres que sea. Solo se muestra tu provincia y cantón 
+              La información de ubicación es opcional y puedes elegir qué tan
+              específica quieres que sea. Solo se muestra tu provincia y cantón
               a otros usuarios.
             </p>
             <div className="flex justify-end pt-4">
@@ -533,7 +632,7 @@ export function Perfil() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 lg:mt-10">
         {/* Panel izquierdo - Información del usuario */}
         <div className="lg:col-span-1 mt-6">
-          <PanelPerfil 
+          <PanelPerfil
             user={user}
             onContactInfoClick={() => setShowContactModal(true)}
             onLocationInfoClick={() => setShowLocationModal(true)}
@@ -544,10 +643,10 @@ export function Perfil() {
         <div className="lg:col-span-2 space-y-8 mt-6">
           {/* Secciones estándar (no admin) */}
           <>
-              {/* Sección de Intereses */}
-              <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between">
+            {/* Sección de Intereses */}
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-primary dark:text-white">Intereses</h2>
                   <button
                     onClick={() => setShowInterestModal(true)}
@@ -556,85 +655,169 @@ export function Perfil() {
                   >
                     <Plus className="w-5 h-5" />
                   </button>
-                  </div>
-                  <h2 className="text-xs text-brand dark:text-brandDark/100 mb-2">¿Cuáles son tus gustos? Dale click al botón de "+" para agregar.</h2>
                 </div>
-                
-                <div className="flex flex-wrap gap-4">
-                  {user.interests?.map((interest: string) => (
-                    <InterestCard
-                      key={interest}
-                      title={interest}
-                      iconUrl={iconUrlForCategory(interest)}
-                      onRemove={() => removeInterestByName(interest)}
-                    />
-                  )) || []}
-                </div>
+                <h2 className="text-xs text-brand dark:text-brandDark/100 mb-2">¿Cuáles son tus gustos? Dale click al botón de "+" para agregar.</h2>
               </div>
 
-              {/* Sección de Favoritos */}
-              <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
-                <h2 className="text-xl font-semibold text-primary dark:text-white mb-1">Favoritos</h2>
-                <h2 className="text-xs text-brand dark:text-brandDark/100 mb-6">Mis emprendimientos favoritos</h2>
-                {/* Mostrar botón para ir al inicio cuando no hay favoritos */}
-                {(!(user.favorites || []) || (user.favorites || []).length === 0) ? (
-                  <div className="py-6 flex flex-col items-center justify-center">
-                    <p className="text-sm text-secondary dark:text-secondaryDark mb-4">No tienes favoritos seleccionados todavía.</p>
-                    <button
-                      onClick={() => navigate('/')}
-                      className="px-4 py-2 rounded-lg bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand transition-colors"
-                    >
-                      Ir al inicio
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(user.favorites || []).map((favorito: any) => {
-                      const entreId = Number(favorito?.entrepreneurship_id);
-                      const detail = Number.isFinite(entreId) ? favDetailMap[entreId] : undefined;
-                      const title = favorito?.name || detail?.name || favorito?.entrepreneurship?.name || 'Emprendimiento';
-                      const imgUrl = favorito?.imageUrl || favorito?.image_url || detail?.image_url || favorito?.entrepreneurship?.image_url || 'https://placehold.co/600x600?text=Sin+imagen';
-                      return (
-                        <Link
-                          key={favorito.id ?? `${title}-${imgUrl}`}
-                          to={`/business/${entreId || ''}`}
-                          className="block"
-                          onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
-                        >
-                          <div className="bg-white dark:bg-backgroundDark rounded-lg shadow-sm border border-gray-100 dark:border-cardDark overflow-hidden hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col">
-                            <div className="relative aspect-square bg-gray-50 dark:bg-backgroundDark overflow-hidden">
-                              <img
-                                src={imgUrl}
-                                alt={title}
-                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                              />
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  if (!favorito?.id) return;
-                                  setFavToRemove(favorito.id);
-                                  setShowFavRemoveModal(true);
-                                }}
-                                disabled={!!favPendingById[favorito.id]}
-                                className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white dark:bg-cardDark text-[#0A5B7A] dark:text-brandDark border border-border dark:border-cardDark shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] dark:hover:bg-brandDark hover:border-[#0A5B7A] dark:hover:border-brandDark dark:hover:text-white transition-colors"
-                                aria-label="Quitar de favoritos"
-                                title="Quitar de favoritos"
-                              >
-                                <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] dark:text-brandDark group-hover:text-white" />
-                              </button>
-                            </div>
-                            <div className="p-4 flex-1 flex flex-col">
-                              <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2">{title}</h3>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+              <div className="flex flex-wrap gap-4">
+                {user.interests?.map((interest: string) => (
+                  <InterestCard
+                    key={interest}
+                    title={interest}
+                    iconUrl={iconUrlForCategory(interest)}
+                    onRemove={() => removeInterestByName(interest)}
+                  />
+                )) || []}
               </div>
+            </div>
+
+            {/* Sección de Favoritos */}
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+              <h2 className="text-xl font-semibold text-primary dark:text-white mb-1">Favoritos</h2>
+              <h2 className="text-xs text-brand dark:text-brandDark/100 mb-6">Mis emprendimientos favoritos</h2>
+              {/* Mostrar botón para ir al inicio cuando no hay favoritos */}
+              {(!(user.favorites || []) || (user.favorites || []).length === 0) ? (
+                <div className="py-6 flex flex-col items-center justify-center">
+                  <p className="text-sm text-secondary dark:text-secondaryDark mb-4">No tienes favoritos seleccionados todavía.</p>
+                  <button
+                    onClick={() => navigate('/')}
+                    className="px-4 py-2 rounded-lg bg-brand dark:bg-brandDark text-white hover:bg-brandDark dark:hover:bg-brand transition-colors"
+                  >
+                    Ir al inicio
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(user.favorites || []).map((favorito: any) => {
+                    const entreId = Number(favorito?.entrepreneurship_id);
+                    const detail = Number.isFinite(entreId) ? favDetailMap[entreId] : undefined;
+                    const title = favorito?.name || detail?.name || favorito?.entrepreneurship?.name || 'Emprendimiento';
+                    const imgUrl = favorito?.imageUrl || favorito?.image_url || detail?.image_url || favorito?.entrepreneurship?.image_url || 'https://placehold.co/600x600?text=Sin+imagen';
+                    return (
+                      <Link
+                        key={favorito.id ?? `${title}-${imgUrl}`}
+                        to={`/business/${entreId || ''}`}
+                        className="block"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'auto' })}
+                      >
+                        <div className="bg-white dark:bg-backgroundDark rounded-lg shadow-sm border border-gray-100 dark:border-cardDark overflow-hidden hover:shadow-md dark:hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col">
+                          <div className="relative aspect-square bg-gray-50 dark:bg-backgroundDark overflow-hidden">
+                            <img
+                              src={imgUrl}
+                              alt={title}
+                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (!favorito?.id) return;
+                                setFavToRemove(favorito.id);
+                                setShowFavRemoveModal(true);
+                              }}
+                              disabled={!!favPendingById[favorito.id]}
+                              className="group absolute top-2 right-2 rounded-full flex items-center justify-center bg-white dark:bg-cardDark text-[#0A5B7A] dark:text-brandDark border border-border dark:border-cardDark shadow-md p-2.5 disabled:opacity-60 hover:bg-[#0A5B7A] dark:hover:bg-brandDark hover:border-[#0A5B7A] dark:hover:border-brandDark dark:hover:text-white transition-colors"
+                              aria-label="Quitar de favoritos"
+                              title="Quitar de favoritos"
+                            >
+                              <Favorite sx={{ fontSize: 18 }} className="text-[#0A5B7A] dark:text-brandDark group-hover:text-white" />
+                            </button>
+                          </div>
+                          <div className="p-4 flex-1 flex flex-col">
+                            <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2">{title}</h3>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sección de Mis Direcciones */}
+            <div className="bg-white dark:bg-cardDark rounded-card shadow-soft border border-border dark:border-cardDark p-6">
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-primary dark:text-white">Mis Direcciones</h2>
+                  <button
+                    onClick={() => {
+                      setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+                      setShowAddLocationModal(true);
+                    }}
+                    className="w-10 h-10 bg-brand dark:bg-brandDark text-white rounded-full flex items-center justify-center hover:bg-brandDark dark:hover:bg-brand transition-colors focus-brand"
+                    aria-label="Agregar dirección"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+                <h2 className="text-xs text-brand dark:text-brandDark/100 mb-2">Direcciones adicionales para entrega</h2>
+              </div>
+
+              {loadingLocations ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand dark:border-brandDark"></div>
+                </div>
+              ) : userLocations.length === 0 ? (
+                <div className="py-6 flex flex-col items-center justify-center">
+                  <p className="text-sm text-secondary dark:text-secondaryDark mb-4">No tienes direcciones adicionales guardadas.</p>
+                  <p className="text-xs text-gray-500 dark:text-secondaryDark">Agrega direcciones para usarlas al realizar pedidos.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userLocations.map((location) => (
+                    <div
+                      key={location.id}
+                      className="bg-gray-50 dark:bg-backgroundDark rounded-lg p-4 border border-border dark:border-cardDark"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="w-4 h-4 text-brand dark:text-brandDark" />
+                            <h3 className="font-medium text-gray-900 dark:text-white text-sm">
+                              {location.province}, {location.canton}
+                            </h3>
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-secondaryDark mb-1">
+                            Distrito: {location.district}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedLocation(location);
+                              setLocationFormData({
+                                province: location.province,
+                                canton: location.canton,
+                                district: location.district,
+                                direccion_breve: location.direccion_breve || ''
+                              });
+                              loadCantones(location.province);
+                              loadDistritos(location.province, location.canton);
+                              setShowEditLocationModal(true);
+                            }}
+                            className="p-2 text-gray-600 dark:text-secondaryDark hover:text-brand dark:hover:text-brandDark transition-colors"
+                            aria-label="Editar dirección"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedLocation(location);
+                              setShowDeleteLocationModal(true);
+                            }}
+                            className="p-2 text-gray-600 dark:text-secondaryDark hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            aria-label="Eliminar dirección"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         </div>
       </div>
@@ -700,27 +883,26 @@ export function Perfil() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {categoriesData.map((cat) => {
                 if (!cat || !cat.name) return null;
-                
+
                 const categoryName = cat.name.trim();
                 const isSelected = (user?.interests || []).some(
                   (i: string) => i && i.toLowerCase() === categoryName.toLowerCase()
                 );
-                
+
                 return (
                   <button
                     key={cat.id}
                     onClick={() => (isSelected ? removeInterestByName(categoryName) : addInterestByCategory(cat))}
-                    className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-left transition-colors ${
-                      isSelected
-                        ? 'border-brand dark:border-brandDark bg-brand/10 dark:bg-brandDark/20'
-                        : 'border-border dark:border-cardDark hover:border-brand/50 dark:hover:border-brandDark/50 hover:bg-brand/5 dark:hover:bg-brandDark/10'
-                    }`}
+                    className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border text-left transition-colors ${isSelected
+                      ? 'border-brand dark:border-brandDark bg-brand/10 dark:bg-brandDark/20'
+                      : 'border-border dark:border-cardDark hover:border-brand/50 dark:hover:border-brandDark/50 hover:bg-brand/5 dark:hover:bg-brandDark/10'
+                      }`}
                     aria-pressed={isSelected}
                   >
                     <span className="flex items-center gap-3">
-                      <img 
-                        src={iconUrlForCategory(categoryName)} 
-                        alt={categoryName} 
+                      <img
+                        src={iconUrlForCategory(categoryName)}
+                        alt={categoryName}
                         className="w-6 h-6 object-contain flex-shrink-0"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -757,11 +939,11 @@ export function Perfil() {
       >
         <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
           <p>
-            Tu información de contacto es visible para otros usuarios cuando interactúas 
+            Tu información de contacto es visible para otros usuarios cuando interactúas
             en la plataforma. Esto incluye tu correo electrónico y número de teléfono.
           </p>
           <p>
-            Puedes controlar qué información compartes en la configuración de privacidad 
+            Puedes controlar qué información compartes en la configuración de privacidad
             de tu perfil.
           </p>
           <div className="flex justify-end pt-4">
@@ -784,12 +966,12 @@ export function Perfil() {
       >
         <div className="space-y-4 text-sm text-secondary dark:text-secondaryDark">
           <p>
-            Tu ubicación nos ayuda a conectarte con emprendimientos cercanos 
+            Tu ubicación nos ayuda a conectarte con emprendimientos cercanos
             y eventos locales en tu área.
           </p>
           <p>
-            La información de ubicación es opcional y puedes elegir qué tan 
-            específica quieres que sea. Solo se muestra tu provincia y cantón 
+            La información de ubicación es opcional y puedes elegir qué tan
+            específica quieres que sea. Solo se muestra tu provincia y cantón
             a otros usuarios.
           </p>
           <div className="flex justify-end pt-4">
@@ -798,6 +980,226 @@ export function Perfil() {
               className="px-6 py-2 bg-brand dark:bg-brandDark text-white rounded-lg font-medium hover:bg-brandDark dark:hover:bg-brand transition-colors focus-brand"
             >
               Entendido
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal para Agregar Dirección */}
+      <Modal
+        isOpen={showAddLocationModal}
+        onClose={() => {
+          setShowAddLocationModal(false);
+          setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+        }}
+        title="Agregar Nueva Dirección"
+        variant="edit"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Provincia
+            </label>
+            <select
+              value={locationFormData.province}
+              onChange={(e) => {
+                setLocationFormData({ ...locationFormData, province: e.target.value, canton: '', district: '' });
+                loadCantones(e.target.value);
+              }}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white"
+            >
+              <option value="">Selecciona una provincia</option>
+              {provincias.map((prov) => (
+                <option key={prov.nombre} value={prov.nombre}>{prov.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Cantón
+            </label>
+            <select
+              value={locationFormData.canton}
+              onChange={(e) => {
+                setLocationFormData({ ...locationFormData, canton: e.target.value, district: '' });
+                loadDistritos(locationFormData.province, e.target.value);
+              }}
+              disabled={!locationFormData.province}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white disabled:opacity-50"
+            >
+              <option value="">Selecciona un cantón</option>
+              {cantones.map((cant) => (
+                <option key={cant.nombre} value={cant.nombre}>{cant.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Distrito
+            </label>
+            <select
+              value={locationFormData.district}
+              onChange={(e) => setLocationFormData({ ...locationFormData, district: e.target.value })}
+              disabled={!locationFormData.canton}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white disabled:opacity-50"
+            >
+              <option value="">Selecciona un distrito</option>
+              {distritos.map((dist) => (
+                <option key={dist.nombre} value={dist.nombre}>{dist.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              onClick={() => {
+                setShowAddLocationModal(false);
+                setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+              }}
+              className="px-4 py-2 border border-border dark:border-cardDark rounded-md hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleAddLocation}
+              className="px-4 py-2 bg-brand dark:bg-brandDark text-white rounded-md hover:bg-brandDark dark:hover:bg-brand transition-colors"
+            >
+              Agregar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal para Editar Dirección */}
+      <Modal
+        isOpen={showEditLocationModal}
+        onClose={() => {
+          setShowEditLocationModal(false);
+          setSelectedLocation(null);
+          setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+        }}
+        title="Editar Dirección"
+        variant="edit"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Provincia
+            </label>
+            <select
+              value={locationFormData.province}
+              onChange={(e) => {
+                setLocationFormData({ ...locationFormData, province: e.target.value, canton: '', district: '' });
+                loadCantones(e.target.value);
+              }}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white"
+            >
+              <option value="">Selecciona una provincia</option>
+              {provincias.map((prov) => (
+                <option key={prov.nombre} value={prov.nombre}>{prov.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Cantón
+            </label>
+            <select
+              value={locationFormData.canton}
+              onChange={(e) => {
+                setLocationFormData({ ...locationFormData, canton: e.target.value, district: '' });
+                loadDistritos(locationFormData.province, e.target.value);
+              }}
+              disabled={!locationFormData.province}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white disabled:opacity-50"
+            >
+              <option value="">Selecciona un cantón</option>
+              {cantones.map((cant) => (
+                <option key={cant.nombre} value={cant.nombre}>{cant.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-secondaryDark mb-2">
+              Distrito
+            </label>
+            <select
+              value={locationFormData.district}
+              onChange={(e) => setLocationFormData({ ...locationFormData, district: e.target.value })}
+              disabled={!locationFormData.canton}
+              className="w-full px-3 py-2 border border-border dark:border-cardDark rounded-md bg-white dark:bg-backgroundDark text-gray-900 dark:text-white disabled:opacity-50"
+            >
+              <option value="">Selecciona un distrito</option>
+              {distritos.map((dist) => (
+                <option key={dist.nombre} value={dist.nombre}>{dist.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <button
+              onClick={() => {
+                setShowEditLocationModal(false);
+                setSelectedLocation(null);
+                setLocationFormData({ province: '', canton: '', district: '', direccion_breve: '' });
+              }}
+              className="px-4 py-2 border border-border dark:border-cardDark rounded-md hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleEditLocation}
+              className="px-4 py-2 bg-brand dark:bg-brandDark text-white rounded-md hover:bg-brandDark dark:hover:bg-brand transition-colors"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal para Eliminar Dirección */}
+      <Modal
+        isOpen={showDeleteLocationModal}
+        onClose={() => {
+          setShowDeleteLocationModal(false);
+          setSelectedLocation(null);
+        }}
+        title="Eliminar Dirección"
+        variant="danger"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary dark:text-secondaryDark">
+            ¿Estás seguro de que deseas eliminar esta dirección?
+          </p>
+          {selectedLocation && (
+            <div className="bg-gray-50 dark:bg-backgroundDark rounded-lg p-3 border border-border dark:border-cardDark">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {selectedLocation.province}, {selectedLocation.canton}, {selectedLocation.district}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-secondaryDark">
+                {selectedLocation.direccion_breve}
+              </p>
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => {
+                setShowDeleteLocationModal(false);
+                setSelectedLocation(null);
+              }}
+              className="px-4 py-2 border border-border dark:border-cardDark rounded-md hover:bg-gray-50 dark:hover:bg-cardDark dark:text-secondaryDark transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeleteLocation}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Eliminar
             </button>
           </div>
         </div>

@@ -54,7 +54,7 @@ export const TopProductsSidebar = ({ onViewAllClick }: { onViewAllClick?: () => 
     if (!topProducts || topProducts.length === 0) return null;
 
     return (
-        <Container className="bg-white dark:bg-cardDark dark:border-backgroundDark dark:rounded-xl rounded-xl border border-gray-100 p-5 shadow-sm sticky top-24">
+        <Container className="bg-white dark:bg-cardDark dark:border-backgroundDark dark:rounded-xl rounded-xl border border-gray-100 p-5 shadow-sm lg:sticky top-24">
             <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
                 <div className="bg-orange-100 p-1.5 rounded-full text-orange-600">
                     <LocalFireDepartment sx={{ fontSize: 20 }} />

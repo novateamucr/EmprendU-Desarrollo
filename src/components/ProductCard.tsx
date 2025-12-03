@@ -39,9 +39,9 @@ export function ProductCard(props: ProductCardProps) {
   const handleAddToCart = async (e: React.MouseEvent, customQuantity?: number) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const qty = customQuantity || 1;
-    
+
     try {
       const pid = Number(props.productId);
       let hasForm = false;
@@ -71,22 +71,22 @@ export function ProductCard(props: ProductCardProps) {
           quantity: qty
         }
       );
-      
+
       // Reset quantity and hide selector
       setQuantity(1);
       setShowQuantity(false);
-      
+
       if (props.onBuy) props.onBuy();
     } catch {
       navigate(`/product/${props.productId}`);
     }
   };
-  
+
   const handleConfirmQuantity = (e: React.MouseEvent) => {
     e.stopPropagation();
     handleAddToCart(e, quantity);
   };
-  
+
   const handleCancelQuantity = (e: React.MouseEvent) => {
     e.stopPropagation();
     setQuantity(1);
@@ -97,7 +97,7 @@ export function ProductCard(props: ProductCardProps) {
   const iconUrl = props.categoryName ? categoryIconUrl(props.categoryName, categoryColorHex) : null;
 
   return (
-    <div 
+    <div
       className="bg-white dark:bg-cardDark dark:border-cardDark rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full relative"
       onClick={handleCardClick}
     >
@@ -109,31 +109,8 @@ export function ProductCard(props: ProductCardProps) {
         />
       </div>
       <div className="p-4 3xl:p-5 4xl:p-6 flex-1 flex flex-col">
-        {props.categoryName && (
-          <div className="self-end mb-1">
-            <div
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 4xl:px-3 4xl:py-1 rounded-full text-[11px] 3xl:text-xs 4xl:text-xl"
-              style={{
-                backgroundColor: categoryColorHex ? `${categoryColorHex}1a` : '#E6F4FA',
-                color: categoryColorHex || '#0A5B7A',
-                border: categoryColorHex ? `1px solid ${categoryColorHex}33` : undefined,
-              }}
-            >
-              {iconUrl && (
-                <img 
-                  src={iconUrl} 
-                  alt="" 
-                  className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-6 4xl:h-6"
-                  style={{
-                    minWidth: '12px',
-                    minHeight: '12px',
-                  }}
-                />
-              )}
-              <span>{props.categoryName}</span>
-            </div>
-          </div>
-        )}
+
+
         <h3 className="font-semibold text-gray-900 dark:text-white text-sm 3xl:text-base 4xl:text-3xl mb-1 ">{props.title}</h3>
         <p className="font-medium text-gray-600 dark:text-secondaryDark text-xs 3xl:text-sm 4xl:text-xl mb-3 line-clamp-2 overflow-hidden text-ellipsis">
           {props.description}
@@ -142,7 +119,7 @@ export function ProductCard(props: ProductCardProps) {
           <p className="text-lg 3xl:text-xl 4xl:text-2xl font-semibold text-gray-900 dark:text-white text-center">
             ₡{props.price.toLocaleString()}
           </p>
-          
+
           {showQuantity ? (
             <div className="flex flex-col gap-2 mt-2">
               <div className="flex items-center justify-center gap-2 4xl:gap-3">
