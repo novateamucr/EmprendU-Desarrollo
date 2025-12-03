@@ -342,7 +342,7 @@ export default function EntrepreneurOrderDetail() {
   }
 
   return (
-    <div className="pt-24 pb-12 bg-white dark:bg-backgroundDark min-h-screen">
+    <div className="pt-24 pb-12 bg-gray dark:bg-backgroundDark min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
