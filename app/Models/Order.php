@@ -22,7 +22,8 @@ class Order extends Model
         'user_id',
         'customer_name','customer_phone_8','customer_email',
         'status',
-        'items_total','options_total','shipping_total','discount_total','grand_total','currency','notes'
+        'items_total','options_total','shipping_total','discount_total','grand_total','currency','notes',
+        'additional_location_id'
     ];
 
     protected $attributes = [
@@ -42,5 +43,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function additionalLocation()
+    {
+        return $this->belongsTo(Ubicacion::class, 'additional_location_id');
     }
 }

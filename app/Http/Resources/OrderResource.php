@@ -30,6 +30,7 @@ class OrderResource extends JsonResource
             'grand_total' => (float) $this->grand_total,
             'currency' => $this->currency,
             'notes' => $this->notes,
+            'additional_location' => $this->whenLoaded('additionalLocation'),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

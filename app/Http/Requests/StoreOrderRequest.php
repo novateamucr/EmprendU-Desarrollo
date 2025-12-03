@@ -20,6 +20,7 @@ class StoreOrderRequest extends FormRequest
             'shipping_total' => ['nullable','numeric','min:0'],
             'discount_total' => ['nullable','numeric','min:0'],
             'status' => ['nullable','in:draft,requested,accepted,canceled,completed,rated'],
+            'additional_location_id' => ['nullable', 'integer', 'exists:ubicaciones,id'],
         ];
     }
 }
