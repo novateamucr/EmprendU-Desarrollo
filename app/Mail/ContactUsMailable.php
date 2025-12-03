@@ -30,8 +30,7 @@ class ContactUsMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-
-            subject: 'Formulario de Contacto',
+            subject: 'Nuevo mensaje desde formulario de contacto',
         );
     }
 
@@ -42,6 +41,9 @@ class ContactUsMailable extends Mailable
     {
         return new Content(
             view: 'emails.contactUs',
+            with: [
+                'data' => $this->data,
+            ],
         );
     }
 
@@ -53,14 +55,5 @@ class ContactUsMailable extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-
-    public function build()
-    {
-        return $this->from('novateamucr@gmail.com', 'EmpowerUp')
-                    ->to('novateamucr@gmail.com') 
-                    ->subject('Nuevo mensaje desde formulario de contacto')
-                    ->view('emails.contactUs')
-                    ->with('data', $this->data);
     }
 }

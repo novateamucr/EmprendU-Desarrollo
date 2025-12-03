@@ -62,6 +62,7 @@ class UserController extends Controller
 
             // Hash and update the user's password
             $user->password = Hash::make($temporaryPassword);
+            $user->must_change_password = true;
             $user->save();
             \Log::info('Password updated in database');
 
@@ -232,6 +233,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
+                'must_change_password' => (bool) $user->must_change_password,
                 'token' => $token,
                 'token_type' => 'Bearer'
             ], 200);
@@ -305,7 +307,6 @@ class UserController extends Controller
             'banned' => 'boolean',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'avatar_url' => 'nullable|string',
-            'role' => 'nullable|exists:roles,id',
         ];
 
         // If _method is present, it's a form submission
@@ -390,5 +391,36 @@ class UserController extends Controller
                 'line' => $e->getLine()
             ], 500);
         }
+    }
+
+    /**
+     * Update the user's password.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\User  $user
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePassword(Request $request, User $user)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        // Verify current password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'La contraseña actual es incorrecta'
+            ], 422);
+        }
+
+        // Update password and reset flag
+        $user->password = Hash::make($request->password);
+        $user->must_change_password = false;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Contraseña actualizada correctamente'
+        ]);
     }
 }
