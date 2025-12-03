@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Exceptions\SensitiveContentException;
+use App\Models\OrderItem;
 
 class ProductController extends Controller
 {
@@ -392,6 +393,10 @@ class ProductController extends Controller
     {
         DB::beginTransaction();
         try {
+            // First, delete dependent order items to satisfy FK constraints
+            // This will cascade delete order_item_options via DB FK
+            OrderItem::where('product_id', $product->id)->delete();
+
             // Delete the image from R2 if it exists
             if (!empty($product->image_url)) {
                 $fileUploadService->delete($product->image_url);
