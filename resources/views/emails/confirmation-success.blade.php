@@ -58,7 +58,7 @@
     <div class="container">
         <h1>¡Cuenta Confirmada!</h1>
         <p>Tu cuenta en EmpowerUp ha sido confirmada exitosamente. Ahora puedes iniciar sesión y comenzar a explorar todas las funcionalidades que ofrecemos.</p>
-        <a href=https://empowerup.lat/login class="btn">Iniciar Sesión</a>
+        <a href="https://empowerup.lat/login" class="btn">Iniciar Sesión</a>
     </div>
 </body>
 

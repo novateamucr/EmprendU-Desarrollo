@@ -85,6 +85,32 @@ public function getByFair($fairId)
         ], 500);
     }
 }
+public function destroy($id)
+{
+    try {
+        $inscripcion = Inscripcion::find($id);
+
+        if (!$inscripcion) {
+            return response()->json([
+                'message' => 'La inscripción no existe'
+            ], 404);
+        }
+
+        $inscripcion->delete();
+
+        return response()->json([
+            'message' => 'Inscripción eliminada correctamente'
+        ], 200);
+
+    } catch (\Throwable $e) {
+        Log::error('Error al eliminar inscripción: ' . $e->getMessage());
+
+        return response()->json([
+            'message' => 'Error al eliminar la inscripción',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
     
 }
