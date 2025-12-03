@@ -25,6 +25,7 @@ export type CartGroup = {
   orderId?: number;
   items: CartItem[];
   notes?: string;
+  selectedLocationId?: number | null; // Optional additional location for delivery
 };
 
 type CartContextValue = {
@@ -41,6 +42,7 @@ type CartContextValue = {
   cancelOrder: (groupId: string) => Promise<void>;
   isPlacingOrder: boolean;
   orderError: string | null;
+  setGroupLocation: (entrepreneurshipId: string, locationId: number | null) => void;
 };
 
 const CART_STORAGE_KEY = 'app_cart';
@@ -112,13 +114,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setGroups(prev => {
       // Create a deep copy of the previous state to avoid direct mutations
       const updatedGroups = [...prev];
-      
+
       // Ensure we have valid entrepreneurship ID and name
       if (!entrepreneurshipId || !entrepreneurshipName) {
         console.error('Missing entrepreneurship ID or name');
         return prev;
       }
-      
+
       // Find a DRAFT group for this entrepreneurship; if only REQUESTED exist, create a new group
       let groupIndex = updatedGroups.findIndex(g => g.entrepreneurshipId === entrepreneurshipId && g.status === 'draft');
       const quantity = item.quantity ?? 1;
@@ -160,8 +162,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           // Update quantity of existing item
           updatedGroups[groupIndex] = {
             ...updatedGroups[groupIndex],
-            items: updatedGroups[groupIndex].items.map((i, idx) => 
-              idx === existingItemIndex 
+            items: updatedGroups[groupIndex].items.map((i, idx) =>
+              idx === existingItemIndex
                 ? { ...i, quantity: i.quantity + quantity }
                 : i
             )
@@ -232,7 +234,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       // Step 1: Create draft order
       const phone = user.phone?.replace(/\D/g, '').slice(-8) || '00000000';
-      
+
       console.log('Creating order with user ID:', user.id);
       console.log('Order details:', {
         entrepreneurship_id: parseInt(entrepreneurshipId, 10),
@@ -249,7 +251,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           customer_name: user.name || 'Cliente',
           customer_phone_8: phone,
           customer_email: user.email || '',
-          notes: group.notes
+          notes: group.notes,
+          additional_location_id: group.selectedLocationId || null
         },
         user.id
       );
@@ -263,7 +266,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       // Step 2: Add all items to the order
       console.log('Adding items to order:', group.items);
-      
+
       for (const item of group.items) {
         try {
           // Prepare order item options from selections (what the backend expects)
@@ -311,7 +314,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             unit_price: item.price,
             order_item_options: orderItemOptions,
           });
-          
+
           console.log(`Added item ${item.productId} to order ${orderId}`);
         } catch (error) {
           console.error(`Failed to add item ${item.productId} to order:`, error);
@@ -322,27 +325,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       // Step 3: Update order status to 'requested' after all items are added
       console.log('Updating order status to requested for order ID:', orderId);
       const updatedOrder = await cartApi.updateOrderStatus(orderId, 'requested');
-      
+
       if (!updatedOrder?.id) {
         throw new Error('No se pudo actualizar el estado de la orden');
       }
-      
+
       // Update the group with the order ID and status
-      setGroups(groups.map(g => 
-        g.entrepreneurshipId === entrepreneurshipId 
-          ? { ...g, status: 'requested', orderId: updatedOrder.id } 
+      setGroups(groups.map(g =>
+        g.entrepreneurshipId === entrepreneurshipId
+          ? { ...g, status: 'requested', orderId: updatedOrder.id }
           : g
       ));
-      
+
       // Add to placed IDs
       setPlacedIds([...placedIds, group.groupId]);
-      
+
       return { success: true, orderId: updatedOrder.id };
     } catch (error: any) {
       console.error('Error placing order:', error);
       const errorData = error.response?.data;
       let errorMessage = 'Error al procesar el pedido. Por favor, inténtalo de nuevo.';
-      
+
       if (errorData?.errors) {
         // Format validation errors
         errorMessage = Object.entries(errorData.errors)
@@ -351,7 +354,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } else if (errorData?.message) {
         errorMessage = errorData.message;
       }
-      
+
       setOrderError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -404,8 +407,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setPlacedIds(prev => prev.filter(id => id !== groupId));
   };
 
+  const setGroupLocation = (entrepreneurshipId: string, locationId: number | null) => {
+    setGroups(prev => prev.map(g =>
+      g.entrepreneurshipId === entrepreneurshipId
+        ? { ...g, selectedLocationId: locationId }
+        : g
+    ));
+  };
+
   // Filter out requested orders from the cart display
-  const activeGroups = React.useMemo(() => 
+  const activeGroups = React.useMemo(() =>
     groups.filter(group => group.status === 'draft'),
     [groups]
   );
@@ -440,7 +451,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cancelOrder,
     isPlacingOrder,
     orderError,
-  }), [activeGroups, groups, showJustAdded, isPlacingOrder, orderError]);
+    setGroupLocation,
+  }), [activeGroups, groups, showJustAdded, isPlacingOrder, orderError, setGroupLocation]);
 
   return (
     <CartContext.Provider value={contextValue}>

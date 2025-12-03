@@ -66,6 +66,13 @@ type Order = {
   created_at: string;
   updated_at: string;
   order_number?: string | number;
+  additional_location?: {
+    id: number;
+    province: string;
+    canton: string;
+    district: string;
+    direccion_breve?: string;
+  } | null;
 };
 
 function mapStatus(s?: string) {
@@ -239,9 +246,9 @@ export default function EntrepreneurOrderDetail() {
           discount_total: Number(orderData.discount_total || 0),
           grand_total: Number(
             orderData.grand_total ||
-              calculatedItemsTotal -
-                Number(orderData.discount_total || 0) +
-                Number(orderData.shipping_total || 0)
+            calculatedItemsTotal -
+            Number(orderData.discount_total || 0) +
+            Number(orderData.shipping_total || 0)
           ),
           currency: orderData.currency || "CRC",
           notes: orderData.notes || null,
@@ -393,16 +400,22 @@ export default function EntrepreneurOrderDetail() {
                   {order.customer_phone_8}
                 </p>
               </div>
-              {address && (
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Dirección de entrega
+
+              {/* Delivery Address */}
+              <div>
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  Dirección de entrega
+                </p>
+                {order.additional_location ? (
+                  <p className="text-sm text-gray-500">
+                    {order.additional_location.province}, {order.additional_location.canton}, {order.additional_location.district}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-line">
-                    {address}
+                ) : (
+                  <p className="text-sm text-gray-500 italic">
+                    Dirección del perfil del cliente
                   </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 

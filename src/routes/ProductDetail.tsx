@@ -21,11 +21,11 @@ const ProductDetailSkeleton = () => (
         <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
         <div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
       </div>
-      
+
       <div className="grid md:grid-cols-2 gap-8">
         {/* Image skeleton */}
         <div className="w-full aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
-        
+
         {/* Details skeleton */}
         <div className="space-y-4">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
@@ -34,7 +34,7 @@ const ProductDetailSkeleton = () => (
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
-          
+
           <div className="pt-4 space-y-4">
             <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             <div className="flex space-x-4">
@@ -80,7 +80,7 @@ export default function ProductDetail() {
         (list || []).forEach((c) => { if (c?.id != null) map[c.id] = c.nombre; });
         setCatMap(map);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const { addItem } = useCart();
@@ -174,7 +174,7 @@ export default function ProductDetail() {
     return [
       ...optList.map(o => ({ kind: 'option' as const, order: o.display_order, data: o })),
       ...formList.map(f => ({ kind: 'form' as const, order: f.display_order, data: f })),
-    ].sort((a,b) => a.order - b.order);
+    ].sort((a, b) => a.order - b.order);
   }, [optList, formList]);
 
   const handleOrder = () => {
@@ -230,7 +230,7 @@ export default function ProductDetail() {
         }
       );
     }
-    
+
     // Reset form selections and quantity
     setSelectedByOption({});
     setCustomValues({});
@@ -346,11 +346,7 @@ export default function ProductDetail() {
             />
           </div>
           <div className="relative flex flex-col pt-6 md:pt-1">
-            {product?.category_id != null && (
-              <span className="inline-block w-fit self-end mb-5 text-xs px-2 py-0.5 rounded-full bg-[#E6F4FA] dark:bg-blue-900/40 text-[#0A5B7A] dark:text-blue-300">
-                {catMap[Number(product.category_id)] || 'General'}
-              </span>
-            )}
+
             <h1 className="text-2xl md:text-3xl font-semibold text-primary dark:text-white">{product.name}</h1>
             {product.description && (
               <p className="text-secondary dark:text-secondaryDark mt-2">{product.description}</p>
@@ -373,124 +369,124 @@ export default function ProductDetail() {
                       <div key={(it.kind === 'option' ? (it.data as ProductOption).id : (it.data as ProductCustomForm).id)}>
                         {it.kind === 'option' ? (
                           (() => {
-                          const o = it.data as ProductOption;
-                          const vals = valuesByOpt[o.id] || [];
-                          if (o.type === 'select') {
-                            return (
-                              <div className="space-y-1">
-                                <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
-                                <select
-                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
-                                  value={(selectedByOption[o.id]?.[0]) ?? ''}
-                                  onChange={(e) => {
-                                    const vId = Number(e.target.value);
-                                    setSelectedByOption(prev => ({ ...prev, [o.id]: vId ? [vId] : [] }));
-                                  }}
-                                >
-                                  <option value="">Selecciona…</option>
-                                  {vals.map(v => (
-                                    <option key={v.id} value={v.id}>{v.value}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            );
-                          }
-                          if (o.type === 'multiselect') {
-                            return (
-                              <div className="space-y-1">
-                                <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
-                                <div className="flex flex-wrap gap-2">
-                                  {vals.map(v => {
-                                    const checked = (selectedByOption[o.id] || []).includes(v.id);
-                                    return (
-                                      <label key={v.id} className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                        <input
-                                          type="checkbox"
-                                          checked={checked}
-                                          onChange={(e) => {
-                                            setSelectedByOption(prev => {
-                                              const current = new Set(prev[o.id] || []);
-                                              if (e.target.checked) current.add(v.id); else current.delete(v.id);
-                                              return { ...prev, [o.id]: Array.from(current) };
-                                            });
-                                          }}
-                                        /> {v.value}
-                                      </label>
-                                    );
-                                  })}
+                            const o = it.data as ProductOption;
+                            const vals = valuesByOpt[o.id] || [];
+                            if (o.type === 'select') {
+                              return (
+                                <div className="space-y-1">
+                                  <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
+                                  <select
+                                    className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
+                                    value={(selectedByOption[o.id]?.[0]) ?? ''}
+                                    onChange={(e) => {
+                                      const vId = Number(e.target.value);
+                                      setSelectedByOption(prev => ({ ...prev, [o.id]: vId ? [vId] : [] }));
+                                    }}
+                                  >
+                                    <option value="">Selecciona…</option>
+                                    {vals.map(v => (
+                                      <option key={v.id} value={v.id}>{v.value}</option>
+                                    ))}
+                                  </select>
                                 </div>
-                                {(o.min_select || o.max_select) && (
-                                  <div className="text-xs text-secondary dark:text-gray-400">{o.min_select ? `Mín: ${o.min_select}` : ''} {o.max_select ? `Máx: ${o.max_select}` : ''}</div>
-                                )}
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()
-                      ) : (
-                        (() => {
-                          const f = it.data as ProductCustomForm;
-                          if (f.input_type === 'text') {
-                            return (
-                              <div className="space-y-1">
-                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
-                                <input
-                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
-                                  type="text"
-                                  placeholder={f.help_text || ''}
-                                  maxLength={f.max_length ?? undefined}
-                                  value={String(customValues[f.id] ?? '')}
-                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
-                                />
-                              </div>
-                            );
-                          }
-                          if (f.input_type === 'textarea') {
-                            return (
-                              <div className="space-y-1">
-                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
-                                <textarea
-                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
-                                  rows={3}
-                                  placeholder={f.help_text || ''}
-                                  maxLength={f.max_length ?? undefined}
-                                  value={String(customValues[f.id] ?? '')}
-                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
-                                />
-                              </div>
-                            );
-                          }
-                          if (f.input_type === 'number') {
-                            return (
-                              <div className="space-y-1">
-                                <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
-                                <input
-                                  className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
-                                  type="number"
-                                  placeholder={f.help_text || ''}
-                                  value={customValues[f.id] === undefined ? '' : String(customValues[f.id])}
-                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value === '' ? '' : Number(e.target.value) }))}
-                                />
-                              </div>
-                            );
-                          }
-                          if (f.input_type === 'boolean') {
-                            return (
-                              <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(customValues[f.id] ?? false)}
-                                  onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.checked }))}
-                                /> {f.label}{f.required ? ' *' : ''}
-                              </label>
-                            );
-                          }
-                          return null;
-                        })()
-                      )}
-                    </div>
-                  ))}
-                </div>
+                              );
+                            }
+                            if (o.type === 'multiselect') {
+                              return (
+                                <div className="space-y-1">
+                                  <label className="text-sm text-secondary dark:text-gray-300">{o.name}{o.required ? ' *' : ''}</label>
+                                  <div className="flex flex-wrap gap-2">
+                                    {vals.map(v => {
+                                      const checked = (selectedByOption[o.id] || []).includes(v.id);
+                                      return (
+                                        <label key={v.id} className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                          <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={(e) => {
+                                              setSelectedByOption(prev => {
+                                                const current = new Set(prev[o.id] || []);
+                                                if (e.target.checked) current.add(v.id); else current.delete(v.id);
+                                                return { ...prev, [o.id]: Array.from(current) };
+                                              });
+                                            }}
+                                          /> {v.value}
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                  {(o.min_select || o.max_select) && (
+                                    <div className="text-xs text-secondary dark:text-gray-400">{o.min_select ? `Mín: ${o.min_select}` : ''} {o.max_select ? `Máx: ${o.max_select}` : ''}</div>
+                                  )}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()
+                        ) : (
+                          (() => {
+                            const f = it.data as ProductCustomForm;
+                            if (f.input_type === 'text') {
+                              return (
+                                <div className="space-y-1">
+                                  <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
+                                  <input
+                                    className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
+                                    type="text"
+                                    placeholder={f.help_text || ''}
+                                    maxLength={f.max_length ?? undefined}
+                                    value={String(customValues[f.id] ?? '')}
+                                    onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                  />
+                                </div>
+                              );
+                            }
+                            if (f.input_type === 'textarea') {
+                              return (
+                                <div className="space-y-1">
+                                  <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
+                                  <textarea
+                                    className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
+                                    rows={3}
+                                    placeholder={f.help_text || ''}
+                                    maxLength={f.max_length ?? undefined}
+                                    value={String(customValues[f.id] ?? '')}
+                                    onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value }))}
+                                  />
+                                </div>
+                              );
+                            }
+                            if (f.input_type === 'number') {
+                              return (
+                                <div className="space-y-1">
+                                  <label className="text-sm text-secondary dark:text-gray-300">{f.label}{f.required ? ' *' : ''}</label>
+                                  <input
+                                    className="w-full border border-gray-300 dark:border-cardDark bg-white dark:bg-backgroundDark text-gray-900 dark:text-white rounded px-3 py-2"
+                                    type="number"
+                                    placeholder={f.help_text || ''}
+                                    value={customValues[f.id] === undefined ? '' : String(customValues[f.id])}
+                                    onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.value === '' ? '' : Number(e.target.value) }))}
+                                  />
+                                </div>
+                              );
+                            }
+                            if (f.input_type === 'boolean') {
+                              return (
+                                <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(customValues[f.id] ?? false)}
+                                    onChange={(e) => setCustomValues(prev => ({ ...prev, [f.id]: e.target.checked }))}
+                                  /> {f.label}{f.required ? ' *' : ''}
+                                </label>
+                              );
+                            }
+                            return null;
+                          })()
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -538,10 +534,9 @@ export default function ProductDetail() {
                     disabled={hasRequiredFields && !isFormValid}
                     className={`px-4 py-2.5 rounded-md text-white text-sm font-medium transition-colors flex items-center justify-center gap-2
                       bg-brand dark:bg-brandDark
-                      ${
-                        hasRequiredFields && !isFormValid
-                          ? 'opacity-60 cursor-not-allowed'
-                          : 'hover:bg-brand/90 dark:hover:bg-brand'
+                      ${hasRequiredFields && !isFormValid
+                        ? 'opacity-60 cursor-not-allowed'
+                        : 'hover:bg-brand/90 dark:hover:bg-brand'
                       }`}
                   >
                     <span>Añadir {quantity} al carrito</span>

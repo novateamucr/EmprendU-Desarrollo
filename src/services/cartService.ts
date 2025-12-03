@@ -24,6 +24,7 @@ export interface CreateOrderRequest {
   notes?: string;
   shipping_total?: number;
   discount_total?: number;
+  additional_location_id?: number | null;  // Optional additional location for delivery
 }
 
 export interface AddOrderItemRequest {
@@ -85,17 +86,17 @@ export const cartApi = {
     try {
       // Get the auth token from localStorage
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('No se encontró el token de autenticación');
       }
-      
+
       // Validate the provided userId
       if (!userId) {
         console.error('No se proporcionó un ID de usuario válido');
         throw new Error('No se pudo obtener el ID de usuario. Por favor, inicie sesión nuevamente.');
       }
-      
+
       console.log('Creating draft order with data:', {
         ...orderData,
         user_id: userId,
@@ -103,7 +104,7 @@ export const cartApi = {
         shipping_total: orderData.shipping_total || 0,
         discount_total: orderData.discount_total || 0,
       });
-      
+
       const payload = {
         ...orderData,
         user_id: userId,
@@ -111,25 +112,25 @@ export const cartApi = {
         shipping_total: orderData.shipping_total || 0,
         discount_total: orderData.discount_total || 0,
       };
-      
+
       console.log('Sending order payload:', payload);
       const response = await api.post('orders', payload);
-      
+
       console.log('Draft order response:', response);
-      
+
       // Handle nested response structure
       const responseData = response.data?.data || response.data;
-      
+
       if (!responseData) {
         console.error('Empty response data:', response);
         throw new Error('No se recibieron datos en la respuesta del servidor');
       }
-      
+
       if (!responseData.id) {
         console.error('Missing order ID in response:', responseData);
         throw new Error('No se pudo crear la orden: ID de orden no recibido');
       }
-      
+
       return responseData;
     } catch (error: any) {
       console.error('Error creating draft order:', {
@@ -138,12 +139,12 @@ export const cartApi = {
         status: error.response?.status,
         headers: error.response?.headers
       });
-      
+
       // If the server returns a response with an error message, use it
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw error;
     }
   },
@@ -153,15 +154,15 @@ export const cartApi = {
     try {
       console.log(`Adding item to order ${orderId}:`, itemData);
       const response = await api.post(`orders/${orderId}/items`, itemData);
-      
+
       // Handle nested response structure
       const responseData = response.data?.data || response.data;
       console.log('Add item response:', responseData);
-      
+
       if (!responseData) {
         throw new Error('No se recibieron datos en la respuesta del servidor');
       }
-      
+
       return responseData;
     } catch (error: any) {
       console.error('Error adding item to order:', {
@@ -171,11 +172,11 @@ export const cartApi = {
         orderId,
         itemData
       });
-      
+
       if (error.response?.data?.message) {
         throw new Error(`Error al agregar ítem: ${error.response.data.message}`);
       }
-      
+
       throw new Error('Error al agregar ítem al pedido');
     }
   },
@@ -185,20 +186,20 @@ export const cartApi = {
     try {
       console.log(`Updating order ${orderId} status to:`, status);
       const response = await api.patch(`orders/${orderId}/status`, { status });
-      
+
       // Handle nested response structure
       const responseData = response.data?.data || response.data;
       console.log('Update status response:', responseData);
-      
+
       if (!responseData) {
         throw new Error('No se recibieron datos en la respuesta del servidor');
       }
-      
+
       if (!responseData.id) {
         console.error('Missing order ID in response:', responseData);
         throw new Error('No se pudo actualizar el estado: ID de orden no recibido');
       }
-      
+
       return responseData;
     } catch (error: any) {
       console.error('Error updating order status:', {
@@ -208,11 +209,11 @@ export const cartApi = {
         orderId,
         newStatus: status
       });
-      
+
       if (error.response?.data?.message) {
         throw new Error(`Error al actualizar estado: ${error.response.data.message}`);
       }
-      
+
       throw new Error('Error al actualizar el estado del pedido');
     }
   },

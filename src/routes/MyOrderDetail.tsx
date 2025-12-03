@@ -58,6 +58,13 @@ type Order = {
   items: OrderItem[];
   created_at: string;
   updated_at: string;
+  additional_location?: {
+    id: number;
+    province: string;
+    canton: string;
+    district: string;
+    direccion_breve?: string;
+  } | null;
 };
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
@@ -71,9 +78,8 @@ const StatusBadge = ({ status }: { status: OrderStatus }) => {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        statusMap[status]?.color || 'bg-gray-100 text-gray-800'
-      }`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMap[status]?.color || 'bg-gray-100 text-gray-800'
+        }`}
     >
       {statusMap[status]?.label || status}
     </span>
@@ -82,16 +88,16 @@ const StatusBadge = ({ status }: { status: OrderStatus }) => {
 
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return 'Fecha no disponible';
-  
+
   try {
     // Handle ISO 8601 format with timezone
     const date = new Date(dateString);
-    
+
     // Check if the date is valid
     if (isNaN(date.getTime())) {
       throw new Error('Invalid date');
     }
-    
+
     return format(date, "d 'de' MMMM 'de' yyyy 'a las' hh:mm a", { locale: es });
   } catch (error) {
     console.error('Error formatting date:', dateString, error);
@@ -112,7 +118,7 @@ export default function MyOrderDetail() {
 
   const fetchProductsForOrder = async (items: OrderItem[]) => {
     if (!items || items.length === 0) return [];
-    
+
     try {
       setProductsLoading(true);
       const productIds = items.map(item => item.product_id);
@@ -127,85 +133,85 @@ export default function MyOrderDetail() {
   };
 
   useEffect(() => {
-  let isMounted = true;
-  
-  const fetchOrder = async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      const response = await getOrder(id);
-      
-      if (!isMounted) return;
-      
-      const orderData = response.data;
-      setOrder(orderData);
-      
-      if (orderData.items?.length > 0) {
-        const products = await fetchProductsForOrder(orderData.items);
-        
-        if (!isMounted) return;
-        
-        const updatedItems = orderData.items.map((item: OrderItem) => ({
-          ...item,
-          product_details: products.find((p: Product) => p.id === item.product_id)
-        }));
-        
-        setOrder(prev => prev ? { ...prev, items: updatedItems } : null);
-      }
-    } catch (err) {
-      if (!isMounted) return;
-      console.error('Error fetching order:', err);
-      setError('No se pudo cargar la información del pedido');
-    } finally {
-      if (isMounted) {
-        setLoading(false);
-      }
-    }
-  };
+    let isMounted = true;
 
-  fetchOrder();
-  
-  return () => {
-    isMounted = false;
-  };
-}, [id]);
+    const fetchOrder = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        const response = await getOrder(id);
+
+        if (!isMounted) return;
+
+        const orderData = response.data;
+        setOrder(orderData);
+
+        if (orderData.items?.length > 0) {
+          const products = await fetchProductsForOrder(orderData.items);
+
+          if (!isMounted) return;
+
+          const updatedItems = orderData.items.map((item: OrderItem) => ({
+            ...item,
+            product_details: products.find((p: Product) => p.id === item.product_id)
+          }));
+
+          setOrder(prev => prev ? { ...prev, items: updatedItems } : null);
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Error fetching order:', err);
+        setError('No se pudo cargar la información del pedido');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchOrder();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
   const handleCancelOrder = async () => {
     if (!order) return;
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Show loading toast
       const toastId = toast.loading('Cancelando pedido...');
-      
+
       // Call the API to cancel the order
       await cancelOrder(String(order.id));
-      
+
       // Update the local state to reflect the cancellation
-      setOrder(prev => prev ? { 
-        ...prev, 
+      setOrder(prev => prev ? {
+        ...prev,
         status: 'canceled',
         updated_at: new Date().toISOString()
       } : null);
-      
+
       // Close the confirmation dialog
       setCancelOpen(false);
-      
+
       // Update toast to show success
       toast.success('El pedido ha sido cancelado exitosamente.', {
         id: toastId,
         duration: 5000,
       });
-      
+
     } catch (error) {
       console.error('Error canceling order:', error);
-      
+
       // Show error toast
       toast.error('No se pudo cancelar el pedido. Por favor, intente nuevamente.', {
         duration: 5000,
       });
-      
+
       setError('No se pudo cancelar el pedido. Por favor, intente nuevamente.');
     } finally {
       setIsSubmitting(false);
@@ -311,6 +317,22 @@ export default function MyOrderDetail() {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Tel: {order.customer_phone_8}
               </p>
+
+              {/* Delivery Address */}
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                  Dirección de entrega
+                </h4>
+                {order.additional_location ? (
+                  <p className="text-sm text-gray-900 dark:text-white">
+                    {order.additional_location.province}, {order.additional_location.canton}, {order.additional_location.district}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+                    Dirección del perfil del cliente
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

@@ -27,39 +27,40 @@ export type CreateOrderPayload = {
   shipping_total?: number | null;
   discount_total?: number | null;
   status?: 'draft' | 'requested' | 'accepted' | 'canceled' | 'completed' | 'rated';
+  additional_location_id?: number | null;  // Optional additional location for delivery
 };
 
 export async function createOrder(payload: CreateOrderPayload) {
   // Get the auth token from localStorage
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('No se encontró el token de autenticación');
   }
-  
+
   // Decode the token to get user info (assuming it's a JWT)
   // Note: This is a simplified example - you might need to adjust based on your token format
   const tokenParts = token.split('.');
   if (tokenParts.length !== 3) {
     throw new Error('Token inválido');
   }
-  
+
   try {
     const decoded = JSON.parse(atob(tokenParts[1]));
     const userId = decoded?.user_id || decoded?.sub;
-    
+
     if (!userId) {
       throw new Error('No se pudo obtener el ID de usuario del token');
     }
-    
+
     // Create the request payload with the user_id
     const requestPayload = {
       ...payload,
       user_id: userId
     };
-    
+
     console.log('Creating order with payload:', requestPayload);
-    
+
     const res = await api.post('/orders', requestPayload);
     return res.data;
   } catch (error) {
@@ -142,7 +143,7 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
     }
 
     console.log('Fetching orders for user ID:', userId);
-    
+
     // Using the orders endpoint with user_id parameter
     const res = await api.get('/orders', {
       params: {
@@ -153,12 +154,12 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
         'Content-Type': 'application/json'
       }
     });
-    
+
     console.log('Orders API Response:', res.data);
-    
+
     // Map the response data to match the expected format
     const orders = Array.isArray(res.data) ? res.data : [];
-    
+
     // Map to OrderTableItem format
     const mappedData = orders.map((order: any) => ({
       id: order.id,
@@ -174,7 +175,7 @@ export async function listMyOrders(userId: number): Promise<OrdersTableResponse>
       },
       items_count: order.items?.length || 0
     }));
-    
+
     return {
       data: mappedData,
       current_page: 1,
