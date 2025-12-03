@@ -313,7 +313,7 @@ export default function ProductDetail() {
   }, [product, frontendProductUrl]);
 
   if (loading) return <ProductDetailSkeleton />;
-  if (error) return <div className="text-center py-8 text-red-500 dark:text-red-400 bg-white dark:bg-backgroundDark min-h-screen">{error}</div>;
+  if (error) return <div className="text-center py-8 text-red-500 dark:text-red-400 bg-gray dark:bg-backgroundDark min-h-screen">{error}</div>;
   if (!product) return <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-backgroundDark min-h-screen">Producto no encontrado.</div>;
 
   return (
