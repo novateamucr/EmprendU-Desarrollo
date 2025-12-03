@@ -34,9 +34,8 @@ class ContactUsConfirmationMailable extends Mailable
 
     public function build()
     {
-        return $this->from('novateamucr@gmail.com', 'EmpowerUp')
+        return $this->subject('Hemos recibido tu mensaje - EmpowerUp')
                     ->to($this->data['email'])
-                    ->subject('Hemos recibido tu mensaje - EmpowerUp')
                     ->view('emails.contactUsConfirmation')
                     ->with('data', $this->data);
     }
