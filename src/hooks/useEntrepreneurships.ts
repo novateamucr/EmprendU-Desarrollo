@@ -17,7 +17,14 @@ const useEntrepreneurships = ({ page = 1, perPage = 15 }: UseEntrepreneurshipsOp
     setLoading(true);
     try {
       const data = await entrepreneurshipApi.getAll({ page, per_page: perPage });
-      setEntrepreneurships(data.data);
+      // Normalize category relation to ensure `nombre` exists
+      const normalized = (data.data || []).map((e: any) => {
+        const cr = e?.category_relation || e?.categoryRelation || null;
+        let nombre = cr?.nombre ?? cr?.name ?? cr?.label ?? undefined;
+        const fixedCr = cr ? { ...cr, nombre: nombre ?? '' } : null;
+        return { ...e, category_relation: fixedCr };
+      });
+      setEntrepreneurships(normalized);
       setPagination(data);
       setError(null);
     } catch (err: any) {
