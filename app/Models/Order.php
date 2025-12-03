@@ -31,12 +31,12 @@ class Order extends Model
 
     public function entrepreneurship()
     {
-        return $this->belongsTo(Entrepreneurship::class);
+        return $this->belongsTo(Entrepreneurship::class, 'entrepreneurship_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function items()

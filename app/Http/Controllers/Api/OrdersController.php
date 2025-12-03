@@ -13,6 +13,10 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+use App\Mail\PedidoRealizadoMailable;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+
 class OrdersController extends Controller
 {
     public function index(Request $request)
@@ -70,11 +74,38 @@ class OrdersController extends Controller
             'currency' => 'CRC',
             'notes' => $data['notes'] ?? null,
         ];
+
+        $order = Order::create($orderData);
+        $this->recalculateTotals($order);
+        $order->refresh(); 
+        $order->load(['entrepreneurship.owner', 'items.product', 'items.orderOptions']);
+
+        // Obtener usuario comprador
+        $usuario = $order->user;
+
+        // Obtener emprendedor dueño del emprendimiento (propietario)
+        $emprendedor = $order->entrepreneurship->owner ?? null;
+
+        // Para el emprendedor
+        Mail::to($emprendedor->email)
+            ->send(new PedidoRealizadoMailable($order, $emprendedor, $usuario, 'emprendedor'));
+
+        // Enviar correo al usuario
+        if ($usuario && $usuario->email) {
+            Mail::to($usuario->email)
+                ->send(new PedidoRealizadoMailable($order, $usuario, $emprendedor));
+        }
+
+        // Enviar correo al emprendedor
+      /*  if ($emprendedor && $emprendedor->email) {
+            Mail::to($emprendedor->email)
+                ->send(new PedidoRealizadoMailable($order, $emprendedor, $usuario));
+        }*/
         
         \Log::info('Creating order with data:', $orderData);
-        $order = Order::create($orderData);
+       // $order = Order::create($orderData);
 
-        $this->recalculateTotals($order);
+       // $this->recalculateTotals($order);
 
         return new OrderResource($order->load(['entrepreneurship', 'items.product', 'items.orderOptions']));
     }
