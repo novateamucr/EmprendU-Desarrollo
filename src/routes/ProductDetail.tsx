@@ -14,7 +14,7 @@ import {
 
 // Skeleton component for loading state
 const ProductDetailSkeleton = () => (
-  <div className="pt-24 pb-8 px-4 md:px-8 bg-white dark:bg-backgroundDark min-h-screen">
+  <div className="pt-24 pb-8 px-4 md:px-8 bg-gray dark:bg-backgroundDark min-h-screen">
     <div className="max-w-4xl mx-auto">
       {/* Back button and image skeleton */}
       <div className="flex items-center gap-2 mb-6">
