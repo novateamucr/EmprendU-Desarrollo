@@ -103,6 +103,26 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
     fetchCategories();
   }, []);
 
+  // Ensure the owner appears in the selector even if not returned in the first users page
+  useEffect(() => {
+    const ensureOwnerPresent = async () => {
+      try {
+        if (!isEditMode) return;
+        if (!formData.user_id) return;
+        if (isLoadingUsers) return;
+        const exists = users.some(u => u.id === Number(formData.user_id));
+        if (!exists) {
+          const owner = await userApi.getById(Number(formData.user_id));
+          setUsers(prev => [owner, ...prev]);
+        }
+      } catch (error) {
+        console.error('Error ensuring owner in users list:', error);
+      }
+    };
+    ensureOwnerPresent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, formData.user_id, isLoadingUsers]);
+
   // Load business data if in edit mode and no initial data provided
   useEffect(() => {
     if (isEditMode && id && !initialData) {
@@ -440,7 +460,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
               <select
                 id="user_id"
                 name="user_id"
-                value={formData.user_id ?? ''}
+                value={formData.user_id ? String(formData.user_id) : ''}
                 onChange={handleInputChange}
                 className="flex h-10 w-full rounded-md border border-input dark:border-cardDark bg-background dark:bg-backgroundDark px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                 required
@@ -448,7 +468,7 @@ export default function BusinessSetup({ initialData, onSuccess, onCancel }: Busi
               >
                 <option value="">Selecciona un usuario</option>
                 {users.map((u) => (
-                  <option key={u.id} value={u.id}>
+                  <option key={u.id} value={String(u.id)}>
                     {u.name}
                   </option>
                 ))}

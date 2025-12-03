@@ -14,7 +14,7 @@ import {
 
 // Skeleton component for loading state
 const ProductDetailSkeleton = () => (
-  <div className="pt-24 pb-8 px-4 md:px-8 bg-white dark:bg-backgroundDark min-h-screen">
+  <div className="pt-24 pb-8 px-4 md:px-8 bg-gray dark:bg-backgroundDark min-h-screen">
     <div className="max-w-4xl mx-auto">
       {/* Back button and image skeleton */}
       <div className="flex items-center gap-2 mb-6">
@@ -313,11 +313,11 @@ export default function ProductDetail() {
   }, [product, frontendProductUrl]);
 
   if (loading) return <ProductDetailSkeleton />;
-  if (error) return <div className="text-center py-8 text-red-500 dark:text-red-400 bg-white dark:bg-backgroundDark min-h-screen">{error}</div>;
+  if (error) return <div className="text-center py-8 text-red-500 dark:text-red-400 bg-gray dark:bg-backgroundDark min-h-screen">{error}</div>;
   if (!product) return <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white dark:bg-backgroundDark min-h-screen">Producto no encontrado.</div>;
 
   return (
-    <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
+    <div className="pt-24 pb-8 bg-gray dark:bg-backgroundDark min-h-screen">
       {/* Entrepreneurship link (avatar + name) above the card */}
       {product.entrepreneurship?.id && (
         <div className="max-w-4xl mx-auto px-4 md:px-8 mb-2">

@@ -150,14 +150,14 @@ export function Navbar({
         >
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-primary bg-opacity-50 transition-opacity"
+            className="fixed inset-0 bg-primary bg-opacity-50 dark:bg-backgroundDark dark:bg-opacity-80 transition-opacity"
             onClick={closeMobileMenu}
           />
           
           {/* Mobile Menu Panel */}
-          <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 max-w-sm bg-white shadow-xl transform transition-transform">
+          <AnimatedMobileMenu className="fixed top-0 right-0 h-full w-80 max-w-sm bg-white dark:bg-cardDark shadow-xl transform transition-transform border-l border-border dark:border-cardDark">
             {/* Mobile Menu Header */}
-            <div className="flex items-center justify-between p-6 border-b border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border dark:border-cardDark">
               <div className="flex items-center">
                 {logo}
               </div>
@@ -166,7 +166,7 @@ export function Navbar({
                 className="p-2 rounded-full transition-colors hover:bg-brand/10 focus-brand"
                 aria-label="Cerrar menú"
               >
-                <X className="w-5 h-5 text-secondary" />
+                <X className="w-5 h-5 text-secondary dark:text-secondaryDark" />
               </HoverButton>
             </div>
             
@@ -181,7 +181,7 @@ export function Navbar({
             
             {/* Mobile Menu Footer */}
             {rightContent && (
-              <div className="border-t border-border p-6">
+              <div className="border-t border-border dark:border-cardDark p-6">
                 <div className="flex justify-center">
                   {rightContent}
                 </div>

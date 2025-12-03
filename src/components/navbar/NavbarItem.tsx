@@ -29,8 +29,10 @@ export function NavbarItem({ item, isMobile = false, onNavigate }: NavbarItemPro
       return (
         <Link
           to={item.to}
-          className={`block px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm ${
-            isActive ? 'text-primary dark:text-white bg-gray-50' : 'text-secondary dark:text-secondaryDark'
+          className={`block px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-backgroundDark hover:text-primary dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm ${
+            isActive
+              ? 'text-primary dark:text-white bg-gray-50 dark:bg-backgroundDark'
+              : 'text-secondary dark:text-secondaryDark'
           }`}
           onClick={() => { if (onNavigate) onNavigate(); }}
         >

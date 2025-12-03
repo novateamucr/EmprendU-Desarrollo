@@ -257,7 +257,7 @@ export default function MyOrderDetail() {
   const canCancelOrder = order.status === 'requested' && order.items?.length > 0;
 
   return (
-    <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
+    <div className="pt-24 pb-8 bg-gray dark:bg-backgroundDark min-h-screen">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <div>
