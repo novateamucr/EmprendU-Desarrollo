@@ -27,7 +27,7 @@ class OrdersController extends Controller
             return response()->json(['error' => 'User ID is required'], 400);
         }
 
-        $orders = Order::with(['entrepreneurship', 'items.product', 'items.orderOptions'])
+        $orders = Order::with(['entrepreneurship', 'items.product', 'items.orderOptions', 'additionalLocation'])
             ->where('user_id', (int) $userId)
             ->orderByDesc('created_at')
             ->get();
@@ -73,6 +73,7 @@ class OrdersController extends Controller
             'grand_total' => 0,
             'currency' => 'CRC',
             'notes' => $data['notes'] ?? null,
+            'additional_location_id' => $data['additional_location_id'] ?? null,
         ];
 
         $order = Order::create($orderData);
@@ -107,7 +108,7 @@ class OrdersController extends Controller
 
        // $this->recalculateTotals($order);
 
-        return new OrderResource($order->load(['entrepreneurship', 'items.product', 'items.orderOptions']));
+        return new OrderResource($order->load(['entrepreneurship', 'items.product', 'items.orderOptions', 'additionalLocation']));
     }
     public function addItem(StoreOrderItemRequest $request, Order $order)
     {
@@ -302,7 +303,7 @@ class OrdersController extends Controller
         abort_unless($authorized, 403);
 
         $includeItems = filter_var($request->query('include_items', 'true'), FILTER_VALIDATE_BOOLEAN);
-        $relations = ['entrepreneurship'];
+        $relations = ['entrepreneurship', 'additionalLocation'];
         if ($includeItems) {
             $relations[] = 'items.orderOptions';
             $relations[] = 'items.product';
@@ -335,6 +336,7 @@ class OrdersController extends Controller
         $with = [];
         if (str_contains($include, 'entrepreneurship')) {
             $with[] = 'entrepreneurship';
+            $with[] = 'additionalLocation';
         }
         if (str_contains($include, 'items')) {
             $with[] = 'items.orderOptions';
@@ -354,7 +356,7 @@ class OrdersController extends Controller
         abort_if(!$eid, 400, 'entrepreneurship_id is required');
         Gate::authorize('manage-entrepreneurship', $eid);
 
-        $query = Order::with(['entrepreneurship'])
+        $query = Order::with(['entrepreneurship', 'additionalLocation'])
             ->where('entrepreneurship_id', $eid)
             ->orderByDesc('id');
 
