@@ -300,7 +300,7 @@ export default function EntrepreneurOrderDetail() {
 
   if (loading) {
     return (
-      <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
+      <div className="pt-24 pb-8 bg-gray dark:bg-backgroundDark min-h-screen">
         <div className="max-w-4xl mx-auto px-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
@@ -318,7 +318,7 @@ export default function EntrepreneurOrderDetail() {
 
   if (!order) {
     return (
-      <div className="pt-24 pb-8 bg-white dark:bg-backgroundDark min-h-screen">
+      <div className="pt-24 pb-8 bg-gray dark:bg-backgroundDark min-h-screen">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white dark:bg-cardDark border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-200 rounded-lg p-6 text-center">
             <div className="flex flex-col items-center justify-center space-y-2">
