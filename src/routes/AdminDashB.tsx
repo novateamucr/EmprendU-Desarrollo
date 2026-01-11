@@ -94,7 +94,7 @@ export default function AdminDashB() {
 	}
 
 	return (
-  <div className="p-4 md:p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 dark:bg-backgroundDark min-h-screen">
+  <div className="p-4 md:p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 dark:bg-backgroundDark ">
     
     {/* Usuarios Card */}
     <div className="bg-white dark:bg-cardDark rounded-xl shadow-md p-6 flex flex-col items-center w-full overflow-x-auto md:overflow-visible">
